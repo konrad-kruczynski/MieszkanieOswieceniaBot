@@ -47,7 +47,6 @@ namespace MieszkanieOswieceniaBot
         {
             var relayOffset = physicalRelayNo % 2 == 0 ? 0 : 3;
             var serialPort = physicalRelayNo < 2 ? serialPort1 : serialPort2;
-            serialPort.WriteByteOrDoNothing((byte)(CommandBase + relayOffset + StateOffset));
             serialPort.WriteByteOrDoNothing((byte)(CommandBase + relayOffset + (state ? TurnOnOffset : TurnOffOffset)));
         }
 
