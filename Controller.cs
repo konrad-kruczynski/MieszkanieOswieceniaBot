@@ -14,6 +14,7 @@ namespace MieszkanieOswieceniaBot
         {
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             relayController = new RelayController();
+            stats = new Stats();
             lastSpeakerHeartbeat = DateTime.Now;
             authorizer = new Authorizer();
             bot.OnMessage += HandleMessage;
@@ -37,6 +38,7 @@ namespace MieszkanieOswieceniaBot
 
         private async void HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
+            stats.IncrementMessageCounter();
             var userId = e.Message.From.Id;
             var chatId = e.Message.Chat.Id;
             if(!authorizer.IsAuthorized(userId))
@@ -108,6 +110,7 @@ namespace MieszkanieOswieceniaBot
 
         private async void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
         {
+            stats.IncrementMessageCounter();
             if(!Configuration.Instance.IsAdmin(e.CallbackQuery.From.Id))
             {
                 await bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
@@ -136,11 +139,21 @@ namespace MieszkanieOswieceniaBot
 
         private string HandleTextCommand(Telegram.Bot.Types.Message message)
         {
-            var text = message.Text;
+            var text = message.Text.ToLower();
             var chatId = message.Chat.Id;
             if(text.Length == 1 && char.IsDigit(text[0]))
             {
                 return HandleScenario(int.Parse(text));
+            }
+
+            if(text == "staty" || text == "statystyki")
+            {
+                return stats.GetStats();
+            }
+
+            if(text == "log")
+            {
+                return CircularLogger.Instance.GetEntriesAsAString();
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
@@ -183,6 +196,7 @@ namespace MieszkanieOswieceniaBot
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
         private readonly Authorizer authorizer;
+        private readonly Stats stats;
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromMinutes(1);
 

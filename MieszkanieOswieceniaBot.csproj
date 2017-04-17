@@ -70,6 +70,7 @@
     <Compile Include="SerialPortHelpers.cs" />
     <Compile Include="Authorizer.cs" />
     <Compile Include="AsyncPump.cs" />
+    <Compile Include="Stats.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
