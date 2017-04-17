@@ -20,19 +20,25 @@ namespace MieszkanieOswieceniaBot
 
         public bool GetState(int relayNo)
         {
-            return relayStateCache[relayNo];
+            lock(sync)
+            {
+                return relayStateCache[relayNo];
+            }
         }
 
         public void SetState(int relayNo, bool state)
         {
-            if(state == relayStateCache[relayNo])
+            lock(sync)
             {
-                return;
+                if(state == relayStateCache[relayNo])
+                {
+                    return;
+                }
+                relayStateCache[relayNo] = state;
+                var physicalNo = LogicalToPhysicalRelayNo[relayNo];
+                CircularLogger.Instance.Log("Setting relay {0} (={2} physical) {1}.", relayNo, state, physicalNo);
+                TrySetStatePhysical(physicalNo, state);
             }
-            relayStateCache[relayNo] = state;
-            var physicalNo = LogicalToPhysicalRelayNo[relayNo];
-            CircularLogger.Instance.Log("Setting relay {0} (={2} physical) {1}.", relayNo, state, physicalNo);
-            TrySetStatePhysical(physicalNo, state);
         }
 
         public static int RelayCount
@@ -69,6 +75,7 @@ namespace MieszkanieOswieceniaBot
         private readonly bool[] relayStateCache;
         private readonly SerialPort serialPort1;
         private readonly SerialPort serialPort2;
+        private readonly object sync;
 
         private const byte StateOffset = 2;
         private const byte TurnOnOffset = 1;
