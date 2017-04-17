@@ -70,7 +70,6 @@ namespace MieszkanieOswieceniaBot
         private readonly bool[] relayStateCache;
         private readonly SerialPort serialPort1;
         private readonly SerialPort serialPort2;
-        private readonly object sync;
 
         private const byte StateOffset = 2;
         private const byte TurnOnOffset = 1;
