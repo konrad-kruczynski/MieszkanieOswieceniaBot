@@ -9,7 +9,6 @@ namespace MieszkanieOswieceniaBot
     {
         public RelayController()
         {
-            sync = new object();
             relayStateCache = new bool[4];
             serialPort1 = TryGetSerialPort("/dev/ttyUSB0");
             serialPort2 = TryGetSerialPort("/dev/ttyUSB1");
@@ -21,25 +20,20 @@ namespace MieszkanieOswieceniaBot
 
         public bool GetState(int relayNo)
         {
-            lock(sync)
-            {
-                return relayStateCache[relayNo];
-            }
+
+            return relayStateCache[relayNo];
         }
 
         public void SetState(int relayNo, bool state)
         {
-            lock(sync)
+            if(state == relayStateCache[relayNo])
             {
-                if(state == relayStateCache[relayNo])
-                {
-                    return;
-                }
-                relayStateCache[relayNo] = state;
-                var physicalNo = LogicalToPhysicalRelayNo[relayNo];
-                CircularLogger.Instance.Log("Setting relay {0} (={2} physical) {1}.", relayNo, state, physicalNo);
-                TrySetStatePhysical(physicalNo, state);
+                return;
             }
+            relayStateCache[relayNo] = state;
+            var physicalNo = LogicalToPhysicalRelayNo[relayNo];
+            CircularLogger.Instance.Log("Setting relay {0} (={2} physical) {1}.", relayNo, state, physicalNo);
+            TrySetStatePhysical(physicalNo, state);
         }
 
         public static int RelayCount

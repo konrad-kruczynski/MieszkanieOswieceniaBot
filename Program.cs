@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Threading;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
@@ -8,9 +10,12 @@ namespace MieszkanieOswieceniaBot
     {
         public static void Main(string[] args)
         {
-            var controller = new Controller();
-            controller.Start();
-            new ManualResetEvent(false).WaitOne();
+            AsyncPump.Run(async () =>
+            {
+                var controller = new Controller();
+                controller.Start();
+                await Task.Delay(Timeout.InfiniteTimeSpan);
+            });
         }
     }
 }

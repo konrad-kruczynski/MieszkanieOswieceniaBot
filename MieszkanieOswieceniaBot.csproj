@@ -69,6 +69,7 @@
     <Compile Include="RelayController.cs" />
     <Compile Include="SerialPortHelpers.cs" />
     <Compile Include="Authorizer.cs" />
+    <Compile Include="AsyncPump.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
