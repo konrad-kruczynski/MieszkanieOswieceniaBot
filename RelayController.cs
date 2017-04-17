@@ -9,6 +9,7 @@ namespace MieszkanieOswieceniaBot
     {
         public RelayController()
         {
+            sync = new object();
             relayStateCache = new bool[4];
             serialPort1 = TryGetSerialPort("/dev/ttyUSB0");
             serialPort2 = TryGetSerialPort("/dev/ttyUSB1");
