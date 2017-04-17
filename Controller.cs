@@ -146,7 +146,7 @@ namespace MieszkanieOswieceniaBot
             {
                 return "Nie ma takiego scenariusza.";
             }
-            for(var i = 0; i < RelayController.RelayCount; i++)
+            for(var i = 0; i < RelayController.RelayCount - 1; i++)
             {
                 relayController.SetState(i, Scenarios[scenarioNo].Contains(i));
             }
