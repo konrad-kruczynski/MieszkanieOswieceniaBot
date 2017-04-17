@@ -13,7 +13,8 @@ namespace MieszkanieOswieceniaBot
         public string GetStats()
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Jestem uruchomiony od {0:D}, czyli przez {1:g}.", startTime, DateTime.Now - startTime);
+            builder.AppendFormat("Jestem uruchomiony od {0:D}, czyli przez {1:#.#}.", startTime,
+                                 (DateTime.Now - startTime).TotalDays);
             builder.AppendLine();
             builder.AppendFormat($"Obsłużyłem w tym czasie {messageCounter} wiadomości.");
             return builder.ToString();
