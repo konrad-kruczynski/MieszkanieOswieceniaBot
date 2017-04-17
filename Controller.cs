@@ -103,6 +103,7 @@ namespace MieszkanieOswieceniaBot
             }
 
             CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(e.Message.From));
+            return;
         }
 
         private async void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
