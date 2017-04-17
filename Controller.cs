@@ -108,6 +108,11 @@ namespace MieszkanieOswieceniaBot
 
         private async void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
         {
+            if(!Configuration.Instance.IsAdmin(e.CallbackQuery.From.Id))
+            {
+                await bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
+                CircularLogger.Instance.Log($"Trying to remove user by {GetSender(e.CallbackQuery.From)}.");
+            }
             var empty = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new Telegram.Bot.Types.InlineKeyboardButton[0]);
             await bot.EditMessageReplyMarkupAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId, empty);
             var data = e.CallbackQuery.Data;
