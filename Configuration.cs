@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -26,7 +27,12 @@ namespace MieszkanieOswieceniaBot
 
         public bool IsAdmin(int id)
         {
-            return File.ReadAllLines("admins.txt").Select(x => int.Parse(x)).Any(x => x == id);
+            return ListAdmins().Any(x => x == id);
+        }
+
+        public IEnumerable<int> ListAdmins()
+        {
+            return File.ReadAllLines("admins.txt").Select(x => int.Parse(x));
         }
     }
 }

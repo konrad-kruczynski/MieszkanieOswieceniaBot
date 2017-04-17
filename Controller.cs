@@ -63,8 +63,9 @@ namespace MieszkanieOswieceniaBot
                     {
                         await bot.SendTextMessageAsync(chatId, "Nie ma żadnych gadów.");
                     }
-                    foreach(var user in users)
+                    foreach(var user in users.Concat(Configuration.Instance.ListAdmins()))
                     {
+                        var isAdmin = Configuration.Instance.IsAdmin(user);
                         var photos = (await bot.GetUserProfilePhotosAsync(user));
                         if(photos.TotalCount < 1)
                         {
@@ -77,7 +78,8 @@ namespace MieszkanieOswieceniaBot
                         var photoToSend = new Telegram.Bot.Types.FileToSend(photo.FileId, memoryStream);
                         var removeButton = new Telegram.Bot.Types.InlineKeyboardButton("Usuń") { CallbackData = "r" + user };
                         var markup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[] { removeButton });
-                        await bot.SendPhotoAsync(chatId, photoToSend, replyMarkup: markup);
+                        await bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
+                                                 replyMarkup: isAdmin ? null: markup);
                     }
                     return;
                 }
