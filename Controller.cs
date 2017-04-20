@@ -54,19 +54,15 @@ namespace MieszkanieOswieceniaBot
                 {
                     if(!Configuration.Instance.IsAdmin(userId))
                     {
-                        await bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.");
+                        bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
                         CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
                         return;
                     }
                     var users = authorizer.ListUsers();
-                    if(!users.Any())
-                    {
-                        await bot.SendTextMessageAsync(chatId, "Nie ma żadnych gadów.");
-                    }
                     foreach(var user in users.Concat(Configuration.Instance.ListAdmins()))
                     {
                         var isAdmin = Configuration.Instance.IsAdmin(user);
-                        var photos = (await bot.GetUserProfilePhotosAsync(user));
+                        var photos = bot.GetUserProfilePhotosAsync(user).Result;
                         if(photos.TotalCount < 1)
                         {
                             continue;
@@ -103,24 +99,24 @@ namespace MieszkanieOswieceniaBot
                 var keyboardMarkup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup
                                                  (new[] { yesButton, noButton });
 
-                await bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup);
+                bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup).Wait();
             }
 
             CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(e.Message.From));
             return;
         }
 
-        private async void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
         {
             stats.IncrementMessageCounter();
             if(!Configuration.Instance.IsAdmin(e.CallbackQuery.From.Id))
             {
-                await bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
+                bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.").Wait();
                 CircularLogger.Instance.Log($"Trying to remove user by {GetSender(e.CallbackQuery.From)}.");
                 return;
             }
             var empty = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new Telegram.Bot.Types.InlineKeyboardButton[0]);
-            await bot.EditMessageReplyMarkupAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId, empty);
+            bot.EditMessageReplyMarkupAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId, empty).Wait();
             var data = e.CallbackQuery.Data;
             var contactId = int.Parse(data.Substring(1));
             string operation;
@@ -134,9 +130,9 @@ namespace MieszkanieOswieceniaBot
                 operation = "Usunięto";
                 authorizer.RemoveUser(contactId);
             }
-            await bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id,
-                                           $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.");
-            await bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.");
+            bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id,
+                                     $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.").Wait();
+            bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.").Wait();
         }
 
         private string HandleTextCommand(Telegram.Bot.Types.Message message)
