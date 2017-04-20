@@ -100,6 +100,7 @@ namespace MieszkanieOswieceniaBot
                                                  (new[] { yesButton, noButton });
 
                 bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup).Wait();
+                return;
             }
 
             CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(e.Message.From));
