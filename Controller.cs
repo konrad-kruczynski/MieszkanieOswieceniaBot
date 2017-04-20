@@ -85,7 +85,7 @@ namespace MieszkanieOswieceniaBot
                 }
 
                 var result = HandleTextCommand(e.Message);
-                await bot.SendTextMessageAsync(chatId, result);
+                bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
             }
 
@@ -156,6 +156,11 @@ namespace MieszkanieOswieceniaBot
             if(text == "log")
             {
                 return CircularLogger.Instance.GetEntriesAsAString();
+            }
+
+            if(text == "ping")
+            {
+                return "pong";
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
