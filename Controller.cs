@@ -85,7 +85,7 @@ namespace MieszkanieOswieceniaBot
                 }
 
                 var result = HandleTextCommand(e.Message);
-                bot.SendTextMessageAsync(chatId, result).Wait();
+                bot.SendTextMessageAsync(chatId, result).RunSynchronously();
                 return;
             }
 
