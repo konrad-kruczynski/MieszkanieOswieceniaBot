@@ -43,7 +43,7 @@ namespace MieszkanieOswieceniaBot
             var chatId = e.Message.Chat.Id;
             if(!authorizer.IsAuthorized(userId))
             {
-                await bot.SendTextMessageAsync(chatId, "Brak dostępu.");
+                bot.SendTextMessageAsync(chatId, "Brak dostępu.").Wait();
                 CircularLogger.Instance.Log($"Unauthorized access from {GetSender(e.Message.From)}.");
                 return;
             }
@@ -85,7 +85,7 @@ namespace MieszkanieOswieceniaBot
                 }
 
                 var result = HandleTextCommand(e.Message);
-                bot.SendTextMessageAsync(chatId, result).RunSynchronously();
+                bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace MieszkanieOswieceniaBot
             {
                 if(!Configuration.Instance.IsAdmin(userId))
                 {
-                    await bot.SendTextMessageAsync(chatId, "Tylko administrator może dodawać użytownkików.");
+                    bot.SendTextMessageAsync(chatId, "Tylko administrator może dodawać użytownkików.").Wait();
                     CircularLogger.Instance.Log($"Trying to add remove/user from {GetSender(e.Message.From)}.");
                     return;
                 }
