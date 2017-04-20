@@ -36,7 +36,7 @@ namespace MieszkanieOswieceniaBot
             CircularLogger.Instance.Log("Bot error: {0}.", error);
         }
 
-        private async void HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        private void HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
             stats.IncrementMessageCounter();
             var userId = e.Message.From.Id;
@@ -69,13 +69,13 @@ namespace MieszkanieOswieceniaBot
                         }
                         var photo = photos.Photos[0][0];
                         var memoryStream = new MemoryStream();
-                        await bot.GetFileAsync(photo.FileId, memoryStream);
+                        bot.GetFileAsync(photo.FileId, memoryStream).Wait();
 
                         var photoToSend = new Telegram.Bot.Types.FileToSend(photo.FileId, memoryStream);
                         var removeButton = new Telegram.Bot.Types.InlineKeyboardButton("Usuń") { CallbackData = "r" + user };
                         var markup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[] { removeButton });
-                        await bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
-                                                 replyMarkup: isAdmin ? null: markup);
+                        bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
+                                           replyMarkup: isAdmin ? null : markup).Wait();
                     }
                     return;
                 }
