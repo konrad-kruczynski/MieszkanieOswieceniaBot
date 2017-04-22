@@ -27,8 +27,11 @@ namespace MieszkanieOswieceniaBot
         {
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
-            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().Subscribe(_ => lastSpeakerHeartbeat = DateTime.Now);
-            Observable.Interval(TimeSpan.FromSeconds(10)).Subscribe(_ => RefreshSpeakerState());
+            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().Subscribe(_ => { 
+                lastSpeakerHeartbeat = DateTime.Now;
+                RefreshSpeakerState();
+            });
+            Observable.Interval(TimeSpan.FromSeconds(7)).Subscribe(_ => RefreshSpeakerState());
         }
 
         private void HandleError(string error)
@@ -95,7 +98,7 @@ namespace MieszkanieOswieceniaBot
                 }
                 var contactUserId = e.Message.Contact.UserId;
                 var yesButton = new Telegram.Bot.Types.InlineKeyboardButton("Tak") { CallbackData = "a" + contactUserId };
-                var noButton = new Telegram.Bot.Types.InlineKeyboardButton("Przeciwnie, chce go usunąć") { CallbackData = "r" + contactUserId };
+                var noButton = new Telegram.Bot.Types.InlineKeyboardButton("Przeciwnie, chcę go usunąć") { CallbackData = "r" + contactUserId };
                 var keyboardMarkup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup
                                                  (new[] { yesButton, noButton });
 
@@ -202,7 +205,7 @@ namespace MieszkanieOswieceniaBot
         private readonly Authorizer authorizer;
         private readonly Stats stats;
 
-        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(15);
 
         private static readonly HashSet<int>[] Scenarios = new HashSet<int>[]
         {
