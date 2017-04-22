@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Threading;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
@@ -27,11 +28,13 @@ namespace MieszkanieOswieceniaBot
         {
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
-            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().Subscribe(_ => { 
+            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => { 
                 lastSpeakerHeartbeat = DateTime.Now;
                 RefreshSpeakerState();
             });
-            Observable.Interval(TimeSpan.FromSeconds(7)).Subscribe(_ => RefreshSpeakerState());
+            Observable.Interval(TimeSpan.FromSeconds(7)).ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => RefreshSpeakerState());
         }
 
         private void HandleError(string error)
