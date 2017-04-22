@@ -16,7 +16,7 @@ namespace MieszkanieOswieceniaBot
 
         private Configuration()
         {
-            
+            admins = new HashSet<int>(File.ReadAllLines("admins.txt").Select(x => int.Parse(x)));
         }
 
         public string GetApiKey()
@@ -27,12 +27,14 @@ namespace MieszkanieOswieceniaBot
 
         public bool IsAdmin(int id)
         {
-            return ListAdmins().Any(x => x == id);
+            return admins.Contains(id);
         }
 
         public IEnumerable<int> ListAdmins()
         {
-            return File.ReadAllLines("admins.txt").Select(x => int.Parse(x));
+            return admins;
         }
+
+        private readonly HashSet<int> admins;
     }
 }

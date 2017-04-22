@@ -10,6 +10,8 @@ namespace MieszkanieOswieceniaBot
         public Authorizer()
         {
             configuration = Configuration.Instance;
+            users = new HashSet<int>();
+            LoadUsers();
         }
 
         public bool IsAuthorized(int userId)
@@ -19,29 +21,40 @@ namespace MieszkanieOswieceniaBot
 
         public void AddUser(int userId)
         {
-            Write(ListUsers().Concat(new[] { userId }));
+            users.Add(userId);
+            Write();
         }
 
         public void RemoveUser(int userId)
         {
-            Write(ListUsers().Where(x => x != userId));
+            users.Remove(userId);
+            Write();
         }
 
         public IEnumerable<int> ListUsers()
         {
-            if(!File.Exists(UsersFile))
-            {
-                Write(new int[0]);
-            }
-            return File.ReadAllLines(UsersFile).Select(x => int.Parse(x));
+            return users;
         }
 
-        private void Write(IEnumerable<int> users)
+        private void LoadUsers()
         {
-            File.WriteAllLines(UsersFile, users.Select(x => x.ToString()).Distinct().ToArray());
+            if(!File.Exists(UsersFile))
+            {
+                Write();
+            }
+            foreach(var user in File.ReadAllLines(UsersFile).Select(x => int.Parse(x)))
+            {
+                users.Add(user);
+            }
+        }
+
+        private void Write()
+        {
+            File.WriteAllLines(UsersFile, users.Select(x => x.ToString()).ToArray());
         }
 
         private readonly Configuration configuration;
+        private readonly HashSet<int> users;
         private const string UsersFile = "users.txt";
     }
 }
