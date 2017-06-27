@@ -166,6 +166,11 @@ namespace MieszkanieOswieceniaBot
                 return "pong";
             }
 
+            if(text == "czuwanie")
+            {
+                lastSpeakerHeartbeat = lastSpeakerHeartbeat + TimeSpan.FromHours(1);
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
