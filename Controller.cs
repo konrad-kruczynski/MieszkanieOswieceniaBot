@@ -99,9 +99,9 @@ namespace MieszkanieOswieceniaBot
                         return;
                     }
                     bot.SendTextMessageAsync(chatId, "Wkrótce restart.").Wait();
-                    new Task(() =>
+                    new Task(async () =>
                     {
-                        Task.Delay(2000);
+                        await Task.Delay(10000);
                         Environment.Exit(0);
                     }).Start();
 
