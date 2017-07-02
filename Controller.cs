@@ -89,6 +89,18 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if (e.Message.Text.ToLower() == "restart")
+                {
+                    if (!Configuration.Instance.IsAdmin(userId))
+                    {
+                        bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
+                        CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
+                        return;
+                    }
+                    Environment.Exit(0);
+                    return;
+                }
+
                 var result = HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
