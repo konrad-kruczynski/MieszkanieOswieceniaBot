@@ -97,7 +97,13 @@ namespace MieszkanieOswieceniaBot
                         CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
                         return;
                     }
-                    Environment.Exit(0);
+                    bot.SendTextMessageAsync(chatId, "Wkrótce restart.").Wait();
+                    new Task(() =>
+                    {
+                        Task.Delay(2000);
+                        Environment.Exit(0);
+                    }).Start();
+
                     return;
                 }
 
