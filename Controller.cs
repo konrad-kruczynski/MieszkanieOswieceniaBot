@@ -102,6 +102,7 @@ namespace MieszkanieOswieceniaBot
                     new Task(async () =>
                     {
                         await Task.Delay(10000);
+                        bot.SendTextMessageAsync(chatId, "Teraz restart.").Wait();
                         Environment.Exit(0);
                     }).Start();
 
