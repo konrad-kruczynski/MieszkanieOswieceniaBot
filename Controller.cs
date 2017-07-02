@@ -89,6 +89,16 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "aktualizacja")
+                {
+                    var repository = Git.Open(Directory.GetCurrentDirectory());
+                    var pullResult = repository.Pull().Call();
+                    var resultMessage = pullResult.GetFetchResult().ToString();
+
+                    bot.SendTextMessageAsync(chatId, resultMessage).Wait();
+                    return;
+                }
+
                 var result = HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
