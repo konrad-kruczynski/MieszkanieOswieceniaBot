@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Threading;
+using NGit.Api;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
