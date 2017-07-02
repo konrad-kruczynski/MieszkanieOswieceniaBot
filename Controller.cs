@@ -171,8 +171,10 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "czuwanie")
             {
-                lastSpeakerHeartbeat = lastSpeakerHeartbeat + TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż {0:yy-MMM-dd HH:mm}.", lastSpeakerHeartbeat);
+                lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.Now ? DateTime.Now : lastSpeakerHeartbeat)
+                    + TimeSpan.FromHours(1);
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1}h).",
+                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
