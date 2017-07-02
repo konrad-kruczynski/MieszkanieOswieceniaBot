@@ -17,11 +17,11 @@ namespace MieszkanieOswieceniaBot
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             relayController = new RelayController();
             stats = new Stats();
-            lastSpeakerHeartbeat = DateTime.Now;
+            lastSpeakerHeartbeat = new DateTime(2000, 1, 1);
             authorizer = new Authorizer();
             bot.OnMessage += HandleMessage;
             bot.OnCallbackQuery += HandleCallbackQuery;
-            bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.Message);
+            bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.ToString());
             bot.OnReceiveError += (sender, e) => HandleError(e.ApiRequestException.ToString());
         }
 
@@ -37,13 +37,14 @@ namespace MieszkanieOswieceniaBot
                 }
                 RefreshSpeakerState();
             });
-            Observable.Interval(TimeSpan.FromSeconds(7)).ObserveOn(SynchronizationContext.Current)
+            Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
         }
 
         private void HandleError(string error)
         {
             CircularLogger.Instance.Log("Bot error: {0}.", error);
+            Thread.Sleep(1000);
         }
 
         private async void HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
