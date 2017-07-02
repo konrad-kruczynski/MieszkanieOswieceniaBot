@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Threading;
-using NGit.Api;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
@@ -87,16 +86,6 @@ namespace MieszkanieOswieceniaBot
                         await bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
                                                  replyMarkup: isAdmin ? null: markup);
                     }
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "aktualizacja")
-                {
-                    var repository = Git.Open(Directory.GetCurrentDirectory());
-                    var pullResult = repository.Pull().Call();
-                    var resultMessage = pullResult.GetFetchResult().ToString();
-
-                    bot.SendTextMessageAsync(chatId, resultMessage).Wait();
                     return;
                 }
 
