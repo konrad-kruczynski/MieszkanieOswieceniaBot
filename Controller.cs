@@ -188,6 +188,11 @@ namespace MieszkanieOswieceniaBot
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
             }
 
+            if(text == "czas")
+            {
+                return DateTime.Now.ToString();
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
