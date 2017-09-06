@@ -205,15 +205,16 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "miganie" || text == "alarm")
             {
+                var random = new Random();
                 var state = relayController.GetStateArray();
                 for (var i = 0; i < 10; i++)
                 {
                     relayController.SetState(1, true);
                     relayController.SetState(2, true);
-                    await Task.Delay(200);
+                    await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                     relayController.SetState(1, false);
 					relayController.SetState(2, false);
-                    await Task.Delay(100);
+                    await Task.Delay(TimeSpan.FromMilliseconds(100 * random.NextDouble()));
                 }
                 relayController.SetStateFromArray(state);
                 return "Wykonano.";
