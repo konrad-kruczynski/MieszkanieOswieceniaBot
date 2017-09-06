@@ -210,11 +210,13 @@ namespace MieszkanieOswieceniaBot
                 for (var i = 0; i < 10; i++)
                 {
                     relayController.SetState(1, true);
+                    await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
                     relayController.SetState(2, true);
-                    await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
+                    await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
                     relayController.SetState(1, false);
+                    await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
 					relayController.SetState(2, false);
-                    await Task.Delay(TimeSpan.FromMilliseconds(100 * random.NextDouble()));
+                    await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                 }
                 relayController.SetStateFromArray(state);
                 return "Wykonano.";
