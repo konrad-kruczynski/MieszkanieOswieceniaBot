@@ -110,7 +110,7 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                var result = HandleTextCommand(e.Message);
+                var result = await HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
             }
@@ -166,7 +166,7 @@ namespace MieszkanieOswieceniaBot
             bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.").Wait();
         }
 
-        private string HandleTextCommand(Telegram.Bot.Types.Message message)
+        private async Task<string> HandleTextCommand(Telegram.Bot.Types.Message message)
         {
             var text = message.Text.ToLower();
             var chatId = message.Chat.Id;
@@ -194,13 +194,27 @@ namespace MieszkanieOswieceniaBot
             {
                 lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.Now ? DateTime.Now : lastSpeakerHeartbeat)
                     + TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1}h).",
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
             }
 
             if(text == "czas")
             {
                 return DateTime.Now.ToString();
+            }
+
+            if(text == "miganie" || text == "alarm")
+            {
+                var state = relayController.GetStateArray();
+                for (var i = 0; i < 10; i++)
+                {
+                    HandleScenario(2);
+                    await Task.Delay(200);
+                    HandleScenario(0);
+                    await Task.Delay(200);
+                }
+                relayController.SetStateFromArray(state);
+                return "Wykonano.";
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");

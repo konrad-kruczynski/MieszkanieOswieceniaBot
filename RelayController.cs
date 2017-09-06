@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
+using System.Linq;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -20,7 +21,6 @@ namespace MieszkanieOswieceniaBot
 
         public bool GetState(int relayNo)
         {
-
             return relayStateCache[relayNo];
         }
 
@@ -34,6 +34,19 @@ namespace MieszkanieOswieceniaBot
             var physicalNo = LogicalToPhysicalRelayNo[relayNo];
             CircularLogger.Instance.Log("Setting relay {0} (={2} physical) {1}.", relayNo, state, physicalNo);
             TrySetStatePhysical(physicalNo, state);
+        }
+
+        public bool[] GetStateArray()
+        {
+            return relayStateCache.ToArray();
+        }
+
+        public void SetStateFromArray(bool[] state)
+        {
+            for(var i = 0; i < relayStateCache.Length; i++)
+            {
+                SetState(i, state[i]); 
+            }
         }
 
         public static int RelayCount
