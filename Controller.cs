@@ -208,10 +208,12 @@ namespace MieszkanieOswieceniaBot
                 var state = relayController.GetStateArray();
                 for (var i = 0; i < 10; i++)
                 {
-                    HandleScenario(2);
+                    relayController.SetState(1, true);
+                    relayController.SetState(2, true);
                     await Task.Delay(200);
-                    HandleScenario(0);
-                    await Task.Delay(200);
+                    relayController.SetState(1, false);
+					relayController.SetState(2, false);
+                    await Task.Delay(100);
                 }
                 relayController.SetStateFromArray(state);
                 return "Wykonano.";
