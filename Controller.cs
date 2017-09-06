@@ -255,7 +255,8 @@ namespace MieszkanieOswieceniaBot
                 new HashSet<int> { 2 },
                 new HashSet<int> { 1 },
                 new HashSet<int> { 0 },
-                new HashSet<int> { 0, 1, 2}
+                new HashSet<int> { 0, 1, 2},
+                new HashSet<int> { 0, 2}
         };
 
         private static readonly Dictionary<int, string> FriendlyNames = new Dictionary<int, string>
