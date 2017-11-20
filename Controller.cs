@@ -198,6 +198,13 @@ namespace MieszkanieOswieceniaBot
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
             }
 
+            if(text == "antyczuwanie")
+            {
+				lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
+									 lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
+            }
+
             if(text == "czas")
             {
                 return DateTime.Now.ToString();
