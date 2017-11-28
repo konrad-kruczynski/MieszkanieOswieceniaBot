@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -231,7 +232,16 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "temperatura" || text == "temp")
             {
-                return File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+                var rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+                var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                var crcMatch = new Regex(@"crc=.. (<yesorno>\w+)").Match(lines[0]);
+                if(crcMatch.Groups["yesorno"].Value != "YES")
+                {
+                    return string.Format("Błąd CRC, przekazuje gołe dane:{0}{1}", Environment.NewLine, rawData);
+                }
+                var temperatureMatch = new Regex(@"t=(<temperature>)\d+").Match(lines[1]);
+                var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 100;
+                return string.Format("Temperatura wynosi {0}°C.", temperature);
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
