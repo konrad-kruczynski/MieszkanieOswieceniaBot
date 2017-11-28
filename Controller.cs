@@ -40,6 +40,9 @@ namespace MieszkanieOswieceniaBot
             });
             Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
+            Observable.Interval(TimeSpan.FromHours(1)).ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => WriteTemperatureToLog());
+            WriteTemperatureToLog();
         }
 
         private void HandleError(string error)
@@ -232,20 +235,25 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "temperatura" || text == "temp")
             {
-                var rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
-                var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
-                if(crcMatch.Groups["yesorno"].Value != "YES")
-                {
-                    return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
-                }
-                var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
-                var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
-                return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
+                return GetTemperature();
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
+        }
+
+        private static string GetTemperature()
+        {
+            var rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+            var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
+            if (crcMatch.Groups["yesorno"].Value != "YES")
+            {
+                return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
+            }
+            var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
+            var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+            return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
         }
 
         private string HandleScenario(int scenarioNo)
@@ -264,6 +272,11 @@ namespace MieszkanieOswieceniaBot
         private void RefreshSpeakerState()
         {
             relayController.SetState(3, DateTime.Now - lastSpeakerHeartbeat < HeartbeatTimeout);
+        }
+
+        private void WriteTemperatureToLog()
+        {
+            CircularLogger.Instance.Log("Temp report: {0}", GetTemperature());
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)
