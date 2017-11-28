@@ -240,8 +240,8 @@ namespace MieszkanieOswieceniaBot
                     return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
                 }
                 var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
-                var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 100;
-                return string.Format("Temperatura wynosi {0}°C.", temperature);
+                var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+                return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
