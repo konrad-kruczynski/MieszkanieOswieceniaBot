@@ -229,6 +229,11 @@ namespace MieszkanieOswieceniaBot
                 return "Wykonano.";
             }
 
+            if(text == "temperatura" || text == "temp")
+            {
+                return File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
