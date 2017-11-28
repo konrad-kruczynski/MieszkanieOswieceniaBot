@@ -234,12 +234,12 @@ namespace MieszkanieOswieceniaBot
             {
                 var rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
                 var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                var crcMatch = new Regex(@"crc=.. (<yesorno>\w+)").Match(lines[0]);
+                var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
                 if(crcMatch.Groups["yesorno"].Value != "YES")
                 {
-                    return string.Format("Błąd CRC, przekazuje gołe dane:{0}{1}", Environment.NewLine, rawData);
+                    return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
                 }
-                var temperatureMatch = new Regex(@"t=(<temperature>)\d+").Match(lines[1]);
+                var temperatureMatch = new Regex(@"t=(?<temperature>)\d+").Match(lines[1]);
                 var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 100;
                 return string.Format("Temperatura wynosi {0}°C.", temperature);
             }
