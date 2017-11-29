@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -14,10 +15,13 @@ namespace MieszkanieOswieceniaBot
             this.dateTimeFormat = dateTimeFormat;
         }
 
-        public string PrepareChart(DateTime startDate, DateTime endDate, Action<Step> stepHandler = null)
+        public string PrepareChart(DateTime startDate, DateTime endDate, Action<Step> stepHandler = null,
+                                   Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
             var samples = TemperatureDatabase.Instance.GetSamples(startDate, endDate);
+            var samplesCount = samples.Count();
+            onDataCount(samplesCount);
             stepHandler(Step.CreatingPlot);
             var plotModel = new PlotModel { Title = "Temperatura" };
             plotModel.Background = OxyColors.White;

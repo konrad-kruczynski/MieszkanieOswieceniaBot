@@ -199,10 +199,12 @@ namespace MieszkanieOswieceniaBot
                                                            break;
 
                                                    }
-                                               });
+            }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
+
             var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
             bot.SendPhotoAsync(chatId, fileToSend).Wait();
             bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
+
         }
 
         private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
