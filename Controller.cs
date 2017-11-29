@@ -13,9 +13,6 @@ namespace MieszkanieOswieceniaBot
 {
     public class Controller
     {
-        private decimal lastTemp = 20;
-        private DateTime lastDateTime = DateTime.Now - TimeSpan.FromDays(7);
-
         public Controller()
         {
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
