@@ -14,7 +14,7 @@ namespace MieszkanieOswieceniaBot
 
         public override string ToString()
         {
-            return string.Format("[{1:R}: {2:##.#}]", Id, Date, Temperature);
+            return string.Format("[{1:R}: {2:##.#}°C]", Id, Date, Temperature);
         }
     }
 }

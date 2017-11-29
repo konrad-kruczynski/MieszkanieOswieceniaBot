@@ -118,13 +118,19 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "wykres7")
                 {
-                    CreateChart(7, chatId);
+                    CreateChart(TimeSpan.FromDays(7), chatId);
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "wykres24")
                 {
-                    CreateChart(1, chatId);
+                    CreateChart(TimeSpan.FromDays(1), chatId);
+                    return;
+                }
+
+                if (e.Message.Text.ToLower() == "wykres1")
+                {
+                    CreateChart(TimeSpan.FromHours(1), chatId);
                     return;
                 }
 
@@ -155,10 +161,10 @@ namespace MieszkanieOswieceniaBot
             return;
         }
 
-        private void CreateChart(int days, long chatId)
+        private void CreateChart(TimeSpan timeBack, long chatId)
         {
             var charter = new Charter();
-            var pngFile = charter.PrepareChart(DateTime.Now - TimeSpan.FromDays(days), DateTime.Now,
+            var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now,
                                                step =>
                                                {
                                                    switch (step)
