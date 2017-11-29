@@ -147,6 +147,13 @@ namespace MieszkanieOswieceniaBot
                     return; 
                 }
 
+                if (e.Message.Text.ToLower() == "log")
+                {
+                    var text = CircularLogger.Instance.GetEntriesAsAString();
+                    bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    return;
+                }
+
                 var result = await HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
@@ -241,11 +248,6 @@ namespace MieszkanieOswieceniaBot
             if(text == "staty" || text == "statystyki")
             {
                 return stats.GetStats();
-            }
-
-            if(text == "log")
-            {
-                return CircularLogger.Instance.GetEntriesAsAString();
             }
 
             if(text == "ping")
