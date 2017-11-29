@@ -51,8 +51,8 @@ namespace MieszkanieOswieceniaBot
 
             using (var stream = File.Create(svgFile))
             {
-                var pdfExporter = new SvgExporter { Width = 1200, Height = 800 };
-                pdfExporter.Export(plotModel, stream);
+                var svgExporter = new SvgExporter { Width = 1200, Height = 800 };
+                svgExporter.Export(plotModel, stream);
             }
             stepHandler(Step.RenderingImage);
             var svgDocument = SvgDocument.Open(svgFile);
