@@ -39,7 +39,7 @@ namespace MieszkanieOswieceniaBot
             {
                 Position = AxisPosition.Left,
                 MajorGridlineStyle = LineStyle.Dot,
-                Minimum = 15,
+                Minimum = 12,
                 Maximum = 30
             });
 
@@ -55,7 +55,7 @@ namespace MieszkanieOswieceniaBot
 
             using (var stream = File.Create(svgFile))
             {
-                var svgExporter = new SvgExporter { Width = 1200, Height = 800 };
+                var svgExporter = new SvgExporter { Width = 1300, Height = 800 };
                 svgExporter.Export(plotModel, stream);
             }
             stepHandler(Step.RenderingImage);
