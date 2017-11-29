@@ -134,6 +134,14 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if (e.Message.Text.ToLower() == "historia")
+                {
+                    var samples = TemperatureDatabase.Instance.GetSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var text = samples.Select(x => "``" + x.ToString() + "``").Aggregate((x, y) => x + Environment.NewLine + y);
+                    bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    return; 
+                }
+
                 var result = await HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
@@ -288,12 +296,6 @@ namespace MieszkanieOswieceniaBot
                     return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
                 }
                 return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
-            }
-
-            if(text == "historia")
-            {
-                var samples = TemperatureDatabase.Instance.GetSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
-                return samples.Select(x => x.ToString()).Aggregate((x, y) => x + Environment.NewLine + y);
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
