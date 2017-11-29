@@ -46,8 +46,6 @@ namespace MieszkanieOswieceniaBot
             }
             plotModel.Series.Add(serie);
 
-            stepHandler(Step.RenderingImage);
-
             var svgFile = "chart.svg";
             var pngFile = "chart.png";
 
@@ -56,6 +54,7 @@ namespace MieszkanieOswieceniaBot
                 var pdfExporter = new SvgExporter { Width = 1200, Height = 800 };
                 pdfExporter.Export(plotModel, stream);
             }
+            stepHandler(Step.RenderingImage);
             var svgDocument = SvgDocument.Open(svgFile);
             var bitmap = svgDocument.Draw();
             bitmap.Save(pngFile, System.Drawing.Imaging.ImageFormat.Png);
