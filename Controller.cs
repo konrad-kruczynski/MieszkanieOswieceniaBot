@@ -293,6 +293,12 @@ namespace MieszkanieOswieceniaBot
                 return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
+            if(text == "historia")
+            {
+                var samples = TemperatureDatabase.Instance.GetSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                return samples.Select(x => x.ToString()).Aggregate((x, y) => x + Environment.NewLine + y);
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }

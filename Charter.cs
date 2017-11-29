@@ -43,7 +43,7 @@ namespace MieszkanieOswieceniaBot
             stepHandler(Step.RenderingImage);
 
             var svgFile = "chart.svg";
-            var pngFile = "char.png";
+            var pngFile = "chart.png";
 
             using (var stream = File.Create(svgFile))
             {
