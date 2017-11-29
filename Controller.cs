@@ -43,7 +43,7 @@ namespace MieszkanieOswieceniaBot
             });
             Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
-            Observable.Interval(TimeSpan.FromMinutes(10)).ObserveOn(SynchronizationContext.Current)
+            Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => WriteTemperatureToDatabase());
         }
 
