@@ -108,13 +108,14 @@ namespace MieszkanieOswieceniaBot
                     var restartMessage = bot.SendTextMessageAsync(chatId, "Wkrótce restart.").Result;
                     new Task(async () =>
                     {
-                        for (var i = 0; i < 7; i++)
+                        const int noOfSeconds = 7;
+                        for (var i = 0; i < noOfSeconds; i++)
                         {
-                            var text = string.Format("Pozostało {0} sekund.", i);
+                            var text = string.Format("Pozostało {0} sekund.", noOfSeconds - i);
                             bot.EditMessageTextAsync(chatId, restartMessage.MessageId, text).Wait();
                             await Task.Delay(TimeSpan.FromSeconds(1));
                         }
-                        bot.SendTextMessageAsync(chatId, "Teraz restart.").Wait();
+                        bot.EditMessageTextAsync(chatId, restartMessage.MessageId, "Teraz restart").Wait();
                         Environment.Exit(0);
                     }).Start();
 
