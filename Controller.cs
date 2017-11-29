@@ -137,7 +137,7 @@ namespace MieszkanieOswieceniaBot
                 if (e.Message.Text.ToLower() == "historia")
                 {
                     var samples = TemperatureDatabase.Instance.GetSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
-                    var text = samples.Select(x => "``" + x.ToString() + "``").Aggregate((x, y) => x + Environment.NewLine + y);
+                    var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
                     return; 
                 }
