@@ -163,7 +163,7 @@ namespace MieszkanieOswieceniaBot
 
         private void CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat)
         {
-            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...");
+            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
             var charter = new Charter(dateTimeFormat);
             var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now,
                                                step =>
@@ -171,20 +171,20 @@ namespace MieszkanieOswieceniaBot
                                                    switch (step)
                                                    {
                                                        case Step.RetrievingData:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Pobieranie danych...").Wait();
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...").Wait();
                                                            break;
                                                        case Step.CreatingPlot:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Tworzenie wykresu...").Wait();
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...").Wait();
                                                            break;
                                                        case Step.RenderingImage:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Renderowanie obrazu...").Wait();
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...").Wait();
                                                            break;
 
                                                    }
                                                });
             var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
             bot.SendPhotoAsync(chatId, fileToSend).Wait();
-            bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Gotowe.").Wait();
+            bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
         }
 
         private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
