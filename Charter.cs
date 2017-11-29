@@ -24,7 +24,7 @@ namespace MieszkanieOswieceniaBot
                 Maximum = DateTimeAxis.ToDouble(endDate),
                 MaximumPadding = 0,
                 MinimumPadding = 0,
-                StringFormat = "dd.MM"
+                StringFormat = "ddd dd.MM HH:mm"
             });
             plotModel.Axes.Add(new LinearAxis()
             {
