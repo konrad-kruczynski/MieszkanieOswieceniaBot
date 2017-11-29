@@ -13,6 +13,9 @@ namespace MieszkanieOswieceniaBot
 {
     public class Controller
     {
+        private decimal lastTemp = 20;
+        private DateTime lastDateTime = DateTime.Now - TimeSpan.FromDays(7);
+
         public Controller()
         {
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
@@ -40,9 +43,8 @@ namespace MieszkanieOswieceniaBot
             });
             Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
-            Observable.Interval(TimeSpan.FromHours(1)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => WriteTemperatureToLog());
-            WriteTemperatureToLog();
+            Observable.Interval(TimeSpan.FromMinutes(10)).ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => WriteTemperatureToDatabase());
         }
 
         private void HandleError(string error)
@@ -114,6 +116,18 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "wykres7")
+                {
+                    CreateChart(7, chatId);
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "wykres24")
+                {
+                    CreateChart(1, chatId);
+                    return;
+                }
+
                 var result = await HandleTextCommand(e.Message);
                 bot.SendTextMessageAsync(chatId, result).Wait();
                 return;
@@ -139,6 +153,30 @@ namespace MieszkanieOswieceniaBot
 
             CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(e.Message.From));
             return;
+        }
+
+        private void CreateChart(int days, long chatId)
+        {
+            var charter = new Charter();
+            var pngFile = charter.PrepareChart(DateTime.Now - TimeSpan.FromDays(days), DateTime.Now,
+                                               step =>
+                                               {
+                                                   switch (step)
+                                                   {
+                                                       case Step.RetrievingData:
+                                                           bot.SendTextMessageAsync(chatId, "Pobieranie danych...");
+                                                           break;
+                                                       case Step.CreatingPlot:
+                                                           bot.SendTextMessageAsync(chatId, "Tworzenie wykresu...");
+                                                           break;
+                                                       case Step.RenderingImage:
+                                                           bot.SendTextMessageAsync(chatId, "Renderowanie obrazu...");
+                                                           break;
+
+                                                   }
+                                               });
+            var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
+            bot.SendPhotoAsync(chatId, fileToSend).Wait();
         }
 
         private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -214,6 +252,17 @@ namespace MieszkanieOswieceniaBot
                 return DateTime.Now.ToString();
             }
 
+            if(text == "s")
+            {
+                var database = TemperatureDatabase.Instance;
+                database.AddSample(new TemperatureSample { Date = lastDateTime, Temperature = lastTemp });
+
+                var retVal = string.Format("ok @ {0} {1}", lastDateTime, lastTemp);
+                lastDateTime += TimeSpan.FromDays(1);
+                lastTemp++;
+                return retVal;
+            }
+
             if(text == "miganie" || text == "alarm")
             {
                 var random = new Random();
@@ -235,25 +284,32 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "temperatura" || text == "temp")
             {
-                return GetTemperature();
+                string rawData;
+                decimal temperature;
+                if (!TryGetTemperature(out temperature, out rawData))
+                {
+                    return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
+                }
+                return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
 
-        private static string GetTemperature()
+        private static bool TryGetTemperature(out decimal temperature, out string rawData)
         {
-            var rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+            rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
             var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
             if (crcMatch.Groups["yesorno"].Value != "YES")
             {
-                return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
+                temperature = default(decimal);
+                return false;
             }
             var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
-            var temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
-            return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
+            temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+            return true;
         }
 
         private string HandleScenario(int scenarioNo)
@@ -274,9 +330,17 @@ namespace MieszkanieOswieceniaBot
             relayController.SetState(3, DateTime.Now - lastSpeakerHeartbeat < HeartbeatTimeout);
         }
 
-        private void WriteTemperatureToLog()
+        private void WriteTemperatureToDatabase()
         {
-            CircularLogger.Instance.Log("Temp report: {0}", GetTemperature());
+            string rawData;
+            decimal temperature;
+            if (!TryGetTemperature(out temperature, out rawData))
+            {
+                CircularLogger.Instance.Log("Error during adding new temperature sample to DB. Raw data: {1}{0}.", rawData, Environment.NewLine);
+                return;
+            }
+            var database = TemperatureDatabase.Instance;
+            database.AddSample(new TemperatureSample {Date = DateTime.Now, Temperature = temperature});
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)

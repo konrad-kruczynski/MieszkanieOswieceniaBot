@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -30,6 +30,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http.Formatting">
       <HintPath>packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
@@ -37,6 +39,12 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="Telegram.Bot">
       <HintPath>packages\Telegram.Bot.10.4.0\lib\net45\Telegram.Bot.dll</HintPath>
     </Reference>
@@ -58,8 +66,19 @@
     </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="WindowsBase" />
+    <Reference Include="LiteDB">
+      <HintPath>packages\LiteDB.4.0.0\lib\net40\LiteDB.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot">
+      <HintPath>packages\OxyPlot.Core.1.0.0\lib\net45\OxyPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="Svg">
+      <HintPath>packages\Svg.2.3.0\lib\net35\Svg.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Charter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Configuration.cs" />
@@ -71,6 +90,9 @@
     <Compile Include="Authorizer.cs" />
     <Compile Include="AsyncPump.cs" />
     <Compile Include="Stats.cs" />
+    <Compile Include="TemperatureDatabase.cs" />
+    <Compile Include="TemperatureSample.cs" />
+    <Compile Include="Step.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
