@@ -366,7 +366,7 @@ namespace MieszkanieOswieceniaBot
         private readonly Authorizer authorizer;
         private readonly Stats stats;
 
-        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
 
         private static readonly HashSet<int>[] Scenarios = new HashSet<int>[]
         {
