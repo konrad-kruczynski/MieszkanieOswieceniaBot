@@ -118,7 +118,7 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "wykres7")
                 {
-                    CreateChart(TimeSpan.FromDays(7), chatId, "ddd");
+                    CreateChart(TimeSpan.FromDays(7), chatId, "ddd HH:mm");
                     return;
                 }
 
@@ -163,6 +163,7 @@ namespace MieszkanieOswieceniaBot
 
         private void CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat)
         {
+            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...");
             var charter = new Charter(dateTimeFormat);
             var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now,
                                                step =>
@@ -170,19 +171,20 @@ namespace MieszkanieOswieceniaBot
                                                    switch (step)
                                                    {
                                                        case Step.RetrievingData:
-                                                           bot.SendTextMessageAsync(chatId, "Pobieranie danych...");
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Pobieranie danych...").Wait();
                                                            break;
                                                        case Step.CreatingPlot:
-                                                           bot.SendTextMessageAsync(chatId, "Tworzenie wykresu...");
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Tworzenie wykresu...").Wait();
                                                            break;
                                                        case Step.RenderingImage:
-                                                           bot.SendTextMessageAsync(chatId, "Renderowanie obrazu...");
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Renderowanie obrazu...").Wait();
                                                            break;
 
                                                    }
                                                });
             var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
             bot.SendPhotoAsync(chatId, fileToSend).Wait();
+            bot.EditMessageTextAsync(chatId, messageToEdit.Id, "Gotowe.").Wait();
         }
 
         private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -256,17 +258,6 @@ namespace MieszkanieOswieceniaBot
             if(text == "czas")
             {
                 return DateTime.Now.ToString();
-            }
-
-            if(text == "s")
-            {
-                var database = TemperatureDatabase.Instance;
-                database.AddSample(new TemperatureSample { Date = lastDateTime, Temperature = lastTemp });
-
-                var retVal = string.Format("ok @ {0} {1}", lastDateTime, lastTemp);
-                lastDateTime += TimeSpan.FromDays(1);
-                lastTemp++;
-                return retVal;
             }
 
             if(text == "miganie" || text == "alarm")

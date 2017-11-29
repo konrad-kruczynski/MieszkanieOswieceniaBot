@@ -34,6 +34,7 @@ namespace MieszkanieOswieceniaBot
             plotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Left,
+                MajorGridlineStyle = LineStyle.Dot,
                 Minimum = 15,
                 Maximum = 30
             });
