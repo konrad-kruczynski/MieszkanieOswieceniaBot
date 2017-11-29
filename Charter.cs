@@ -9,6 +9,11 @@ namespace MieszkanieOswieceniaBot
 {
     public class Charter
     {
+        public Charter(string dateTimeFormat = "ddd dd.MM HH:mm")
+        {
+            this.dateTimeFormat = dateTimeFormat;
+        }
+
         public string PrepareChart(DateTime startDate, DateTime endDate, Action<Step> stepHandler = null)
         {
             stepHandler(Step.RetrievingData);
@@ -24,7 +29,7 @@ namespace MieszkanieOswieceniaBot
                 Maximum = DateTimeAxis.ToDouble(endDate),
                 MaximumPadding = 0,
                 MinimumPadding = 0,
-                StringFormat = "ddd dd.MM HH:mm"
+                StringFormat = dateTimeFormat
             });
             plotModel.Axes.Add(new LinearAxis()
             {
@@ -56,5 +61,7 @@ namespace MieszkanieOswieceniaBot
 
             return pngFile;
         }
+
+        private readonly string dateTimeFormat;
     }
 }
