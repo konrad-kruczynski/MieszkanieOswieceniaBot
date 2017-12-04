@@ -85,7 +85,7 @@ namespace MieszkanieOswieceniaBot
                                 streamWriter.Write(JsonConvert.SerializeObject(sample));
                                 streamWriter.Write(',');
                                 streamWriter.WriteLine();
-                                if(stopwatch.Elapsed - last > TimeSpan.FromMilliseconds(500))
+                                if(stopwatch.Elapsed - last > TimeSpan.FromMilliseconds(300))
                                 {
                                     progressHandler(1m * counter / allSamplesNumber);
                                     last = stopwatch.Elapsed;
