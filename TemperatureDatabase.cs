@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -63,8 +64,10 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public string GetSampleExport()
+        public string GetSampleExport(Action<decimal> progressHandler = null)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var last = stopwatch.Elapsed;
             var exportFileName = "export.jsonz"; // TODO: some tmp file?
             using(var fileStream = File.OpenWrite(exportFileName))
             {
@@ -74,11 +77,18 @@ namespace MieszkanieOswieceniaBot
                     {
                         using(var database = new LiteDatabase(DatabaseFileName))
                         {
-                            foreach(var sample in database.GetCollection<TemperatureSample>(CollectionName).FindAll())
+                            var counter = 0;
+                            var collection = database.GetCollection<TemperatureSample>(CollectionName);
+                            var allSamplesNumber = collection.Count();
+                            foreach(var sample in collection.FindAll())
                             {
                                 streamWriter.Write(JsonConvert.SerializeObject(sample));
                                 streamWriter.Write(',');
                                 streamWriter.WriteLine();
+                                if(stopwatch.Elapsed - last < TimeSpan.FromMilliseconds(500))
+                                {
+                                    progressHandler(1m * counter / allSamplesNumber);
+                                }
                             }
                         }
                     }
