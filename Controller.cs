@@ -145,15 +145,15 @@ namespace MieszkanieOswieceniaBot
                     return; 
                 }
 
-                if (e.Message.Text.ToLower() == "kopia")
+                if (e.Message.Text.ToLower() == "eksport")
                 {
                     var progressMessage = bot.SendTextMessageAsync(chatId, "Wykonuję (0%)...").Result;
                     var exportFile = TemperatureDatabase.Instance.GetSampleExport(progress =>
                     {
-                        bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:##}%)...", progress)).Wait();
+                        bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:##}%)...", 100*progress)).Wait();
                     });
                     bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...").Wait();
-                    var fileToSend = new Telegram.Bot.Types.FileToSend("próbki.json.gz", File.OpenRead(exportFile));
+                    var fileToSend = new Telegram.Bot.Types.FileToSend("probki.json.gz", File.OpenRead(exportFile));
                     bot.SendDocumentAsync(chatId, fileToSend).Wait();
                     bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Gotowe").Wait();
                     return;

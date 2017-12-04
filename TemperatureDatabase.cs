@@ -88,6 +88,7 @@ namespace MieszkanieOswieceniaBot
                                 if(stopwatch.Elapsed - last < TimeSpan.FromMilliseconds(500))
                                 {
                                     progressHandler(1m * counter / allSamplesNumber);
+                                    last = stopwatch.Elapsed;
                                 }
                             }
                         }
