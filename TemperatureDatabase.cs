@@ -90,6 +90,7 @@ namespace MieszkanieOswieceniaBot
                                     progressHandler(1m * counter / allSamplesNumber);
                                     last = stopwatch.Elapsed;
                                 }
+                                counter++;
                             }
                         }
                     }
