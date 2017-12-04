@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using ByteSizeLib;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -18,6 +19,7 @@ namespace MieszkanieOswieceniaBot
             builder.AppendLine();
             builder.AppendLine($"Obsłużyłem w tym czasie {messageCounter} wiadomości.");
             builder.AppendFormat("To daje średnio ~{0:0.0} wiadomości dziennie.", messageCounter / totalDays);
+            builder.AppendFormat("Rozmiar bazy danych: {0}.", ByteSize.FromBytes(TemperatureDatabase.Instance.FileSize));
             return builder.ToString();
         }
 

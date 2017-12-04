@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +38,18 @@ namespace MieszkanieOswieceniaBot
             {
                 var samples = database.GetCollection<TemperatureSample>(CollectionName);
                 return samples.Find(x => x.Date >= startDate && x.Date <= endDate);
+            }
+        }
+
+        public long FileSize
+        {
+            get
+            {
+                if(!File.Exists(DatabaseFileName))
+                {
+                    return 0;
+                }
+                return new FileInfo(DatabaseFileName).Length;
             }
         }
 
