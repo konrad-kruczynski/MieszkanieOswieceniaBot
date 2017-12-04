@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LiteDB;
+using Newtonsoft.Json;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -41,6 +43,14 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
+        public int GetSampleCount()
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                return database.GetCollection(CollectionName).Count();
+            }
+        }
+
         public long FileSize
         {
             get
@@ -51,6 +61,30 @@ namespace MieszkanieOswieceniaBot
                 }
                 return new FileInfo(DatabaseFileName).Length;
             }
+        }
+
+        public string GetSampleExport()
+        {
+            var exportFileName = "export.jsonz"; // TODO: some tmp file?
+            using(var fileStream = File.OpenWrite(exportFileName))
+            {
+                using(var gzipStream = new GZipStream(fileStream, CompressionMode.Compress))
+                {
+                    using(var streamWriter = new StreamWriter(gzipStream))
+                    {
+                        using(var database = new LiteDatabase(DatabaseFileName))
+                        {
+                            foreach(var sample in database.GetCollection<TemperatureSample>(CollectionName).FindAll())
+                            {
+                                streamWriter.Write(JsonConvert.SerializeObject(sample));
+                                streamWriter.Write(',');
+                                streamWriter.WriteLine();
+                            }
+                        }
+                    }
+                }
+            }
+            return exportFileName;
         }
 
         private const string DatabaseFileName = "temperature.db";

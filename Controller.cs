@@ -145,6 +145,14 @@ namespace MieszkanieOswieceniaBot
                     return; 
                 }
 
+                if (e.Message.Text.ToLower() == "kopia")
+                {
+                    bot.SendTextMessageAsync(chatId, "Wykonuję...").Wait();
+                    var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(TemperatureDatabase.Instance.GetSampleExport()));
+                    bot.SendDocumentAsync(chatId, fileToSend).Wait();
+                    return;
+                }
+
                 if (e.Message.Text.ToLower() == "log")
                 {
                     var text = CircularLogger.Instance.GetEntriesAsAString();
