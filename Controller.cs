@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Flurl.Http;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
@@ -306,6 +307,18 @@ namespace MieszkanieOswieceniaBot
                 }
                 relayController.SetStateFromArray(state);
                 return "Wykonano.";
+            }
+
+            if(text == "bitcoin")
+            {
+                const string bitcoinFile = "bitcoin.txt";
+                if(!File.Exists(bitcoinFile))
+                {
+                    return "Brak pliku z wielkością portfela.";
+                }
+                var data = "https://bitmarket24.pl/api/BTC_PLN/status.json".GetJsonAsync().Result;
+                var value = decimal.Parse(data.last) * decimal.Parse(File.ReadAllText(bitcoinFile));
+                return string.Format("Aktualna wartość: {0:0}.", value);
             }
 
             if(text == "temperatura" || text == "temp")
