@@ -19,7 +19,7 @@ namespace MieszkanieOswieceniaBot
         public decimal GetCurrentBalance()
         {
             string homePageAsString = GetHomePage();
-            if (homePageAsString.Contains("Zaloguj się"))
+            if (!homePageAsString.Contains("Saldo"))
             {
                 LogIn();
                 homePageAsString = GetHomePage();
