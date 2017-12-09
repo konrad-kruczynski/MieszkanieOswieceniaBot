@@ -318,7 +318,7 @@ namespace MieszkanieOswieceniaBot
                 }
                 var data = "https://bitmarket24.pl/api/BTC_PLN/status.json".GetJsonAsync().Result;
                 var value = decimal.Parse(data.last) * decimal.Parse(File.ReadAllText(bitcoinFile));
-                return string.Format("Aktualna wartość: {0:0}.", value);
+                return string.Format("Aktualna wartość: {0:0.00} PLN.", value);
             }
 
             if(text == "temperatura" || text == "temp")
