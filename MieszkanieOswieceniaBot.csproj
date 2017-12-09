@@ -87,6 +87,12 @@
       <HintPath>packages\Flurl.Http.2.1.0\lib\net45\Flurl.Http.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>packages\HtmlAgilityPack.1.6.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Charter.cs" />
@@ -104,6 +110,8 @@
     <Compile Include="TemperatureDatabase.cs" />
     <Compile Include="TemperatureSample.cs" />
     <Compile Include="Step.cs" />
+    <Compile Include="PekaClient.cs" />
+    <Compile Include="PekaDb.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

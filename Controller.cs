@@ -19,6 +19,7 @@ namespace MieszkanieOswieceniaBot
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             relayController = new RelayController();
             stats = new Stats();
+            pekaClients = new Dictionary<string, PekaClient>();
             lastSpeakerHeartbeat = new DateTime(2000, 1, 1);
             authorizer = new Authorizer();
             bot.OnMessage += HandleMessage;
@@ -157,6 +158,21 @@ namespace MieszkanieOswieceniaBot
                     var fileToSend = new Telegram.Bot.Types.FileToSend("probki.json.gz", File.OpenRead(exportFile));
                     bot.SendDocumentAsync(chatId, fileToSend).Wait();
                     bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Gotowe").Wait();
+                    return;
+                }
+
+                if (e.Message.Text.ToLower() == "peka")
+                {
+                    foreach (var pekaEntry in PekaDb.Instance.GetData())
+                    {
+                        if (!pekaClients.TryGetValue(pekaEntry.Item2, out var client))
+                        {
+                            client = new PekaClient(pekaEntry.Item2, pekaEntry.Item3);
+                            pekaClients[pekaEntry.Item2] = client;
+                        }
+                        var balance = client.GetCurrentBalance();
+                        bot.SendTextMessageAsync(chatId, string.Format("{0}: {1:0.00} PLN", pekaEntry.Item1, balance)).Wait();
+                    }
                     return;
                 }
 
@@ -397,6 +413,7 @@ namespace MieszkanieOswieceniaBot
         }
 
         private DateTime lastSpeakerHeartbeat;
+        private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
         private readonly Authorizer authorizer;
