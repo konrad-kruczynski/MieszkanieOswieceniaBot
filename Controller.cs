@@ -327,14 +327,18 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "bitcoin")
             {
-                const string bitcoinFile = "bitcoin.txt";
-                if(!File.Exists(bitcoinFile))
+                const string currencyFile = "currency.txt";
+                if(!File.Exists(currencyFile))
                 {
-                    return "Brak pliku z wielkością portfela.";
+                    return "Brak pliku z wielkością portfeli.";
                 }
-                var data = "https://bitmarket24.pl/api/BTC_PLN/status.json".GetJsonAsync().Result;
-                var value = decimal.Parse(data.last) * decimal.Parse(File.ReadAllText(bitcoinFile));
-                return string.Format("Aktualna wartość: {0:0.00} PLN.", value);
+                var btcData = "https://bitmarket24.pl/api/BTC_PLN/status.json".GetJsonAsync().Result;
+                var ltcData = "https://bitmarket24.pl/api/LTC_PLN/status.json".GetJsonAsync().Result;
+                var currencyFileLines = File.ReadAllLines(currencyFile);
+                var btcValue = decimal.Parse(btcData.last) * decimal.Parse(currencyFileLines[0]);
+                var ltcValue = decimal.Parse(ltcData.last) * decimal.Parse(currencyFileLines[1]);
+                return string.Format("Bitcoin: {0:0.00} PLN\nLitecoin: {1:0.00} PLN\nRazem: {2:0.00} PLN",
+                                     btcValue, ltcValue, btcValue + ltcValue);
             }
 
             if(text == "temperatura" || text == "temp")
