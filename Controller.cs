@@ -336,9 +336,12 @@ namespace MieszkanieOswieceniaBot
                 var ltcData = "https://bitmarket24.pl/api/LTC_PLN/status.json".GetJsonAsync().Result;
                 var currencyFileLines = File.ReadAllLines(currencyFile);
                 var btcValue = decimal.Parse(btcData.last) * decimal.Parse(currencyFileLines[0]);
-                var ltcValue = decimal.Parse(ltcData.last) * decimal.Parse(currencyFileLines[1]);
-                return string.Format("Bitcoin: {0:0.00} PLN\nLitecoin: {1:0.00} PLN\nRazem: {2:0.00} PLN",
-                                     btcValue, ltcValue, btcValue + ltcValue);
+                var originalBtcValue = decimal.Parse(currencyFileLines[1]);
+                var ltcValue = decimal.Parse(ltcData.last) * decimal.Parse(currencyFileLines[2]);
+                var originalLtcValue = decimal.Parse(currencyFileLines[3]);
+                return string.Format("Bitcoin: {0:0.00}PLN ({1:0.#}x)\nLitecoin: {2:0.00}PLN ({3:0.#}x)\nRazem: {4:0.00}PLN  ({5:0.#}x)",
+                                     btcValue, btcValue/originalBtcValue, ltcValue, originalLtcValue,
+                                     btcValue + ltcValue, (btcValue + ltcValue)/(originalBtcValue + originalLtcValue));
             }
 
             if(text == "temperatura" || text == "temp")
