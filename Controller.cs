@@ -98,7 +98,6 @@ namespace MieszkanieOswieceniaBot
 
                 if (e.Message.Text.ToLower() == "restart")
                 {
-                    return;
                     if (!Configuration.Instance.IsAdmin(userId))
                     {
                         bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
@@ -341,7 +340,7 @@ namespace MieszkanieOswieceniaBot
                 var ltcValue = decimal.Parse(ltcData.last) * decimal.Parse(currencyFileLines[2]);
                 var originalLtcValue = decimal.Parse(currencyFileLines[3]);
                 return string.Format("Bitcoin: {0:0.00}PLN ({1:0.#}x)\nLitecoin: {2:0.00}PLN ({3:0.#}x)\nRazem: {4:0.00}PLN  ({5:0.#}x)",
-                                     btcValue, btcValue/originalBtcValue, ltcValue, originalLtcValue,
+                                     btcValue, btcValue/originalBtcValue, ltcValue, ltcValue/originalLtcValue,
                                      btcValue + ltcValue, (btcValue + ltcValue)/(originalBtcValue + originalLtcValue));
             }
 
