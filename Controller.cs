@@ -98,6 +98,7 @@ namespace MieszkanieOswieceniaBot
 
                 if (e.Message.Text.ToLower() == "restart")
                 {
+                    return;
                     if (!Configuration.Instance.IsAdmin(userId))
                     {
                         bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
