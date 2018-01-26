@@ -113,19 +113,8 @@ namespace MieszkanieOswieceniaBot
                         CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
                         return;
                     }
-                    var restartMessage = bot.SendTextMessageAsync(chatId, "Wkrótce restart.").Result;
-                    new Task(async () =>
-                    {
-                        const int noOfSeconds = 7;
-                        for (var i = 0; i < noOfSeconds; i++)
-                        {
-                            var text = string.Format("Pozostało {0} sekund.", noOfSeconds - i);
-                            bot.EditMessageTextAsync(chatId, restartMessage.MessageId, text).Wait();
-                            await Task.Delay(TimeSpan.FromSeconds(1));
-                        }
-                        bot.EditMessageTextAsync(chatId, restartMessage.MessageId, "Teraz restart").Wait();
-                        Environment.Exit(0);
-                    }).Start();
+                    bot.SendTextMessageAsync(chatId, "Teraz restart").Wait();
+                    Environment.Exit(0);
 
                     return;
                 }
