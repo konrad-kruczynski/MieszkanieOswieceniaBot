@@ -30,6 +30,7 @@ namespace MieszkanieOswieceniaBot
 
         public void Start()
         {
+            startDate = DateTime.Now;
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
@@ -61,6 +62,14 @@ namespace MieszkanieOswieceniaBot
             {
                 bot.SendTextMessageAsync(chatId, "Brak dostępu.").Wait();
                 CircularLogger.Instance.Log($"Unauthorized access from {GetSender(e.Message.From)}.");
+                return;
+            }
+
+            if(e.Message.Date < startDate)
+            {
+                bot.SendTextMessageAsync(e.Message.Chat.Id,
+                                         string.Format("Wiadomość '{0}' została wysłana {1}, tj. przed startem bota, który nastąpił {2}. Proszę ponowić.",
+                                         e.Message.Text, e.Message.Date, startDate)).Wait();
                 return;
             }
 
@@ -420,6 +429,7 @@ namespace MieszkanieOswieceniaBot
         }
 
         private DateTime lastSpeakerHeartbeat;
+        private DateTime startDate;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
