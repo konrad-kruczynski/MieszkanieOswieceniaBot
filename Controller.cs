@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Flurl.Http;
 using Humanizer;
 using Telegram.Bot;
+using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -36,17 +38,18 @@ namespace MieszkanieOswieceniaBot
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => {
-                if(lastSpeakerHeartbeat < DateTime.Now)
-                {
-                   lastSpeakerHeartbeat = DateTime.Now;
-                }
-                RefreshSpeakerState();
-            });
+                      .Subscribe(_ =>
+                      {
+                          if(lastSpeakerHeartbeat < DateTime.Now)
+                          {
+                              lastSpeakerHeartbeat = DateTime.Now;
+                          }
+                          RefreshSpeakerState();
+                      });
             Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => WriteTemperatureToDatabase());
+                      .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
         }
 
         private void HandleError(string error)
@@ -99,17 +102,17 @@ namespace MieszkanieOswieceniaBot
                         await bot.GetFileAsync(photo.FileId, memoryStream);
 
                         var photoToSend = new Telegram.Bot.Types.FileToSend(photo.FileId, memoryStream);
-                        var removeButton = new Telegram.Bot.Types.InlineKeyboardButton("Usuń") { CallbackData = "r" + user };
-                        var markup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[] { removeButton });
+                        var markup = new InlineKeyboardMarkup(
+                            new[] { InlineKeyboardButton.WithCallbackData("Usuń", "r" + user) });
                         await bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
-                                                 replyMarkup: isAdmin ? null: markup);
+                                                 replyMarkup: isAdmin ? null : markup);
                     }
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "restart")
+                if(e.Message.Text.ToLower() == "restart")
                 {
-                    if (!Configuration.Instance.IsAdmin(userId))
+                    if(!Configuration.Instance.IsAdmin(userId))
                     {
                         bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
                         CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
@@ -133,26 +136,34 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "wykres1")
+                if(e.Message.Text.ToLower() == "wykres1")
                 {
                     CreateChart(TimeSpan.FromHours(1), chatId, "HH:mm");
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "historia")
+                if(e.Message.Text.ToLower() == "historia")
                 {
-                    var samples = Database.Instance.GetTemperatureSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var samples = Database.Instance.GetSamples<TemperatureSample>(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
                     var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
-                    return; 
+                    return;
                 }
 
-                if (e.Message.Text.ToLower() == "eksport")
+                if(e.Message.Text.ToLower() == "historia2")
+                {
+                    var samples = Database.Instance.GetSamples<StateSample>(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
+                    bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "eksport")
                 {
                     var progressMessage = bot.SendTextMessageAsync(chatId, "Przygotowuję...").Result;
                     var exportFile = Database.Instance.GetTemperatureSampleExport(progress =>
                     {
-                        bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100*progress)).Wait();
+                        bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100 * progress)).Wait();
                     });
                     bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...").Wait();
                     var fileToSend = new Telegram.Bot.Types.FileToSend("probki.json.gz", File.OpenRead(exportFile));
@@ -161,11 +172,11 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "peka")
+                if(e.Message.Text.ToLower() == "peka")
                 {
-                    foreach (var pekaEntry in PekaDb.Instance.GetData())
+                    foreach(var pekaEntry in PekaDb.Instance.GetData())
                     {
-                        if (!pekaClients.TryGetValue(pekaEntry.Item2, out var client))
+                        if(!pekaClients.TryGetValue(pekaEntry.Item2, out var client))
                         {
                             client = new PekaClient(pekaEntry.Item2, pekaEntry.Item3);
                             pekaClients[pekaEntry.Item2] = client;
@@ -176,7 +187,7 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "log")
+                if(e.Message.Text.ToLower() == "log")
                 {
                     var text = CircularLogger.Instance.GetEntriesAsAString();
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
@@ -197,10 +208,11 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
                 var contactUserId = e.Message.Contact.UserId;
-                var yesButton = new Telegram.Bot.Types.InlineKeyboardButton("Tak") { CallbackData = "a" + contactUserId };
-                var noButton = new Telegram.Bot.Types.InlineKeyboardButton("Przeciwnie, chcę go usunąć") { CallbackData = "r" + contactUserId };
-                var keyboardMarkup = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup
-                                                 (new[] { yesButton, noButton });
+
+
+                var yesButton = InlineKeyboardButton.WithCallbackData("Tak", "a" + contactUserId);
+                var noButton = InlineKeyboardButton.WithCallbackData("Przeciwnie, chcę go usunąć", "r");
+                var keyboardMarkup = new InlineKeyboardMarkup(new[] { yesButton, noButton });
 
                 bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup).Wait();
                 return;
@@ -217,7 +229,7 @@ namespace MieszkanieOswieceniaBot
             var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now,
                                                step =>
                                                {
-                                                   switch (step)
+                                                   switch(step)
                                                    {
                                                        case Step.RetrievingData:
                                                            bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...").Wait();
@@ -230,7 +242,7 @@ namespace MieszkanieOswieceniaBot
                                                            break;
 
                                                    }
-            }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
+                                               }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
 
             var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
             bot.SendPhotoAsync(chatId, fileToSend).Wait();
@@ -247,7 +259,7 @@ namespace MieszkanieOswieceniaBot
                 CircularLogger.Instance.Log($"Trying to remove user by {GetSender(e.CallbackQuery.From)}.");
                 return;
             }
-            var empty = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new Telegram.Bot.Types.InlineKeyboardButton[0]);
+            var empty = new InlineKeyboardMarkup(new InlineKeyboardButton[0]);
             bot.EditMessageReplyMarkupAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId, empty).Wait();
             var data = e.CallbackQuery.Data;
             var contactId = int.Parse(data.Substring(1));
@@ -296,7 +308,7 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "antyczuwanie")
             {
-				lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
+                lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} ({1}).",
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).Humanize(culture: PolishCultureInfo));
             }
@@ -310,7 +322,7 @@ namespace MieszkanieOswieceniaBot
             {
                 var random = new Random();
                 var state = relayController.GetStateArray();
-                for (var i = 0; i < 10; i++)
+                for(var i = 0; i < 10; i++)
                 {
                     relayController.SetState(1, true);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
@@ -318,7 +330,7 @@ namespace MieszkanieOswieceniaBot
                     await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
                     relayController.SetState(1, false);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-					relayController.SetState(2, false);
+                    relayController.SetState(2, false);
                     await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                 }
                 relayController.SetStateFromArray(state);
@@ -340,15 +352,15 @@ namespace MieszkanieOswieceniaBot
                 var ltcValue = decimal.Parse(ltcData.last) * decimal.Parse(currencyFileLines[2]);
                 var originalLtcValue = decimal.Parse(currencyFileLines[3]);
                 return string.Format("Bitcoin: {0:0.00}PLN ({1:0.#}x)\nLitecoin: {2:0.00}PLN ({3:0.#}x)\nRazem: {4:0.00}PLN  ({5:0.#}x)",
-                                     btcValue, btcValue/originalBtcValue, ltcValue, ltcValue/originalLtcValue,
-                                     btcValue + ltcValue, (btcValue + ltcValue)/(originalBtcValue + originalLtcValue));
+                                     btcValue, btcValue / originalBtcValue, ltcValue, ltcValue / originalLtcValue,
+                                     btcValue + ltcValue, (btcValue + ltcValue) / (originalBtcValue + originalLtcValue));
             }
 
             if(text == "temperatura" || text == "temp")
             {
                 string rawData;
                 decimal temperature;
-                if (!TryGetTemperature(out temperature, out rawData))
+                if(!TryGetTemperature(out temperature, out rawData))
                 {
                     return string.Format("Błąd CRC, przekazuję gołe dane:{0}{1}", Environment.NewLine, rawData);
                 }
@@ -364,7 +376,7 @@ namespace MieszkanieOswieceniaBot
             rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
             var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
-            if (crcMatch.Groups["yesorno"].Value != "YES")
+            if(crcMatch.Groups["yesorno"].Value != "YES")
             {
                 temperature = default(decimal);
                 return false;
@@ -394,15 +406,18 @@ namespace MieszkanieOswieceniaBot
 
         private void WriteTemperatureToDatabase()
         {
-            string rawData;
-            decimal temperature;
-            if (!TryGetTemperature(out temperature, out rawData))
+            if(!TryGetTemperature(out decimal temperature, out string rawData))
             {
                 CircularLogger.Instance.Log("Error during adding new temperature sample to DB. Raw data: {1}{0}.", rawData, Environment.NewLine);
                 return;
             }
             var database = Database.Instance;
-            database.AddTemperatureSample(new TemperatureSample {Date = DateTime.Now, Temperature = temperature});
+            database.AddSample(new TemperatureSample { Date = DateTime.Now, Temperature = temperature });
+        }
+
+        private void WriteStateToDatabase()
+        {
+            Database.Instance.AddSample(new StateSample(relayController.GetStateArray()));
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)

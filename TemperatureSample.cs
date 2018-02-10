@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot
 {
-    public class TemperatureSample
+    public class TemperatureSample : ISample
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }

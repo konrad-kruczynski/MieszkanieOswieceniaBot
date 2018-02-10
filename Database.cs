@@ -22,21 +22,21 @@ namespace MieszkanieOswieceniaBot
             
         }
 
-        public void AddTemperatureSample(TemperatureSample sample)
+        public void AddSample<T>(T sample) where T : ISample
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(CollectionNameOfType<T>()))
             {
-                var samples = database.GetCollection<TemperatureSample>(CollectionName);
+                var samples = database.GetCollection<T>(TemperatureCollectionName);
                 samples.Insert(sample);
                 samples.EnsureIndex(x => x.Date);
             }
         }
 
-        public IEnumerable<TemperatureSample> GetTemperatureSamples(DateTime startDate, DateTime endDate)
+        public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(CollectionNameOfType<T>()))
             {
-                var samples = database.GetCollection<TemperatureSample>(CollectionName);
+                var samples = database.GetCollection<T>(TemperatureCollectionName);
                 return samples.Find(x => x.Date >= startDate && x.Date <= endDate);
             }
         }
@@ -45,7 +45,7 @@ namespace MieszkanieOswieceniaBot
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
-                return database.GetCollection(CollectionName).Count();
+                return database.GetCollection(TemperatureCollectionName).Count();
             }
         }
 
@@ -75,7 +75,7 @@ namespace MieszkanieOswieceniaBot
                         using(var database = new LiteDatabase(DatabaseFileName))
                         {
                             var counter = 0;
-                            var collection = database.GetCollection<TemperatureSample>(CollectionName);
+                            var collection = database.GetCollection<TemperatureSample>(TemperatureCollectionName);
                             var allSamplesNumber = collection.Count();
                             foreach(var sample in collection.FindAll())
                             {
@@ -96,8 +96,23 @@ namespace MieszkanieOswieceniaBot
             return exportFileName;
         }
 
+        private static string CollectionNameOfType<T>()
+        {
+            var type = typeof(T);
+            if(type == typeof(TemperatureSample))
+            {
+                return TemperatureCollectionName;
+            }
+            if(type == typeof(StateSample))
+            {
+                return StateCollectionName;
+            }
+            throw new InvalidOperationException();
+        }
+
         private const string DatabaseFileName = "temperature.db";
-        private const string CollectionName = "samples";
+        private const string TemperatureCollectionName = "samples";
+        private const string StateCollectionName = "histogram";
 
     }
 }
