@@ -19,7 +19,7 @@ namespace MieszkanieOswieceniaBot
                                    Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
-            var samples = TemperatureDatabase.Instance.GetSamples(startDate, endDate);
+            var samples = Database.Instance.GetTemperatureSamples(startDate, endDate);
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
             stepHandler(Step.CreatingPlot);

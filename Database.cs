@@ -3,29 +3,26 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LiteDB;
 using Newtonsoft.Json;
 
 namespace MieszkanieOswieceniaBot
 {
-    public class TemperatureDatabase
+    public class Database
     {
-        public static TemperatureDatabase Instance { get; private set; }
+        public static Database Instance { get; private set; }
 
-        static TemperatureDatabase()
+        static Database()
         {
-            Instance = new TemperatureDatabase();
+            Instance = new Database();
         }
 
-        private TemperatureDatabase()
+        private Database()
         {
             
         }
 
-        public void AddSample(TemperatureSample sample)
+        public void AddTemperatureSample(TemperatureSample sample)
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
@@ -35,7 +32,7 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<TemperatureSample> GetSamples(DateTime startDate, DateTime endDate)
+        public IEnumerable<TemperatureSample> GetTemperatureSamples(DateTime startDate, DateTime endDate)
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
@@ -44,7 +41,7 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public int GetSampleCount()
+        public int GetTemperatureSampleCount()
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
@@ -64,7 +61,7 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public string GetSampleExport(Action<decimal> progressHandler = null)
+        public string GetTemperatureSampleExport(Action<decimal> progressHandler = null)
         {
             var stopwatch = Stopwatch.StartNew();
             var last = stopwatch.Elapsed;

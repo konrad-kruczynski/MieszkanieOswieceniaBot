@@ -107,7 +107,7 @@
     <Compile Include="Authorizer.cs" />
     <Compile Include="AsyncPump.cs" />
     <Compile Include="Stats.cs" />
-    <Compile Include="TemperatureDatabase.cs" />
+    <Compile Include="Database.cs" />
     <Compile Include="TemperatureSample.cs" />
     <Compile Include="Step.cs" />
     <Compile Include="PekaClient.cs" />

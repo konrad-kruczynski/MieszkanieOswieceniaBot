@@ -141,7 +141,7 @@ namespace MieszkanieOswieceniaBot
 
                 if (e.Message.Text.ToLower() == "historia")
                 {
-                    var samples = TemperatureDatabase.Instance.GetSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var samples = Database.Instance.GetTemperatureSamples(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
                     var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
                     return; 
@@ -150,7 +150,7 @@ namespace MieszkanieOswieceniaBot
                 if (e.Message.Text.ToLower() == "eksport")
                 {
                     var progressMessage = bot.SendTextMessageAsync(chatId, "Przygotowuję...").Result;
-                    var exportFile = TemperatureDatabase.Instance.GetSampleExport(progress =>
+                    var exportFile = Database.Instance.GetTemperatureSampleExport(progress =>
                     {
                         bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100*progress)).Wait();
                     });
@@ -290,15 +290,15 @@ namespace MieszkanieOswieceniaBot
             {
                 lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.Now ? DateTime.Now : lastSpeakerHeartbeat)
                     + TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
-                                     lastSpeakerHeartbeat, lastSpeakerHeartbeat.Humanize(culture: PolishCultureInfo));
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} ({1}).",
+                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "antyczuwanie")
             {
 				lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
-                                     lastSpeakerHeartbeat, lastSpeakerHeartbeat.Humanize(culture: PolishCultureInfo));
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} ({1}).",
+                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "czas")
@@ -401,8 +401,8 @@ namespace MieszkanieOswieceniaBot
                 CircularLogger.Instance.Log("Error during adding new temperature sample to DB. Raw data: {1}{0}.", rawData, Environment.NewLine);
                 return;
             }
-            var database = TemperatureDatabase.Instance;
-            database.AddSample(new TemperatureSample {Date = DateTime.Now, Temperature = temperature});
+            var database = Database.Instance;
+            database.AddTemperatureSample(new TemperatureSample {Date = DateTime.Now, Temperature = temperature});
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)
