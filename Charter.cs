@@ -90,7 +90,7 @@ namespace MieszkanieOswieceniaBot
             }
 
             stepHandler(Step.CreatingPlot);
-            var plotModel = new PlotModel { Title = "Histogram" };
+            var plotModel = new PlotModel { Title = "Histogram", };
             plotModel.Background = OxyColors.White;
             plotModel.Axes.Add(new LinearAxis()
             {
@@ -100,7 +100,7 @@ namespace MieszkanieOswieceniaBot
                 Maximum = buckets.Length,
                 MaximumPadding = 0,
                 MinimumPadding = 0,
-                LabelFormatter = value => "" + ((int)value) / 60 + ":" + ((int)value) % 60,
+                LabelFormatter = value => "" + ((int)value*minutesInBucket) / 60 + ":" + ((int)value*minutesInBucket) % 60,
             });
             plotModel.Axes.Add(new LinearAxis()
             {
@@ -110,10 +110,10 @@ namespace MieszkanieOswieceniaBot
                 Maximum = buckets.Max()
             });
 
-            var serie = new LineSeries();
+            var serie = new BarSeries();
             for(var i = 0; i < buckets.Length; i++)
             {
-                serie.Points.Add(new DataPoint(i, buckets[i]));
+                serie.Items.Add(new BarItem(buckets[i]));
             }
             plotModel.Series.Add(serie);
 
