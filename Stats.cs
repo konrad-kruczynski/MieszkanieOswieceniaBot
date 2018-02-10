@@ -21,7 +21,7 @@ namespace MieszkanieOswieceniaBot
             builder.AppendLine($"Obsłużyłem w tym czasie {messageCounter} wiadomości.");
             builder.AppendFormat("To daje średnio ~{0:0.0} wiadomości dziennie.", messageCounter / totalDays);
             builder.AppendLine();
-            builder.AppendFormat("Rozmiar bazy danych: {0}.", ByteSize.FromBytes(Database.Instance.FileSize).Humanize());
+            builder.AppendFormat("Rozmiar bazy danych: {0}.", ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"));
             builder.AppendLine();
             builder.AppendFormat("Liczba próbek temperatury: {0}.", Database.Instance.GetSampleCount<TemperatureSample>());
             builder.AppendLine();
