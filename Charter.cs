@@ -110,10 +110,10 @@ namespace MieszkanieOswieceniaBot
                 Maximum = buckets.Max()
             });
 
-            var serie = new BarSeries();
+            var serie = new LineSeries();
             for(var i = 0; i < buckets.Length; i++)
             {
-                serie.Items.Add(new BarItem(buckets[i]));
+                serie.Points.Add(new DataPoint(i, buckets[i]));
             }
             plotModel.Series.Add(serie);
 
