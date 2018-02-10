@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using ByteSizeLib;
+using Humanizer.Bytes;
 
 namespace MieszkanieOswieceniaBot
 {

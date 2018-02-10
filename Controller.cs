@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -8,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Flurl.Http;
+using Humanizer;
 using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot
@@ -289,14 +291,14 @@ namespace MieszkanieOswieceniaBot
                 lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.Now ? DateTime.Now : lastSpeakerHeartbeat)
                     + TimeSpan.FromHours(1);
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
-                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
+                                     lastSpeakerHeartbeat, lastSpeakerHeartbeat.Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "antyczuwanie")
             {
 				lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} (za {1:#.##}h).",
-									 lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).TotalHours);
+                                     lastSpeakerHeartbeat, lastSpeakerHeartbeat.Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "czas")
@@ -424,6 +426,7 @@ namespace MieszkanieOswieceniaBot
         private readonly RelayController relayController;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
+        private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
 
