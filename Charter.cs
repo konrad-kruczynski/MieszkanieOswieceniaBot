@@ -66,6 +66,72 @@ namespace MieszkanieOswieceniaBot
             return pngFile;
         }
 
+        public string PrepareHistogram(int relayNo, Action<Step> stepHandler = null,
+                                   Action<int> onDataCount = null)
+        {
+            stepHandler(Step.RetrievingData);
+            var samples = Database.Instance.GetAllSamples<StateSample>();
+            var samplesCount = samples.Count();
+            onDataCount(samplesCount);
+
+            var minutesInBucket = 10;
+            var bucketsCount = 24 * 60 / minutesInBucket;
+            var buckets = new int[bucketsCount];
+            foreach(var sample in samples)
+            {
+                var active = sample.GetStateArray()[relayNo];
+                if(!active)
+                {
+                    continue;
+                }
+                var minutesFromDayStart = sample.Date.Hour * 60 + sample.Date.Minute;
+                var bucketNo = minutesFromDayStart / minutesInBucket;
+                buckets[bucketNo]++;
+            }
+
+            stepHandler(Step.CreatingPlot);
+            var plotModel = new PlotModel { Title = "Histogram" };
+            plotModel.Background = OxyColors.White;
+            plotModel.Axes.Add(new LinearAxis()
+            {
+                Position = AxisPosition.Bottom,
+                MajorGridlineStyle = LineStyle.Solid,
+                Minimum = 0,
+                Maximum = buckets.Length,
+                MaximumPadding = 0,
+                MinimumPadding = 0
+            });
+            plotModel.Axes.Add(new LinearAxis()
+            {
+                Position = AxisPosition.Left,
+                MajorGridlineStyle = LineStyle.Dot,
+                Minimum = 0,
+                Maximum = buckets.Max()
+            });
+
+            var serie = new LineSeries();
+            for(var i = 0; i < buckets.Length; i++)
+            {
+                serie.Points.Add(new DataPoint(i, buckets[i]));
+            }
+            plotModel.Series.Add(serie);
+
+            var svgFile = "histogram.svg";
+            var pngFile = "histogram.png";
+
+            using(var stream = File.Create(svgFile))
+            {
+                var svgExporter = new SvgExporter { Width = 1300, Height = 800 };
+                svgExporter.Export(plotModel, stream);
+            }
+            stepHandler(Step.RenderingImage);
+            var svgDocument = SvgDocument.Open(svgFile);
+            var bitmap = svgDocument.Draw();
+            bitmap.Save(pngFile, System.Drawing.Imaging.ImageFormat.Png);
+
+            return pngFile;
+        }
+
         private readonly string dateTimeFormat;
     }
 }

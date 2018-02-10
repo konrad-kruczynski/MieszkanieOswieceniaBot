@@ -18,6 +18,11 @@ namespace MieszkanieOswieceniaBot
             
         }
 
+        public bool[] GetStateArray()
+        {
+            return new[] { Lamp1, Lamp2, Lamp3, Speakers };
+        }
+
         public int Id { get; set; }
         public bool Lamp1 { get; set; }
         public bool Lamp2 { get; set; }

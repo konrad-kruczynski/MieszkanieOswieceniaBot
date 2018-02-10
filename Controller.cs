@@ -142,6 +142,29 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "histogram0")
+                {
+                    CreateHistogram(chatId, 0);
+                    return;
+                }
+                if(e.Message.Text.ToLower() == "histogram1")
+                {
+                    CreateHistogram(chatId, 1);
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "histogram2")
+                {
+                    CreateHistogram(chatId, 2);
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "histogram3")
+                {
+                    CreateHistogram(chatId, 3);
+                    return;
+                }
+
                 if(e.Message.Text.ToLower() == "historia")
                 {
                     var samples = Database.Instance.GetSamples<TemperatureSample>(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
@@ -245,6 +268,33 @@ namespace MieszkanieOswieceniaBot
                                                }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
 
             var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
+            bot.SendPhotoAsync(chatId, fileToSend).Wait();
+            bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
+
+        }
+
+        private void CreateHistogram(long chatId, int relayNo)
+        {
+            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
+            var charter = new Charter("");
+            var pngFile = charter.PrepareHistogram(relayNo, step =>
+                                               {
+                                                   switch(step)
+                                                   {
+                                                       case Step.RetrievingData:
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...").Wait();
+                                                           break;
+                                                       case Step.CreatingPlot:
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...").Wait();
+                                                           break;
+                                                       case Step.RenderingImage:
+                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...").Wait();
+                                                           break;
+
+                                                   }
+                                               }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
+
+            var fileToSend = new Telegram.Bot.Types.FileToSend("histogram", File.OpenRead(pngFile));
             bot.SendPhotoAsync(chatId, fileToSend).Wait();
             bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
 

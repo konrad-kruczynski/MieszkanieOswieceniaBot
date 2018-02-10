@@ -41,6 +41,15 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
+        public IEnumerable<T> GetAllSamples<T>() where T : ISample
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
+                return samples.FindAll();
+            }
+        }
+
         public int GetSampleCount<T>()
         {
             using(var database = new LiteDatabase(DatabaseFileName))
