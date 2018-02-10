@@ -74,7 +74,7 @@ namespace MieszkanieOswieceniaBot
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
 
-            var minutesInBucket = 10;
+            var minutesInBucket = 2;
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[bucketsCount];
             foreach(var sample in samples)
@@ -99,7 +99,8 @@ namespace MieszkanieOswieceniaBot
                 Minimum = 0,
                 Maximum = buckets.Length,
                 MaximumPadding = 0,
-                MinimumPadding = 0
+                MinimumPadding = 0,
+                LabelFormatter = value => "" + ((int)value) / 60 + ":" + ((int)value) % 60,
             });
             plotModel.Axes.Add(new LinearAxis()
             {
