@@ -34,7 +34,7 @@ namespace MieszkanieOswieceniaBot
 
         public void Start()
         {
-            startDate = DateTime.Now.ToUniversalTime();
+            startDate = DateTime.Now;
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
