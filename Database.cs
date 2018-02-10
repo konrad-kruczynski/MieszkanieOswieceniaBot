@@ -24,9 +24,9 @@ namespace MieszkanieOswieceniaBot
 
         public void AddSample<T>(T sample) where T : ISample
         {
-            using(var database = new LiteDatabase(CollectionNameOfType<T>()))
+            using(var database = new LiteDatabase(DatabaseFileName))
             {
-                var samples = database.GetCollection<T>(TemperatureCollectionName);
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
                 samples.Insert(sample);
                 samples.EnsureIndex(x => x.Date);
             }
@@ -34,18 +34,18 @@ namespace MieszkanieOswieceniaBot
 
         public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample
         {
-            using(var database = new LiteDatabase(CollectionNameOfType<T>()))
+            using(var database = new LiteDatabase(DatabaseFileName))
             {
-                var samples = database.GetCollection<T>(TemperatureCollectionName);
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
                 return samples.Find(x => x.Date >= startDate && x.Date <= endDate);
             }
         }
 
-        public int GetTemperatureSampleCount()
+        public int GetSampleCount<T>()
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
-                return database.GetCollection(TemperatureCollectionName).Count();
+                return database.GetCollection(CollectionNameOfType<T>()).Count();
             }
         }
 

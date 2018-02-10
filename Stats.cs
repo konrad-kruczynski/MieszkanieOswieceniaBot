@@ -23,7 +23,9 @@ namespace MieszkanieOswieceniaBot
             builder.AppendLine();
             builder.AppendFormat("Rozmiar bazy danych: {0}.", ByteSize.FromBytes(Database.Instance.FileSize).Humanize());
             builder.AppendLine();
-            builder.AppendFormat("Liczba próbek: {0}.", Database.Instance.GetTemperatureSampleCount());
+            builder.AppendFormat("Liczba próbek temperatury: {0}.", Database.Instance.GetSampleCount<TemperatureSample>());
+            builder.AppendLine();
+            builder.AppendFormat("Liczba próbek stanu: {0}.", Database.Instance.GetSampleCount<StateSample>());
             return builder.ToString();
         }
 
