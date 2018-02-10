@@ -18,6 +18,7 @@ namespace MieszkanieOswieceniaBot
             
         }
 
+        public int Id { get; set; }
         public bool Lamp1 { get; set; }
         public bool Lamp2 { get; set; }
         public bool Lamp3 { get; set; }

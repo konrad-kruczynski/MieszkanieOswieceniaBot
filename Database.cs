@@ -112,7 +112,7 @@ namespace MieszkanieOswieceniaBot
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";
-        private const string StateCollectionName = "histogram";
+        private const string StateCollectionName = "stany";
 
     }
 }
