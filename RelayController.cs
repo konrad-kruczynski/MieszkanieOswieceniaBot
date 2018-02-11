@@ -13,9 +13,19 @@ namespace MieszkanieOswieceniaBot
             relayStateCache = new bool[4];
             serialPort1 = TryGetSerialPort("/dev/ttyUSB0");
             serialPort2 = TryGetSerialPort("/dev/ttyUSB1");
+
+            // get the last state from the database
+            var statesToSet = new bool[relayStateCache.Length];
+            var lastState = Database.Instance.GetSamples<StateSample>(DateTime.Now.AddDays(-7), DateTime.Now)
+                                    .OrderBy(x => x.Date).LastOrDefault();
+            if(lastState != null)
+            {
+                CircularLogger.Instance.Log("Setting last state from the DB: {0}.", lastState);
+                statesToSet = lastState.GetStateArray();
+            }
             for(var i = 0; i < relayStateCache.Length; i++)
             {
-                TrySetStatePhysical(LogicalToPhysicalRelayNo[i], false);
+                TrySetStatePhysical(LogicalToPhysicalRelayNo[i], statesToSet[i]);
             }
         }
 
