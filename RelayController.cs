@@ -25,6 +25,7 @@ namespace MieszkanieOswieceniaBot
             }
             for(var i = 0; i < relayStateCache.Length; i++)
             {
+                relayStateCache[i] = statesToSet[i];
                 TrySetStatePhysical(LogicalToPhysicalRelayNo[i], statesToSet[i]);
             }
         }
