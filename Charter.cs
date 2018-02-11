@@ -100,7 +100,7 @@ namespace MieszkanieOswieceniaBot
                 Maximum = buckets.Length,
                 MaximumPadding = 0,
                 MinimumPadding = 0,
-                LabelFormatter = value => TimeSpan.FromMinutes(minutesInBucket*value).ToString(@"h:mm"),
+                LabelFormatter = value => TimeSpan.FromMinutes(minutesInBucket*value).ToString(@"h\:mm"),
             });
             plotModel.Axes.Add(new LinearAxis()
             {
