@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -32,7 +33,12 @@ namespace MieszkanieOswieceniaBot
 
         public override string ToString()
         {
-            return string.Format("[{4:R}: Lampa1: {0}, Lampa2: {1}, Lampa3: {2}, Głośniki: {3}]", Lamp1, Lamp2, Lamp3, Speakers, Date);
+            var result = new StringBuilder();
+            result.Append(Lamp1 ? "○" : "●");
+            result.Append(Lamp2 ? "○" : "●");
+            result.Append(Lamp3 ? "○" : "●");
+            result.Append(Speakers ? "○" : "●");
+            return string.Format("[{0:R}: {1}]", Date, result);
         }
     }
 }
