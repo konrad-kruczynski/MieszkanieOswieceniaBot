@@ -100,14 +100,14 @@ namespace MieszkanieOswieceniaBot
                 Maximum = buckets.Length,
                 MaximumPadding = 0,
                 MinimumPadding = 0,
-                LabelFormatter = value => "" + ((int)value*minutesInBucket) / 60 + ":" + ((int)value*minutesInBucket) % 60,
+                LabelFormatter = value => TimeSpan.FromMinutes(minutesInBucket*value).ToString(@"h:mm"),
             });
             plotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Left,
                 MajorGridlineStyle = LineStyle.Dot,
                 Minimum = 0,
-                Maximum = buckets.Max()
+                Maximum = buckets.Max() + 1
             });
 
             var serie = new LineSeries();
