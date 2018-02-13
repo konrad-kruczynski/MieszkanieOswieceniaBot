@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace MieszkanieOswieceniaBot
@@ -17,6 +18,14 @@ namespace MieszkanieOswieceniaBot
         public StateSample()
         {
             
+        }
+
+        public bool IsEffectivelyMeaningless
+        {
+            get
+            {
+                return !GetStateArray().Any();
+            }
         }
 
         public bool[] GetStateArray()

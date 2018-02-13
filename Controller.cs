@@ -467,7 +467,11 @@ namespace MieszkanieOswieceniaBot
 
         private void WriteStateToDatabase()
         {
-            Database.Instance.AddSample(new StateSample(relayController.GetStateArray()));
+            var sample = new StateSample(relayController.GetStateArray());
+            if(!sample.IsEffectivelyMeaningless)
+            {
+                Database.Instance.AddSample(sample);
+            }
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)
