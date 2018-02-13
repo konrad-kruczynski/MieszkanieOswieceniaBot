@@ -24,7 +24,7 @@ namespace MieszkanieOswieceniaBot
         {
             get
             {
-                return !GetStateArray().Any();
+                return !GetStateArray().Any(x => x);
             }
         }
 
