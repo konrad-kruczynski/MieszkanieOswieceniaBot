@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot
         public DateTime Date { get; set; }
         public decimal Temperature { get; set; }
 
-        public bool IsDataEqualTo(TemperatureSample t)
+        public bool CanSampleBeSquashed(TemperatureSample t)
         {
             return Temperature == t.Temperature;
         }

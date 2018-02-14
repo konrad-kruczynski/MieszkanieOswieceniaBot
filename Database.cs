@@ -26,7 +26,7 @@ namespace MieszkanieOswieceniaBot
         public void AddSample<T>(T sample) where T : ISample<T>
         {
             var lastSample = samplesCache.OfType<T>().SingleOrDefault();
-            if(lastSample != null && lastSample.IsDataEqualTo(sample))
+            if(lastSample != null && lastSample.CanSampleBeSquashed(sample))
             {
                 return;
             }

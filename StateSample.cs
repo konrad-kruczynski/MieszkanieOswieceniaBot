@@ -42,9 +42,9 @@ namespace MieszkanieOswieceniaBot
             return string.Format("[{0:R}: {1}]", Date, result);
         }
 
-        public bool IsDataEqualTo(StateSample t)
+        public bool CanSampleBeSquashed(StateSample t)
         {
-            return t.GetStateArray().Zip(GetStateArray(), (x, y) => x == y).All(x => x);
+            return !t.GetStateArray().Any(x => x) && !GetStateArray().Any(x => x);
         }
     }
 }

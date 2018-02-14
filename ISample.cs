@@ -6,6 +6,6 @@ namespace MieszkanieOswieceniaBot
     {
         DateTime Date { get; }
         int Id { get; }
-        bool IsDataEqualTo(T t);
+        bool CanSampleBeSquashed(T t);
     }
 }
