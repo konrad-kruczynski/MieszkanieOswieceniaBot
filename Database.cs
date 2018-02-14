@@ -63,7 +63,7 @@ namespace MieszkanieOswieceniaBot
             using(var database = new LiteDatabase(DatabaseFileName))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
-                return samples.Find(Query.All("Date", Query.Descending), 0, howMany);
+                return samples.Find(Query.All("Date", Query.Descending), 0, howMany).Reverse();
             }
         }
 
