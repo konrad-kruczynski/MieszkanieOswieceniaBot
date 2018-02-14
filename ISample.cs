@@ -2,7 +2,7 @@
 
 namespace MieszkanieOswieceniaBot
 {
-    public interface ISample<T> where T : ISample<T>
+    public interface ISample<T>
     {
         DateTime Date { get; }
         int Id { get; }
