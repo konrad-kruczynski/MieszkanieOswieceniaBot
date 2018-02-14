@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot
 {
-    public class TemperatureSample : ISample
+    public class TemperatureSample : ISample<TemperatureSample>
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public decimal Temperature { get; set; }
+
+        public bool IsDataEqualTo(TemperatureSample t)
+        {
+            return Temperature == t.Temperature;
+        }
 
         public override string ToString()
         {

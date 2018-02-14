@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MieszkanieOswieceniaBot
 {
-    public class StateSample : ISample
+    public class StateSample : ISample<StateSample>
     {
         public StateSample(bool[] stateArray)
         {
@@ -18,14 +18,6 @@ namespace MieszkanieOswieceniaBot
         public StateSample()
         {
             
-        }
-
-        public bool IsEffectivelyMeaningless
-        {
-            get
-            {
-                return !GetStateArray().Any(x => x);
-            }
         }
 
         public bool[] GetStateArray()
@@ -48,6 +40,11 @@ namespace MieszkanieOswieceniaBot
             result.Append(Lamp3 ? "○" : "●");
             result.Append(Speakers ? "○" : "●");
             return string.Format("[{0:R}: {1}]", Date, result);
+        }
+
+        public bool IsDataEqualTo(StateSample t)
+        {
+            return t.GetStateArray().Zip(GetStateArray(), (x, y) => x == y).All(x => x);
         }
     }
 }

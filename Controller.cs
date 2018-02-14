@@ -167,7 +167,7 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "historia")
                 {
-                    var samples = Database.Instance.GetSamples<TemperatureSample>(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var samples = Database.Instance.GetNewestSamples<TemperatureSample>(30);
                     var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
                     return;
@@ -175,7 +175,7 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "historia2")
                 {
-                    var samples = Database.Instance.GetSamples<StateSample>(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
+                    var samples = Database.Instance.GetNewestSamples<StateSample>(30);
                     var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
                     return;
@@ -467,11 +467,7 @@ namespace MieszkanieOswieceniaBot
 
         private void WriteStateToDatabase()
         {
-            var sample = new StateSample(relayController.GetStateArray());
-            if(!sample.IsEffectivelyMeaningless)
-            {
-                Database.Instance.AddSample(sample);
-            }
+            Database.Instance.AddSample(new StateSample(relayController.GetStateArray()));
         }
 
         private static string GetSender(Telegram.Bot.Types.User user)

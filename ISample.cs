@@ -2,9 +2,10 @@
 
 namespace MieszkanieOswieceniaBot
 {
-    public interface ISample
+    public interface ISample<T> where T : ISample<T>
     {
         DateTime Date { get; }
         int Id { get; }
+        bool IsDataEqualTo(T t);
     }
 }

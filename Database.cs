@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using LiteDB;
 using Newtonsoft.Json;
 
@@ -19,11 +20,18 @@ namespace MieszkanieOswieceniaBot
 
         private Database()
         {
-            
+            samplesCache = new HashSet<object>();
         }
 
-        public void AddSample<T>(T sample) where T : ISample
+        public void AddSample<T>(T sample) where T : ISample<T>
         {
+            var lastSample = samplesCache.OfType<T>().SingleOrDefault();
+            if(lastSample != null && lastSample.IsDataEqualTo(sample))
+            {
+                return;
+            }
+            samplesCache.Remove(lastSample);
+            samplesCache.Add(sample);
             using(var database = new LiteDatabase(DatabaseFileName))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
@@ -32,7 +40,7 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample
+        public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample<T>
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
@@ -41,12 +49,21 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<T> GetAllSamples<T>() where T : ISample
+        public IEnumerable<T> GetAllSamples<T>() where T : ISample<T>
         {
             using(var database = new LiteDatabase(DatabaseFileName))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
                 return samples.FindAll();
+            }
+        }
+
+        public IEnumerable<T> GetNewestSamples<T>(int howMany) where T : ISample<T>
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
+                return samples.Find(Query.All("Date", Query.Descending), 0, howMany);
             }
         }
 
@@ -118,6 +135,8 @@ namespace MieszkanieOswieceniaBot
             }
             throw new InvalidOperationException();
         }
+
+        private readonly HashSet<object> samplesCache;
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";
