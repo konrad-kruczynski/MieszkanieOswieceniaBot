@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using Humanizer;
 using Humanizer.Bytes;
@@ -16,7 +17,7 @@ namespace MieszkanieOswieceniaBot
         {
             var builder = new StringBuilder();
             var runningTime = (DateTime.Now - startTime);
-            builder.AppendFormat("Jestem uruchomiony od {0:D}, czyli przez {1}.", startTime, runningTime.Humanize());
+            builder.AppendFormat("Jestem uruchomiony od {0:D}, czyli przez {1}.", startTime, runningTime.Humanize(culture: new CultureInfo("pl-PL")));
             builder.AppendLine();
             builder.AppendLine($"Obsłużyłem w tym czasie {messageCounter} wiadomości.");
             builder.AppendFormat("To daje średnio ~{0:0.0} wiadomości dziennie.", messageCounter / runningTime.TotalDays);
