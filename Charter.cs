@@ -74,7 +74,7 @@ namespace MieszkanieOswieceniaBot
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
 
-            var minutesInBucket = 20;
+            var minutesInBucket = 2;
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[bucketsCount];
             foreach(var sample in samples)
