@@ -136,9 +136,9 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres1")
+                if(e.Message.Text.ToLower() == "wykres48")
                 {
-                    CreateChart(TimeSpan.FromHours(1), chatId, "HH:mm");
+                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm");
                     return;
                 }
 
