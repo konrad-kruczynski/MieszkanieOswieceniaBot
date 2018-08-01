@@ -39,8 +39,8 @@ namespace MieszkanieOswieceniaBot
             {
                 Position = AxisPosition.Left,
                 MajorGridlineStyle = LineStyle.Dot,
-                Minimum = 12,
-                Maximum = 30
+                Minimum = 15,
+                Maximum = 33
             });
 
             var serie = new LineSeries();
