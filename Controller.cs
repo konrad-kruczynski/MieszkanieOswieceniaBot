@@ -471,6 +471,7 @@ namespace MieszkanieOswieceniaBot
         private string HandleAutoScenario()
         {
             autoScenarioEnabled = true;
+            HandleAutoScenarioTimer();
             return "Autoscenariusz uaktywniony";
         }
 
