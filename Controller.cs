@@ -50,6 +50,8 @@ namespace MieszkanieOswieceniaBot
                       .Subscribe(_ => RefreshSpeakerState());
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
+            Observable.Interval(TimeSpan.FromMinutes(3)).ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => HandleAutoScenarioTimer());
         }
 
         private void HandleError(string error)
@@ -344,6 +346,11 @@ namespace MieszkanieOswieceniaBot
                 return HandleScenario(int.Parse(text));
             }
 
+            if(text == "auto")
+            {
+                return HandleAutoScenario();
+            }
+
             if(text == "staty" || text == "statystyki")
             {
                 return stats.GetStats();
@@ -448,11 +455,30 @@ namespace MieszkanieOswieceniaBot
             {
                 return "Nie ma takiego scenariusza.";
             }
+            autoScenarioEnabled = false; // every scenario disable autoscenario
+            HandleScenarioInner(scenarioNo);
+            return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, GetLampsFriendlyName(Scenarios[scenarioNo]));
+        }
+
+        private void HandleScenarioInner(int scenarioNo)
+        {
             for(var i = 0; i < RelayController.RelayCount - 1; i++)
             {
                 relayController.SetState(i, Scenarios[scenarioNo].Contains(i));
             }
-            return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, GetLampsFriendlyName(Scenarios[scenarioNo]));
+        }
+
+        private string HandleAutoScenario()
+        {
+            autoScenarioEnabled = true;
+            return "Autoscenariusz uaktywniony";
+        }
+
+        private void HandleAutoScenarioTimer()
+        {
+            var currentTime = DateTime.Now.TimeOfDay;
+            var currentScenario = AutoScenario.Last(x => x.Item1 <= currentTime).Item2;
+            HandleScenarioInner(currentScenario);
         }
 
         private void RefreshSpeakerState()
@@ -492,6 +518,7 @@ namespace MieszkanieOswieceniaBot
 
         private DateTime lastSpeakerHeartbeat;
         private DateTime startDate;
+        private bool autoScenarioEnabled;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
@@ -511,6 +538,13 @@ namespace MieszkanieOswieceniaBot
                 new HashSet<int> { 0 },
                 new HashSet<int> { 0, 1, 2},
                 new HashSet<int> { 0, 2}
+        };
+
+        private static readonly (TimeSpan, int)[] AutoScenario = {
+            (new TimeSpan(0, 0, 0), 3),
+            (new TimeSpan(8, 0, 0), 1),
+            (new TimeSpan(20, 0, 0), 2),
+            (new TimeSpan(22, 0, 0), 3)
         };
 
         private static readonly Dictionary<int, string> FriendlyNames = new Dictionary<int, string>
