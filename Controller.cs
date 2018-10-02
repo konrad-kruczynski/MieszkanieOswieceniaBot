@@ -476,6 +476,10 @@ namespace MieszkanieOswieceniaBot
 
         private void HandleAutoScenarioTimer()
         {
+            if(!autoScenarioEnabled)
+            {
+                return;
+            }
             var currentTime = DateTime.Now.TimeOfDay;
             var currentScenario = AutoScenario.Last(x => x.Item1 <= currentTime).Item2;
             HandleScenarioInner(currentScenario);
