@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,20 +39,29 @@ namespace MieszkanieOswieceniaBot
             bot.StartReceiving();
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ =>
-                      {
-                          if(lastSpeakerHeartbeat < DateTime.Now)
-                          {
-                              lastSpeakerHeartbeat = DateTime.Now;
-                          }
-                          RefreshSpeakerState();
-                      });
+                      .Subscribe(HandleUdp);
             Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
             Observable.Interval(TimeSpan.FromMinutes(3)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => HandleAutoScenarioTimer());
+        }
+
+        private void HandleUdp(UdpReceiveResult result)
+        {
+            var bufferAsString = Encoding.UTF8.GetString(result.Buffer);
+            if(int.TryParse(bufferAsString, out var number))
+            {
+                HandleScenario(number);
+                return;
+            }
+
+            if(lastSpeakerHeartbeat < DateTime.Now)
+            {
+                lastSpeakerHeartbeat = DateTime.Now;
+            }
+            RefreshSpeakerState();
         }
 
         private void HandleError(string error)
