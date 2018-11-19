@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Flurl.Http;
 using Humanizer;
+using Humanizer.Bytes;
 using Telegram.Bot;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -264,6 +265,17 @@ namespace MieszkanieOswieceniaBot
                 if(e.Message.Text.ToLower() == "o wakacjach")
                 {
                     bot.SendTextMessageAsync(chatId, GetHolidayInfo(Database.Instance)).Wait();
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "zmniejsz")
+                {
+                    bot.SendTextMessageAsync(chatId, string.Format("Rozmiar bazy danych przed: {0}.", 
+                                                                   ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"))).Wait();
+                    bot.SendTextMessageAsync(chatId, "Zmniejszam...").Wait();
+                    Database.Instance.Shrink();
+                    bot.SendTextMessageAsync(chatId, string.Format("Rozmiar bazy danych po: {0}.",
+                                                                   ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"))).Wait();
                     return;
                 }
 

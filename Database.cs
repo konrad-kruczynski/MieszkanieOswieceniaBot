@@ -126,6 +126,15 @@ namespace MieszkanieOswieceniaBot
             return exportFileName;
         }
 
+        public void Shrink()
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var fileDiskService = new FileDiskService("szrink.tmp");
+                database.Engine.Shrink(tempDisk: fileDiskService);
+            }
+        }
+
         public bool HolidayMode
         {
             get => holidayMode.Value;
