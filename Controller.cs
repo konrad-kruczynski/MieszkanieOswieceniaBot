@@ -25,7 +25,7 @@ namespace MieszkanieOswieceniaBot
             relayController = new RelayController();
             stats = new Stats();
             pekaClients = new Dictionary<string, PekaClient>();
-            lastSpeakerHeartbeat = new DateTime(2000, 1, 1);
+            lastSpeakerHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
             authorizer = new Authorizer();
             bot.OnMessage += HandleMessage;
             bot.OnCallbackQuery += HandleCallbackQuery;
@@ -57,9 +57,9 @@ namespace MieszkanieOswieceniaBot
                 return;
             }
 
-            if(lastSpeakerHeartbeat < DateTime.Now)
+            if(lastSpeakerHeartbeat < DateTime.UtcNow)
             {
-                lastSpeakerHeartbeat = DateTime.Now;
+                lastSpeakerHeartbeat = DateTime.UtcNow;
             }
             RefreshSpeakerState();
         }
@@ -373,17 +373,17 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "czuwanie")
             {
-                lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.Now ? DateTime.Now : lastSpeakerHeartbeat)
+                lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.UtcNow ? DateTime.UtcNow : lastSpeakerHeartbeat)
                     + TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} ({1}).",
-                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).Humanize(culture: PolishCultureInfo));
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
+                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "antyczuwanie")
             {
                 lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
-                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} ({1}).",
-                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.Now).Humanize(culture: PolishCultureInfo));
+                return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
+                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
 
             if(text == "czas")
@@ -498,7 +498,7 @@ namespace MieszkanieOswieceniaBot
 
         private void RefreshSpeakerState()
         {
-            relayController.SetState(3, DateTime.Now - lastSpeakerHeartbeat < HeartbeatTimeout);
+            relayController.SetState(3, DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
         }
 
         private void WriteTemperatureToDatabase()
