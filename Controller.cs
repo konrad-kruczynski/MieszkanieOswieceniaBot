@@ -241,7 +241,7 @@ namespace MieszkanieOswieceniaBot
                     {
                         return "Brak trybu wakacyjnego.";
                     }
-                    return string.Format("Tryb wakacyjny w przedziale {0:c} - {1:c}.",
+                    return string.Format("Tryb wakacyjny w przedziale {0:hh\\:mm} - {1:hh\\:mm}.",
                                          database.HolidayModeStartedAt,
                                          database.HolidayModeStartedAt + HolidayWindowLength);
                 }
@@ -579,7 +579,7 @@ namespace MieszkanieOswieceniaBot
         private readonly Authorizer authorizer;
         private readonly Stats stats;
         private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
-        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(30);
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
 
