@@ -143,7 +143,7 @@ namespace MieszkanieOswieceniaBot
             using(var database = new LiteDatabase(DatabaseFileName))
             {
                 var collection = database.GetCollection<KeyValueItem>(KeyValueCollectionName);
-                var result = collection.FindOne(Query.EQ("Key", key));
+                var result = collection.FindOne(x => x.Key == key);
                 if(result == null)
                 {
                     return default(T);
