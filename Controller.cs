@@ -535,8 +535,9 @@ namespace MieszkanieOswieceniaBot
                 relayController.SetState(3, DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
                 return;
             }
+            var database = Database.Instance;
             var timeOfDay = DateTime.Now.TimeOfDay;
-            relayController.SetState(3, timeOfDay > holidayModeStartedAt && timeOfDay < (holidayModeStartedAt + HolidayWindowLength));
+            relayController.SetState(3, timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
         }
 
         private void WriteTemperatureToDatabase()
@@ -572,7 +573,6 @@ namespace MieszkanieOswieceniaBot
         private DateTime lastSpeakerHeartbeat;
         private DateTime startDate;
         private bool autoScenarioEnabled;
-        private TimeSpan holidayModeStartedAt;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;

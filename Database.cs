@@ -24,6 +24,7 @@ namespace MieszkanieOswieceniaBot
             samplesCache = new HashSet<object>();
             serializer = new Serializer(new Antmicro.Migrant.Customization.Settings(disableTypeStamping: true));
             holidayMode = new CachedKeyValue<bool>(this, "holidayMode");
+            holidayModeStartedAt = new CachedKeyValue<TimeSpan>(this, "holidayModeStartedAt");
         }
 
         public void AddSample<T>(T sample) where T : ISample<T>
@@ -198,6 +199,7 @@ namespace MieszkanieOswieceniaBot
             public CachedKeyValue(Database parent, string name)
             {
                 this.name = name;
+                this.parent = parent;
                 cachedValue = parent.GetValueByKey<T>(name);
             }
 
