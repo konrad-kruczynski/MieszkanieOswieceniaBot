@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Antmicro.Migrant;
 using LiteDB;
 using Newtonsoft.Json;
 
@@ -21,6 +22,8 @@ namespace MieszkanieOswieceniaBot
         private Database()
         {
             samplesCache = new HashSet<object>();
+            serializer = new Serializer(new Antmicro.Migrant.Customization.Settings(disableTypeStamping: true));
+            holidayMode = new CachedKeyValue<bool>(this, "holidayMode");
         }
 
         public void AddSample<T>(T sample) where T : ISample<T>
@@ -122,6 +125,46 @@ namespace MieszkanieOswieceniaBot
             return exportFileName;
         }
 
+        public bool HolidayMode
+        {
+            get => holidayMode.Value;
+            set => holidayMode.Value = value;
+        }
+
+        public TimeSpan HolidayModeStartedAt
+        {
+            get => holidayModeStartedAt.Value;
+            set => holidayModeStartedAt.Value = value;
+        }
+
+        private T GetValueByKey<T>(string key)
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var collection = database.GetCollection<KeyValueItem>(KeyValueCollectionName);
+                var result = collection.FindOne(Query.EQ("Key", key));
+                if(result == null)
+                {
+                    return default(T);
+                }
+                var memoryStream = new MemoryStream(result.Value);
+                return serializer.Deserialize<T>(memoryStream);
+            }
+        }
+
+        private void SetValueByKey<T>(string key, T value)
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var collection = database.GetCollection<KeyValueItem>(KeyValueCollectionName);
+                var memoryStream = new MemoryStream();
+                serializer.Serialize(value, memoryStream);
+                var item = new KeyValueItem { Key = key, Value = memoryStream.ToArray() };
+                collection.Upsert(item);
+                collection.EnsureIndex(x => x.Key);
+            }
+        }
+
         private static string CollectionNameOfType<T>()
         {
             var type = typeof(T);
@@ -133,14 +176,47 @@ namespace MieszkanieOswieceniaBot
             {
                 return StateCollectionName;
             }
+            if(type == typeof(KeyValueItem))
+            {
+                return KeyValueCollectionName;
+            }
             throw new InvalidOperationException();
         }
 
         private readonly HashSet<object> samplesCache;
+        private readonly Serializer serializer;
+        private readonly CachedKeyValue<bool> holidayMode;
+        private readonly CachedKeyValue<TimeSpan> holidayModeStartedAt;
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";
         private const string StateCollectionName = "stany";
+        private const string KeyValueCollectionName = "keyval";
 
+        private class CachedKeyValue<T>
+        {
+            public CachedKeyValue(Database parent, string name)
+            {
+                this.name = name;
+                cachedValue = parent.GetValueByKey<T>(name);
+            }
+
+            public T Value
+            {
+                get
+                {
+                    return cachedValue;
+                }
+                set
+                {
+                    cachedValue = value;
+                    parent.SetValueByKey(name, value);
+                }
+            }
+
+            private T cachedValue;
+            private readonly string name;
+            private readonly Database parent;
+        }
     }
 }

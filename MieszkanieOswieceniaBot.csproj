@@ -93,6 +93,9 @@
     <Reference Include="Telegram.Bot">
       <HintPath>packages\Telegram.Bot.13.4.0\lib\net45\Telegram.Bot.dll</HintPath>
     </Reference>
+    <Reference Include="Migrant">
+      <HintPath>packages\Migrant.0.13\lib\net40\Migrant.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Charter.cs" />
@@ -114,6 +117,7 @@
     <Compile Include="PekaDb.cs" />
     <Compile Include="StateSample.cs" />
     <Compile Include="ISample.cs" />
+    <Compile Include="KeyValueItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

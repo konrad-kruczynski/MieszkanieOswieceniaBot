@@ -40,7 +40,7 @@ namespace MieszkanieOswieceniaBot
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
                       .Subscribe(HandleUdp);
-            Observable.Interval(TimeSpan.FromSeconds(1)).ObserveOn(SynchronizationContext.Current)
+            Observable.Interval(TimeSpan.FromSeconds(10)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => RefreshSpeakerState());
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
@@ -232,6 +232,38 @@ namespace MieszkanieOswieceniaBot
                 {
                     var text = CircularLogger.Instance.GetEntriesAsAString();
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    return;
+                }
+
+                string GetHolidayInfo(Database database) 
+                {
+                    if(!database.HolidayMode)
+                    {
+                        return "Brak trybu wakacyjnego.";
+                    }
+                    return string.Format("Tryb wakacyjny w przedziale {0:c} - {1:c}.",
+                                         database.HolidayModeStartedAt,
+                                         database.HolidayModeStartedAt + HolidayWindowLength);
+                }
+
+                if(e.Message.Text.ToLower() == "wakacje")
+                {
+                    var database = Database.Instance;
+                    database.HolidayModeStartedAt = DateTime.Now.TimeOfDay;
+                    database.HolidayMode = true;
+                    bot.SendTextMessageAsync(chatId, GetHolidayInfo(database)).Wait();
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "po wakacjach")
+                {
+                    Database.Instance.HolidayMode = false;
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "o wakacjach")
+                {
+                    bot.SendTextMessageAsync(chatId, GetHolidayInfo(Database.Instance)).Wait();
                     return;
                 }
 
@@ -498,7 +530,13 @@ namespace MieszkanieOswieceniaBot
 
         private void RefreshSpeakerState()
         {
-            relayController.SetState(3, DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
+            if(!Database.Instance.HolidayMode)
+            {
+                relayController.SetState(3, DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
+                return;
+            }
+            var timeOfDay = DateTime.Now.TimeOfDay;
+            relayController.SetState(3, timeOfDay > holidayModeStartedAt && timeOfDay < (holidayModeStartedAt + HolidayWindowLength));
         }
 
         private void WriteTemperatureToDatabase()
@@ -534,12 +572,14 @@ namespace MieszkanieOswieceniaBot
         private DateTime lastSpeakerHeartbeat;
         private DateTime startDate;
         private bool autoScenarioEnabled;
+        private TimeSpan holidayModeStartedAt;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
         private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
+        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(5);
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
 
