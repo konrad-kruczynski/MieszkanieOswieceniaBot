@@ -116,7 +116,7 @@ namespace MieszkanieOswieceniaBot
             for(var j = 0; j < relayNos.Length; j++)
             {
                 var serie = new LineSeries();
-                for(var i = 0; i < buckets.Length; i++)
+                for(var i = 0; i < bucketsCount; i++)
                 {
                     serie.Points.Add(new DataPoint(i, buckets[j, i]));
                 }
