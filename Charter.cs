@@ -100,7 +100,7 @@ namespace MieszkanieOswieceniaBot
                 Position = AxisPosition.Bottom,
                 MajorGridlineStyle = LineStyle.Solid,
                 Minimum = 0,
-                Maximum = buckets.Length,
+                Maximum = bucketsCount,
                 MaximumPadding = 0,
                 MinimumPadding = 0,
                 LabelFormatter = value => TimeSpan.FromMinutes(minutesInBucket*value).ToString(@"h\:mm"),
@@ -116,6 +116,7 @@ namespace MieszkanieOswieceniaBot
             for(var j = 0; j < relayNos.Length; j++)
             {
                 var serie = new LineSeries();
+                serie.LabelFormatString = j.ToString();
                 for(var i = 0; i < bucketsCount; i++)
                 {
                     serie.Points.Add(new DataPoint(i, buckets[j, i]));
