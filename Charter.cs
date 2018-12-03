@@ -140,23 +140,23 @@ namespace MieszkanieOswieceniaBot
             return pngFile;
         }
 
-        private readonly string dateTimeFormat;
-    }
-
-    private static string GetRelayFriendlyName(int relayNo)
-    {
-        switch(relayNo)
+        private static string GetRelayFriendlyName(int relayNo)
         {
-            case 0:
-                return "doniczka";
-            case 1:
-                return "regał";
-            case 2:
-                return "kanapa";
-            case 3:
-                return "głośniki";
-            default:
-                return "nieznany";
+            switch(relayNo)
+            {
+                case 0:
+                    return "doniczka";
+                case 1:
+                    return "regał";
+                case 2:
+                    return "kanapa";
+                case 3:
+                    return "głośniki";
+                default:
+                    return "nieznany";
+            }
         }
+
+        private readonly string dateTimeFormat;
     }
 }
