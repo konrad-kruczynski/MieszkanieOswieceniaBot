@@ -112,11 +112,11 @@ namespace MieszkanieOswieceniaBot
                 Minimum = 0,
                 Maximum = buckets.Cast<int>().Max() + 1
             });
+            plotModel.IsLegendVisible = true;
 
             for(var j = 0; j < relayNos.Length; j++)
             {
                 var serie = new LineSeries();
-                serie.LabelFormatString = j.ToString();
                 for(var i = 0; i < bucketsCount; i++)
                 {
                     serie.Points.Add(new DataPoint(i, buckets[j, i]));
@@ -141,5 +141,22 @@ namespace MieszkanieOswieceniaBot
         }
 
         private readonly string dateTimeFormat;
+    }
+
+    private static string GetRelayFriendlyName(int relayNo)
+    {
+        switch(relayNo)
+        {
+            case 0:
+                return "doniczka";
+            case 1:
+                return "regał";
+            case 2:
+                return "kanapa";
+            case 3:
+                return "głośniki";
+            default:
+                return "nieznany";
+        }
     }
 }
