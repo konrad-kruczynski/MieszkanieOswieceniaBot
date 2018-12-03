@@ -163,24 +163,30 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "histogram0")
                 {
-                    CreateHistogram(chatId, 0);
+                    CreateHistogram(chatId, new[] { 0 });
                     return;
                 }
                 if(e.Message.Text.ToLower() == "histogram1")
                 {
-                    CreateHistogram(chatId, 1);
+                    CreateHistogram(chatId, new[] { 1 });
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "histogram2")
                 {
-                    CreateHistogram(chatId, 2);
+                    CreateHistogram(chatId, new[] { 2 });
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "histogram3")
                 {
-                    CreateHistogram(chatId, 3);
+                    CreateHistogram(chatId, new[] { 3 });
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "superhistogram")
+                {
+                    CreateHistogram(chatId, new[] { 0, 1, 2, 3 });
                     return;
                 }
 
@@ -335,11 +341,11 @@ namespace MieszkanieOswieceniaBot
 
         }
 
-        private void CreateHistogram(long chatId, int relayNo)
+        private void CreateHistogram(long chatId, int[] relayNos)
         {
             var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
             var charter = new Charter("");
-            var pngFile = charter.PrepareHistogram(relayNo, step =>
+            var pngFile = charter.PrepareHistogram(relayNos, step =>
                                                {
                                                    switch(step)
                                                    {

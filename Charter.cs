@@ -66,7 +66,7 @@ namespace MieszkanieOswieceniaBot
             return pngFile;
         }
 
-        public string PrepareHistogram(int relayNo, Action<Step> stepHandler = null,
+        public string PrepareHistogram(int[] relayNos, Action<Step> stepHandler = null,
                                    Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
@@ -76,17 +76,20 @@ namespace MieszkanieOswieceniaBot
 
             var minutesInBucket = 2;
             var bucketsCount = 24 * 60 / minutesInBucket;
-            var buckets = new int[bucketsCount];
-            foreach(var sample in samples)
+            var buckets = new int[relayNos.Length, bucketsCount];
+            for(var i = 0; i < relayNos.Length; i++)
             {
-                var active = sample.GetStateArray()[relayNo];
-                if(!active)
+                foreach(var sample in samples)
                 {
-                    continue;
+                    var active = sample.GetStateArray()[relayNos[i]];
+                    if(!active)
+                    {
+                        continue;
+                    }
+                    var minutesFromDayStart = sample.Date.Hour * 60 + sample.Date.Minute;
+                    var bucketNo = minutesFromDayStart / minutesInBucket;
+                    buckets[i, bucketNo]++;
                 }
-                var minutesFromDayStart = sample.Date.Hour * 60 + sample.Date.Minute;
-                var bucketNo = minutesFromDayStart / minutesInBucket;
-                buckets[bucketNo]++;
             }
 
             stepHandler(Step.CreatingPlot);
@@ -107,15 +110,18 @@ namespace MieszkanieOswieceniaBot
                 Position = AxisPosition.Left,
                 MajorGridlineStyle = LineStyle.Dot,
                 Minimum = 0,
-                Maximum = buckets.Max() + 1
+                Maximum = buckets.Cast<int>().Max() + 1
             });
 
-            var serie = new LineSeries();
-            for(var i = 0; i < buckets.Length; i++)
+            for(var j = 0; j < relayNos.Length; j++)
             {
-                serie.Points.Add(new DataPoint(i, buckets[i]));
+                var serie = new LineSeries();
+                for(var i = 0; i < buckets.Length; i++)
+                {
+                    serie.Points.Add(new DataPoint(i, buckets[j, i]));
+                }
+                plotModel.Series.Add(serie);
             }
-            plotModel.Series.Add(serie);
 
             var svgFile = "histogram.svg";
             var pngFile = "histogram.png";
