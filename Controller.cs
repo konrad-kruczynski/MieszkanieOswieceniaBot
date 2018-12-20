@@ -432,6 +432,7 @@ namespace MieszkanieOswieceniaBot
             {
                 lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.UtcNow ? DateTime.UtcNow : lastSpeakerHeartbeat)
                     + TimeSpan.FromHours(1);
+                RefreshSpeakerState();
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
@@ -439,6 +440,7 @@ namespace MieszkanieOswieceniaBot
             if(text == "antyczuwanie")
             {
                 lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
+                RefreshSpeakerState();
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
