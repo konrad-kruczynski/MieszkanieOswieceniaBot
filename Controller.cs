@@ -254,7 +254,8 @@ namespace MieszkanieOswieceniaBot
                                          database.HolidayModeStartedAt + HolidayWindowLength);
                     if(holidayGracePeriodStopwatch.IsRunning)
                     {
-                        message += $"Do końca okresu ochronnego pozostało ${(HolidayWindowLength - holidayGracePeriodStopwatch.Elapsed).Humanize()}";
+                        var timeLeft = (HolidayWindowLength - holidayGracePeriodStopwatch.Elapsed).Humanize(culture: PolishCultureInfo);
+                        message += $"Do końca okresu ochronnego pozostało {timeLeft}.";
                     }
                     return message;
                 }
