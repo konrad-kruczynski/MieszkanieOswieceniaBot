@@ -55,6 +55,14 @@ namespace MieszkanieOswieceniaBot
             var bufferAsString = Encoding.UTF8.GetString(result.Buffer);
             if(int.TryParse(bufferAsString, out var number))
             {
+                if(number == 10)
+                {
+                    relayController.SetState(3, true);
+                }
+                if(number == 11)
+                {
+                    relayController.SetState(3, false);
+                }
                 HandleScenario(number);
                 return;
             }
