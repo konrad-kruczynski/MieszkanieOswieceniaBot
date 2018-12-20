@@ -249,9 +249,14 @@ namespace MieszkanieOswieceniaBot
                     {
                         return "Brak trybu wakacyjnego.";
                     }
-                    return string.Format("Tryb wakacyjny w przedziale {0:hh\\:mm} - {1:hh\\:mm}.",
+                    var message =  string.Format("Tryb wakacyjny w przedziale {0:hh\\:mm} - {1:hh\\:mm}.",
                                          database.HolidayModeStartedAt,
                                          database.HolidayModeStartedAt + HolidayWindowLength);
+                    if(holidayGracePeriodStopwatch.IsRunning)
+                    {
+                        message += $"Do końca okresu ochronnego pozostało ${(HolidayWindowLength - holidayGracePeriodStopwatch.Elapsed).Humanize()}";
+                    }
+                    return message;
                 }
 
                 if(e.Message.Text.ToLower() == "wakacje")
