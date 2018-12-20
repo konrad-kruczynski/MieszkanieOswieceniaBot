@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -553,6 +554,18 @@ namespace MieszkanieOswieceniaBot
                 relayController.SetState(3, DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
                 return;
             }
+            if(holidayGracePeriodStopwatch == null)
+            {
+                holidayGracePeriodStopwatch = new Stopwatch();
+                holidayGracePeriodStopwatch.Start();
+            }
+            if(holidayGracePeriodStopwatch.IsRunning && holidayGracePeriodStopwatch.Elapsed < HolidayWindowLength)
+            {
+                relayController.SetState(3, true);
+                return;
+            }
+            holidayGracePeriodStopwatch.Stop();
+
             var database = Database.Instance;
             var timeOfDay = DateTime.Now.TimeOfDay;
             relayController.SetState(3, timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
@@ -591,13 +604,14 @@ namespace MieszkanieOswieceniaBot
         private DateTime lastSpeakerHeartbeat;
         private DateTime startDate;
         private bool autoScenarioEnabled;
+        private Stopwatch holidayGracePeriodStopwatch;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly RelayController relayController;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
         private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
-        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(15);
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
 
