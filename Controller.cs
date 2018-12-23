@@ -477,6 +477,21 @@ namespace MieszkanieOswieceniaBot
                 return "Wykonano.";
             }
 
+            if(text == "miganie specjalne")
+            {
+                var random = new Random();
+                var state = relayController.GetStateArray();
+                for(var i = 0; i < 30; i++)
+                {
+                    relayController.SetState(3, true);
+                    await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
+                    relayController.SetState(3, false);
+                    await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
+                }
+                relayController.SetStateFromArray(state);
+                return "Wykonano.";
+            }
+
             if(text == "bitcoin")
             {
                 const string currencyFile = "currency.txt";
