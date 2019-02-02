@@ -46,8 +46,18 @@ namespace MieszkanieOswieceniaBot
                       .Subscribe(_ => RefreshSpeakerState());
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
-            Observable.Interval(TimeSpan.FromMinutes(3)).ObserveOn(SynchronizationContext.Current)
+            Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => HandleAutoScenarioTimer());
+            var random = new Random();
+            Observable.Interval(TimeSpan.FromHours(24)).ObserveOn(SynchronizationContext.Current)
+                .Subscribe(_ =>
+                {
+                    for(var i = 0; i < AutoScenario.Length; i++)
+                    {
+                        AutoScenario[i].Item1 += TimeSpan.FromMinutes(random.Next(-5, 6));
+                    }
+
+                });
         }
 
         private void HandleUdp(UdpReceiveResult result)
