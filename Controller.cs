@@ -654,7 +654,7 @@ namespace MieszkanieOswieceniaBot
         private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
         private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(15);
 
-        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 
         private static readonly HashSet<int>[] Scenarios = new HashSet<int>[]
         {
