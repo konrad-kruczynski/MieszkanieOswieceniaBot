@@ -432,7 +432,7 @@ namespace MieszkanieOswieceniaBot
         private async Task MakePhoto(long chatId)
         {
             var command = Command.Run("fswebcam", "-D", "1", "-S", "5",
-                "-F", "15", "--no-banner", "-R", "-r", "640x480", "camera.jpg");
+                "-F", "15", "-R", "-r", "640x480", "camera.jpg");
             var result = await command.Task;
             if(result.ExitCode == 0)
             {
