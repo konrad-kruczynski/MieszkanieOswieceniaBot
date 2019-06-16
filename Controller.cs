@@ -436,8 +436,11 @@ namespace MieszkanieOswieceniaBot
             var result = await command.Task;
             if(result.ExitCode == 0)
             {
-                var photo = new Telegram.Bot.Types.FileToSend("photo", File.OpenRead("camera.jpg"));
-                await bot.SendPhotoAsync(chatId, photo);
+                using(var photoStream = File.OpenRead("camera.jpg"))
+                {
+                    var photo = new Telegram.Bot.Types.FileToSend("photo", File.OpenRead("camera.jpg"));
+                    await bot.SendPhotoAsync(chatId, photo);
+                }
             }
             else
             {
