@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Flurl.Http;
 using Humanizer;
 using Humanizer.Bytes;
+using Medallion.Shell;
 using Telegram.Bot;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -278,6 +279,12 @@ namespace MieszkanieOswieceniaBot
                     return message;
                 }
 
+                if(e.Message.Text.ToLower() == "zdjęcie")
+                {
+                    MakePhoto(e.Message.Chat.Id).Wait();
+                    return;
+                }
+
                 if(e.Message.Text.ToLower() == "wakacje")
                 {
                     var database = Database.Instance;
@@ -420,6 +427,23 @@ namespace MieszkanieOswieceniaBot
             bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id,
                                      $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.").Wait();
             bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.").Wait();
+        }
+
+        private async Task MakePhoto(long chatId)
+        {
+            var command = Command.Run("fswebcam", "-D", "1", "-S", "5",
+                "-F", "17", "--no-banner", "-r", "640x480", "camera.jpg");
+            var result = await command.Task;
+            if(result.ExitCode == 0)
+            {
+                var photo = new Telegram.Bot.Types.FileToSend("photo", File.OpenRead("camera.jpg"));
+                await bot.SendPhotoAsync(chatId, photo);
+            }
+            else
+            {
+                var output = command.GetOutputAndErrorLines().Aggregate((x, y) => x + Environment.NewLine + y);
+                await bot.SendTextMessageAsync(chatId, "Error during taking image." + Environment.NewLine + output);
+            }
         }
 
         private async Task<string> HandleTextCommand(Telegram.Bot.Types.Message message)

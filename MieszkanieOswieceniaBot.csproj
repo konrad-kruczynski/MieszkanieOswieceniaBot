@@ -96,6 +96,12 @@
     <Reference Include="Migrant">
       <HintPath>packages\Migrant.0.13\lib\net40\Migrant.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation">
+      <HintPath>packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="MedallionShell">
+      <HintPath>packages\MedallionShell.1.6.0\lib\net46\MedallionShell.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Charter.cs" />
