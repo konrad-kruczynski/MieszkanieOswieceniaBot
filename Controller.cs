@@ -441,6 +441,7 @@ namespace MieszkanieOswieceniaBot
                     var photo = new Telegram.Bot.Types.FileToSend("photo", File.OpenRead("camera.jpg"));
                     await bot.SendPhotoAsync(chatId, photo);
                 }
+                File.Delete("camera.jpg");
             }
             else
             {
