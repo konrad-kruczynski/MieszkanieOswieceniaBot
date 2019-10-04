@@ -540,9 +540,9 @@ namespace MieszkanieOswieceniaBot
                 var btcData = "https://api.bitbay.net/rest/trading/stats/BTC-PLN".GetJsonAsync().Result;
                 var ltcData = "https://api.bitbay.net/rest/trading/stats/LTC-PLN".GetJsonAsync().Result;
                 var currencyFileLines = File.ReadAllLines(currencyFile);
-                var btcValue = decimal.Parse(btcData.l) * decimal.Parse(currencyFileLines[0]);
+                var btcValue = decimal.Parse(btcData.stats.l) * decimal.Parse(currencyFileLines[0]);
                 var originalBtcValue = decimal.Parse(currencyFileLines[1]);
-                var ltcValue = decimal.Parse(ltcData.l) * decimal.Parse(currencyFileLines[2]);
+                var ltcValue = decimal.Parse(ltcData.stats.l) * decimal.Parse(currencyFileLines[2]);
                 var originalLtcValue = decimal.Parse(currencyFileLines[3]);
                 return string.Format("Bitcoin: {0:0.00}PLN ({1:0.#}x)\nLitecoin: {2:0.00}PLN ({3:0.#}x)\nRazem: {4:0.00}PLN  ({5:0.#}x)",
                                      btcValue, btcValue / originalBtcValue, ltcValue, ltcValue / originalLtcValue,
