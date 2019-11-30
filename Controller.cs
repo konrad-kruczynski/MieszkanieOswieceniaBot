@@ -560,7 +560,7 @@ namespace MieszkanieOswieceniaBot
                 return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
-            if(text == "potok")
+            if(text == "różany")
             {
                 Database.Instance.AddHouseCooperativeChatId(message.Chat.Id);
                 return "Dodano";
@@ -647,7 +647,17 @@ namespace MieszkanieOswieceniaBot
 
         private void CheckHousingCooperativeNews()
         {
-            // PROMPT
+            var rosyCreekClient = new RosyCreekClient();
+            if(!rosyCreekClient.TryGetNews(out var message))
+            {
+                return;
+            }
+
+            var chatIds = Database.Instance.GetHouseCooperativeChatIds();
+            foreach(var chatId in chatIds)
+            {
+                bot.SendTextMessageAsync(chatId, message);
+            }
         }
 
         private void WriteTemperatureToDatabase()

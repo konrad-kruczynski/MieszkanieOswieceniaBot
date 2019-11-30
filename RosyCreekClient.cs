@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot
     {
         public bool TryGetNews(out string message)
         {
-            message = default;
+            message = null;
 
             var pageAsString = NewsUrl.GetStringAsync().GetAwaiter().GetResult();
             var page = new HtmlDocument();
