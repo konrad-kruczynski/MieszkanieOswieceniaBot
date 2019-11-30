@@ -665,7 +665,7 @@ namespace MieszkanieOswieceniaBot
             {
                 bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
                     Telegram.Bot.Types.Enums.ParseMode.Markdown);
-                bot.SendTextMessageAsync(chatId, message, Telegram.Bot.Types.Enums.ParseMode.Html);
+                bot.SendTextMessageAsync(chatId, message);
             }
         }
 
