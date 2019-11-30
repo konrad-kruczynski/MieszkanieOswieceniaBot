@@ -29,7 +29,7 @@ namespace MieszkanieOswieceniaBot
                 return false;
             }
 
-            message = RemoveConsecutiveSpacesAndNewlines(newestNewsDiv.InnerText);
+            message = newestNewsDiv.InnerHtml;
 
             return true;
         }

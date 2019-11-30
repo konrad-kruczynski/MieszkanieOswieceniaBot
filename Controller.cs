@@ -55,10 +55,12 @@ namespace MieszkanieOswieceniaBot
                 {
                     for(var i = 0; i < AutoScenario.Length; i++)
                     {
-                        AutoScenario[i].Item1 += TimeSpan.FromMinutes(random.Next(-5, 6));
+                        AutoScenario[i].Item1 += TimeSpan.FromMinutes(random.Next(-10, 11));
                     }
 
                 });
+            Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
+                .Subscribe(_ => CheckHousingCooperativeNews());
         }
 
         private void HandleUdp(UdpReceiveResult result)
@@ -566,6 +568,11 @@ namespace MieszkanieOswieceniaBot
                 return "Dodano";
             }
 
+            if(text == "reset różanego")
+            {
+                Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
@@ -656,7 +663,9 @@ namespace MieszkanieOswieceniaBot
             var chatIds = Database.Instance.GetHouseCooperativeChatIds();
             foreach(var chatId in chatIds)
             {
-                bot.SendTextMessageAsync(chatId, message);
+                bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
+                    Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                bot.SendTextMessageAsync(chatId, message, Telegram.Bot.Types.Enums.ParseMode.Html);
             }
         }
 
