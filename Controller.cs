@@ -560,7 +560,7 @@ namespace MieszkanieOswieceniaBot
                 return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
-            if(text == "różany")
+            if(text == "potok")
             {
                 Database.Instance.AddHouseCooperativeChatId(message.Chat.Id);
                 return "Dodano";
