@@ -59,7 +59,7 @@ namespace MieszkanieOswieceniaBot
                     }
 
                 });
-            Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
+            Observable.Interval(TimeSpan.FromHours(8)).ObserveOn(SynchronizationContext.Current)
                 .Subscribe(_ => CheckHousingCooperativeNews());
         }
 
@@ -571,6 +571,7 @@ namespace MieszkanieOswieceniaBot
             if(text == "reset różanego")
             {
                 Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
+                return "Zresetowano";
             }
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
