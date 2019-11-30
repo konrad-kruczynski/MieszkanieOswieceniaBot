@@ -31,6 +31,9 @@ namespace MieszkanieOswieceniaBot
 
             message = RemoveConsecutiveSpacesAndNewlines(newestNewsDiv.InnerText);
 
+            database.NewestKnownRosyCreekNewsDate = date;
+            database.NewestKnownRosyCreekNewsHeader = header;
+
             return true;
         }
 
