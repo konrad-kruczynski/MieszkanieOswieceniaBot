@@ -25,6 +25,8 @@ namespace MieszkanieOswieceniaBot
             serializer = new Serializer(new Antmicro.Migrant.Customization.Settings(disableTypeStamping: true));
             holidayMode = new CachedKeyValue<bool>(this, "holidayMode");
             holidayModeStartedAt = new CachedKeyValue<TimeSpan>(this, "holidayModeStartedAt");
+            newestKnownRosyCreekHeader = new CachedKeyValue<string>(this, "newestRosyCreekHeader");
+            newestKnownRosyCreekNewsDate = new CachedKeyValue<DateTime>(this, "newestRosyCreekNewsDate");
         }
 
         public void AddSample<T>(T sample) where T : ISample<T>
@@ -147,6 +149,37 @@ namespace MieszkanieOswieceniaBot
             set => holidayModeStartedAt.Value = value;
         }
 
+        public DateTime NewestKnownRosyCreekNewsDate
+        {
+            get => newestKnownRosyCreekNewsDate.Value;
+            set => newestKnownRosyCreekNewsDate.Value = value;
+        }
+
+        public string NewestKnownRosyCreekNewsHeader
+        {
+            get => newestKnownRosyCreekHeader.Value;
+            set => newestKnownRosyCreekHeader.Value = value;
+        }
+
+        public void AddHouseCooperativeChatId(long chatId)
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var collection = database.GetCollection<DatabaseChatId>(ChatIdColectionName);
+                collection.Upsert(new DatabaseChatId { Id = chatId });
+            }
+        }
+
+        public IEnumerable<long> GetHouseCooperativeChatIds()
+        {
+            using(var database = new LiteDatabase(DatabaseFileName))
+            {
+                var collection = database.GetCollection<DatabaseChatId>(ChatIdColectionName);
+                var result = collection.FindAll().Select(x => x.Id);
+                return result;
+            }
+        }
+
         private T GetValueByKey<T>(string key)
         {
             using(var database = new LiteDatabase(DatabaseFileName))
@@ -197,11 +230,14 @@ namespace MieszkanieOswieceniaBot
         private readonly Serializer serializer;
         private readonly CachedKeyValue<bool> holidayMode;
         private readonly CachedKeyValue<TimeSpan> holidayModeStartedAt;
+        private readonly CachedKeyValue<DateTime> newestKnownRosyCreekNewsDate;
+        private readonly CachedKeyValue<string> newestKnownRosyCreekHeader;
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";
         private const string StateCollectionName = "stany";
         private const string KeyValueCollectionName = "keyval";
+        private const string ChatIdColectionName = "hcChatIds";
 
         private class CachedKeyValue<T>
         {

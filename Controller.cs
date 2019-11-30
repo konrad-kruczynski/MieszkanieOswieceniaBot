@@ -560,6 +560,12 @@ namespace MieszkanieOswieceniaBot
                 return string.Format("Temperatura wynosi {0:##.#}°C.", temperature);
             }
 
+            if(text == "różany")
+            {
+                Database.Instance.AddHouseCooperativeChatId(message.Chat.Id);
+                return "Dodano";
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
@@ -634,10 +640,14 @@ namespace MieszkanieOswieceniaBot
                 return;
             }
             holidayGracePeriodStopwatch.Stop();
-
             var database = Database.Instance;
             var timeOfDay = DateTime.Now.TimeOfDay;
             relayController.SetState(3, timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
+        }
+
+        private void CheckHousingCooperativeNews()
+        {
+            // PROMPT
         }
 
         private void WriteTemperatureToDatabase()
