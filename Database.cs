@@ -27,6 +27,7 @@ namespace MieszkanieOswieceniaBot
             holidayModeStartedAt = new CachedKeyValue<TimeSpan>(this, "holidayModeStartedAt");
             newestKnownRosyCreekHeader = new CachedKeyValue<string>(this, "newestRosyCreekHeader");
             newestKnownRosyCreekNewsDate = new CachedKeyValue<DateTime>(this, "newestRosyCreekNewsDate");
+            newestRosyCreekShortNews = new CachedKeyValue<string>(this, "newestRosyCreekShortNews");
         }
 
         public void AddSample<T>(T sample) where T : ISample<T>
@@ -161,6 +162,12 @@ namespace MieszkanieOswieceniaBot
             set => newestKnownRosyCreekHeader.Value = value;
         }
 
+        public string NewestRosyCreekShortNews
+        {
+            get => newestRosyCreekShortNews.Value;
+            set => newestRosyCreekShortNews.Value = value;
+        }
+
         public void AddHouseCooperativeChatId(long chatId)
         {
             using(var database = new LiteDatabase(DatabaseFileName))
@@ -232,6 +239,7 @@ namespace MieszkanieOswieceniaBot
         private readonly CachedKeyValue<TimeSpan> holidayModeStartedAt;
         private readonly CachedKeyValue<DateTime> newestKnownRosyCreekNewsDate;
         private readonly CachedKeyValue<string> newestKnownRosyCreekHeader;
+        private readonly CachedKeyValue<string> newestRosyCreekShortNews;
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";

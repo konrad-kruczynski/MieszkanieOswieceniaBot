@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot
     {
         public bool TryGetNews(out string message)
         {
-            message = null;
+            message = string.Empty;
 
             var pageAsString = NewsUrl.GetStringAsync().GetAwaiter().GetResult();
             var page = new HtmlDocument();
@@ -23,16 +23,32 @@ namespace MieszkanieOswieceniaBot
             var date = DateTime.ParseExact(dateAsString, "dd-MM-yyyy", CultureInfo.InvariantCulture);
             var header = newestNewsDiv.SelectSingleNode(@"//h3").InnerText;
 
+            var shortNewsList = page.DocumentNode.Descendants().First(x => x.Name == "ul" && x.HasClass("short_news_list"));
+            var newestShortNews = RemoveConsecutiveSpacesAndNewlines(shortNewsList.ChildNodes.First(x => x.Name == "li").InnerText);
+
             var database = Database.Instance;
-            if(date == database.NewestKnownRosyCreekNewsDate && header == database.NewestKnownRosyCreekNewsHeader)
+
+            if(date != database.NewestKnownRosyCreekNewsDate
+                || header != database.NewestKnownRosyCreekNewsHeader)
+            {
+                message += RemoveConsecutiveSpacesAndNewlines(newestNewsDiv.InnerText);
+            }
+
+            if(newestShortNews != database.NewestRosyCreekShortNews)
+            {
+                message +=
+                    (message != string.Empty ? Environment.NewLine : string.Empty)
+                    + newestShortNews;
+            }
+
+            if(message == string.Empty)
             {
                 return false;
             }
 
-            message = RemoveConsecutiveSpacesAndNewlines(newestNewsDiv.InnerText);
-
             database.NewestKnownRosyCreekNewsDate = date;
             database.NewestKnownRosyCreekNewsHeader = header;
+            database.NewestRosyCreekShortNews = newestShortNews;
 
             return true;
         }
