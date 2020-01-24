@@ -12,6 +12,7 @@ namespace MieszkanieOswieceniaBot
     {
         public bool TryGetNews(out string message)
         {
+
             message = string.Empty;
 
             var pageAsString = NewsUrl.GetStringAsync().GetAwaiter().GetResult();
@@ -23,11 +24,19 @@ namespace MieszkanieOswieceniaBot
             var date = DateTime.ParseExact(dateAsString, "dd-MM-yyyy", CultureInfo.InvariantCulture);
             var header = newestNewsDiv.SelectSingleNode(@"//h3").InnerText;
 
-            var shortNewsList = page.DocumentNode.Descendants().First(x => x.Name == "ul" && x.HasClass("short_news_list"));
-            var newestShortNews = RemoveConsecutiveSpacesAndNewlines(shortNewsList.ChildNodes.First(x => x.Name == "li").InnerText);
-
             var database = Database.Instance;
 
+            string newestShortNews;
+            var shortNewsList = page.DocumentNode.Descendants().FirstOrDefault(x => x.Name == "ul" && x.HasClass("short_news_list"));
+            if(shortNewsList == null)
+            {
+                newestShortNews = database.NewestRosyCreekShortNews;
+            }
+            else
+            {
+                newestShortNews = RemoveConsecutiveSpacesAndNewlines(shortNewsList.ChildNodes.First(x => x.Name == "li").InnerText);
+            }
+            
             if(date != database.NewestKnownRosyCreekNewsDate
                 || header != database.NewestKnownRosyCreekNewsHeader)
             {
