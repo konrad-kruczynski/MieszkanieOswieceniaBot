@@ -30,7 +30,18 @@ namespace MieszkanieOswieceniaBot
             pekaClients = new Dictionary<string, PekaClient>();
             lastSpeakerHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
             authorizer = new Authorizer();
-            bot.OnMessage += HandleMessage;
+            bot.OnMessage += (o, e) =>
+            {
+                try
+                {
+                    HandleMessage(o, e);
+                }
+                catch(Exception exception)
+                {
+                    CircularLogger.Instance.Log("Exception '{1}' during message handling: {0}\n{2}",
+                        e.Message.Text, exception.Message, exception.StackTrace);
+                }
+            };
             bot.OnCallbackQuery += HandleCallbackQuery;
             bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.ToString());
             bot.OnReceiveError += (sender, e) => HandleError(e.ApiRequestException.ToString());
