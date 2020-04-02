@@ -30,11 +30,11 @@ namespace MieszkanieOswieceniaBot
             pekaClients = new Dictionary<string, PekaClient>();
             lastSpeakerHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
             authorizer = new Authorizer();
-            bot.OnMessage += (o, e) =>
+            bot.OnMessage += async (o, e) =>
             {
                 try
                 {
-                    HandleMessage(o, e);
+                    await HandleMessage(o, e);
                 }
                 catch(Exception exception)
                 {
@@ -104,7 +104,7 @@ namespace MieszkanieOswieceniaBot
             Thread.Sleep(1000);
         }
 
-        private async void HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        private async Task HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
             stats.IncrementMessageCounter();
             var userId = e.Message.From.Id;
