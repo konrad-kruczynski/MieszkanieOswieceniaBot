@@ -585,6 +585,46 @@ namespace MieszkanieOswieceniaBot
                 return "Zresetowano";
             }
 
+            if(text == "odpady")
+            {
+                var wasteEntries = new List<(string, DateTime)>();
+
+                using(var reader = new StreamReader("odpady.csv"))
+                {
+                    var row = reader.ReadLine().Split(';');
+                    var typesOfWaste = new string[row.Length];
+                    for(var i = 0; i < typesOfWaste.Length; i++)
+                    {
+                        typesOfWaste[i] = row[i];
+                    }
+
+                    for(var i = 1; i <= 12; i++)
+                    {
+                        row = reader.ReadLine().Split(';');
+                        for(var j = 0; j < typesOfWaste.Length; j++)
+                        {
+                            var days = row[j].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                            var wasteElements = days.Select(dayNo => (typesOfWaste[j], new DateTime(DateTime.Now.Year, i, int.Parse(dayNo))));
+                            wasteEntries.AddRange(wasteElements);
+                        }
+                    }
+                }
+
+                var wasteData = wasteEntries.GroupBy(x => x.Item1).ToDictionary(x => x.Key, x => x.Select(y => y.Item2).ToArray());
+
+                var result = new StringBuilder();
+                foreach(var waste in wasteData)
+                {
+                    var dates = waste.Value;
+                    var nearestInFuture = dates.Where(x => x > DateTime.Now).OrderBy(x => x - DateTime.Now).First();
+                    var nearestInPast = dates.Where(x => x <= DateTime.Now).OrderBy(x => DateTime.Now - x).First();
+                    result.AppendFormat("{0}: {1:ddd dd MMM} <-> {2:ddd dd MMM}", waste.Key, nearestInPast, nearestInFuture);
+                    result.AppendLine();
+                }
+
+                return result.ToString();
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
