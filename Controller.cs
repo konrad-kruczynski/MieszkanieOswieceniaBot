@@ -504,6 +504,35 @@ namespace MieszkanieOswieceniaBot
                                      lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
 
+            if(text.StartsWith("grzanie"))
+            {
+                string targetIp;
+                if (text == "grzanie kot")
+                {
+                    targetIp = "31";
+                }
+                else if (text == "grzanie kocica")
+                {
+                    targetIp = "32";
+                }
+                else
+                {
+                    return "Niepoprawna informacja kogo grzać";
+                }
+
+                var url = string.Format(@"http://192.168.71.{0}/cm?cmnd=Power%20Toggle", targetIp);
+                var result = url.GetJsonAsync().GetAwaiter().GetResult();
+                switch ((string)result.POWER)
+                {
+                    case "ON":
+                        return "Grzanie włączono";
+                    case "OFF":
+                        return "Grzanie wyłączono";
+                    default:
+                        return string.Format("Błąd: {0}", result.ToString());
+                }
+            }
+
             if(text == "czas")
             {
                 return DateTime.Now.ToString();
