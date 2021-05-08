@@ -522,7 +522,7 @@ namespace MieszkanieOswieceniaBot
                         return value ? "właczone" : "wyłączone";
                     }
 
-                    var friendlyStatuses = statuses.Select(x => BoolToString(x.Value)).ToArray();
+                    var friendlyStatuses = statuses.Select(x => BoolToString(x)).ToArray();
 
                     return string.Format("Kot: {0}{1}Kocica: {2}", friendlyStatuses[0], Environment.NewLine, friendlyStatuses[1]);
                 }
