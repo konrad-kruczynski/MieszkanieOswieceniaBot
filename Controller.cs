@@ -507,11 +507,30 @@ namespace MieszkanieOswieceniaBot
             if(text.StartsWith("grzanie"))
             {
                 string targetIp;
-                if (text == "grzanie kot")
+                if(text == "grzanie")
+                {
+                    var urlTemplate = @"http://192.168.71.{0}/cm?cmnd=Power";
+                    var urls = new[] { "31", "32" }.Select(x => string.Format(urlTemplate, x));
+                    var statuses = urls.Select(x => PowerStateToNBool(x.GetJsonAsync().GetAwaiter().GetResult())).ToArray();
+                    if (statuses.Any(x => x == null))
+                    {
+                        return "Błąd podczas pobierania stanu grzania";
+                    }
+
+                    string BoolToString(bool value)
+                    {
+                        return value ? "właczone" : "wyłączone";
+                    }
+
+                    var friendlyStatuses = statuses.Select(x => BoolToString(x.Value)).ToArray();
+
+                    return string.Format("Kot: {0}{1}Kocica: {2}", friendlyStatuses[0], Environment.NewLine, friendlyStatuses[1]);
+                }
+                else if(text == "grzanie kot")
                 {
                     targetIp = "31";
                 }
-                else if (text == "grzanie kocica")
+                else if(text == "grzanie kocica")
                 {
                     targetIp = "32";
                 }
@@ -522,14 +541,14 @@ namespace MieszkanieOswieceniaBot
 
                 var url = string.Format(@"http://192.168.71.{0}/cm?cmnd=Power%20Toggle", targetIp);
                 var result = url.GetJsonAsync().GetAwaiter().GetResult();
-                switch ((string)result.POWER)
+                switch(PowerStateToNBool(result))
                 {
-                    case "ON":
+                    case true:
                         return "Grzanie włączono";
-                    case "OFF":
+                    case false:
                         return "Grzanie wyłączono";
-                    default:
-                        return string.Format("Błąd: {0}", result.ToString());
+                    case null:
+                        return string.Format("Błąd: {0}", result);
                 }
             }
 
@@ -656,6 +675,19 @@ namespace MieszkanieOswieceniaBot
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
+        }
+
+        private static bool? PowerStateToNBool(dynamic result)
+        {
+            switch((string)result.POWER)
+            {
+                case "ON":
+                    return true;
+                case "OFF":
+                    return false;
+                default:
+                    return null;
+            }
         }
 
         private static bool TryGetTemperature(out decimal temperature, out string rawData)
