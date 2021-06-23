@@ -172,25 +172,31 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "wykres7")
                 {
-                    CreateChart(TimeSpan.FromDays(7), chatId, "ddd HH:mm");
+                    CreateChart(TimeSpan.FromDays(7), chatId, "ddd HH:mm", false);
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "wykres24")
                 {
-                    CreateChart(TimeSpan.FromDays(1), chatId, "HH:mm");
+                    CreateChart(TimeSpan.FromDays(1), chatId, "HH:mm", false);
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "wykres48")
                 {
-                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm");
+                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", false);
                     return;
                 }
 
                 if(e.Message.Text.ToLower() == "wykres30")
                 {
-                    CreateChart(TimeSpan.FromDays(30), chatId, "dd");
+                    CreateChart(TimeSpan.FromDays(30), chatId, "dd", false);
+                    return;
+                }
+
+                if (e.Message.Text.ToLower() == "wykres48-2")
+                {
+                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", true);
                     return;
                 }
 
@@ -358,11 +364,11 @@ namespace MieszkanieOswieceniaBot
             return;
         }
 
-        private void CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat)
+        private void CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat, bool oneDay)
         {
             var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
             var charter = new Charter(dateTimeFormat);
-            var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now,
+            var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
                                                step =>
                                                {
                                                    switch(step)

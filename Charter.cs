@@ -15,7 +15,7 @@ namespace MieszkanieOswieceniaBot
             this.dateTimeFormat = dateTimeFormat;
         }
 
-        public string PrepareChart(DateTime startDate, DateTime endDate, Action<Step> stepHandler = null,
+        public string PrepareChart(DateTime startDate, DateTime endDate, bool oneDay, Action<Step> stepHandler = null,
                                    Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
@@ -25,16 +25,31 @@ namespace MieszkanieOswieceniaBot
             stepHandler(Step.CreatingPlot);
             var plotModel = new PlotModel { Title = "Temperatura" };
             plotModel.Background = OxyColors.White;
-            plotModel.Axes.Add(new DateTimeAxis()
+
+            if(oneDay)
             {
-                Position = AxisPosition.Bottom,
-                MajorGridlineStyle = LineStyle.Solid,
-                Minimum = DateTimeAxis.ToDouble(startDate),
-                Maximum = DateTimeAxis.ToDouble(endDate),
-                MaximumPadding = 0,
-                MinimumPadding = 0,
-                StringFormat = dateTimeFormat
-            });
+                plotModel.Axes.Add(new TimeSpanAxis()
+                {
+                    Position = AxisPosition.Bottom,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MaximumPadding = 0,
+                    MinimumPadding = 0,
+                });
+            }
+            else
+            {
+                plotModel.Axes.Add(new DateTimeAxis()
+                {
+                    Position = AxisPosition.Bottom,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    Minimum = DateTimeAxis.ToDouble(startDate),
+                    Maximum = DateTimeAxis.ToDouble(endDate),
+                    MaximumPadding = 0,
+                    MinimumPadding = 0,
+                    StringFormat = dateTimeFormat
+                });
+            }
+
             plotModel.Axes.Add(new LinearAxis()
             {
                 Position = AxisPosition.Left,
@@ -43,12 +58,32 @@ namespace MieszkanieOswieceniaBot
                 Maximum = 33
             });
 
-            var serie = new LineSeries();
-            foreach(var sample in samples)
+            if (oneDay)
             {
-                serie.Points.Add(new DataPoint(DateTimeAxis.ToDouble(sample.Date), Convert.ToDouble(sample.Temperature)));
+                var numberOfDays = (int)Math.Round((endDate - startDate).TotalDays);
+                for (var i = 0; i < numberOfDays; i++)
+                {
+                    var serie = new LineSeries();
+                    var dayStart = startDate + TimeSpan.FromDays(i);
+                    var dayEnd = dayStart + TimeSpan.FromDays(1);
+                    serie.Title = dayStart.ToString("d");
+                    var samplesThatDay = samples.Where(x => x.Date < dayEnd && x.Date >= dayStart);
+
+                    foreach(var sample in samplesThatDay)
+                    {
+                        serie.Points.Add(new DataPoint(TimeSpanAxis.ToDouble(sample.Date.TimeOfDay), Convert.ToDouble(sample.Temperature)));
+                    }
+                }
             }
-            plotModel.Series.Add(serie);
+            else
+            {
+                var serie = new LineSeries();
+                foreach(var sample in samples)
+                {
+                    serie.Points.Add(new DataPoint(DateTimeAxis.ToDouble(sample.Date), Convert.ToDouble(sample.Temperature)));
+                }
+                plotModel.Series.Add(serie);
+            }
 
             var svgFile = "chart.svg";
             var pngFile = "chart.png";
