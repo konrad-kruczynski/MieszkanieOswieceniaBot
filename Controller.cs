@@ -200,6 +200,12 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "wykres7-2")
+                {
+                    CreateChart(TimeSpan.FromDays(7), chatId, "HH:mm", true);
+                    return;
+                }
+
                 if(e.Message.Text.ToLower() == "histogram0")
                 {
                     CreateHistogram(chatId, new[] { 0 });

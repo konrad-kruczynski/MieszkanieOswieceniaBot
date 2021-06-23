@@ -32,6 +32,8 @@ namespace MieszkanieOswieceniaBot
                 {
                     Position = AxisPosition.Bottom,
                     MajorGridlineStyle = LineStyle.Solid,
+                    Minimum = TimeSpanAxis.ToDouble(TimeSpan.Zero),
+                    Maximum = TimeSpanAxis.ToDouble(TimeSpan.FromDays(1)),
                     MaximumPadding = 0,
                     MinimumPadding = 0,
                 });
