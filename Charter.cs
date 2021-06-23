@@ -66,7 +66,7 @@ namespace MieszkanieOswieceniaBot
                 for (var i = 0; i < numberOfDays; i++)
                 {
                     var serie = new LineSeries();
-                    var dayStart = startDate.Date;
+                    var dayStart = startDate.Date + TimeSpan.FromDays(i);
                     var dayEnd = dayStart + TimeSpan.FromDays(1);
                     serie.Title = dayStart.ToString("d");
                     var samplesThatDay = samples.Where(x => x.Date < dayEnd && x.Date >= dayStart);
