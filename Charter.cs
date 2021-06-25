@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OxyPlot;
@@ -19,6 +21,7 @@ namespace MieszkanieOswieceniaBot
                                    Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
+
             var samples = Database.Instance.GetSamples<TemperatureSample>(startDate, endDate);
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
@@ -32,10 +35,11 @@ namespace MieszkanieOswieceniaBot
                 {
                     Position = AxisPosition.Bottom,
                     MajorGridlineStyle = LineStyle.Solid,
-                    Minimum = TimeSpanAxis.ToDouble(TimeSpan.Zero),
-                    Maximum = TimeSpanAxis.ToDouble(TimeSpan.FromDays(1)),
+                    Minimum = TimeSpanAxis.ToDouble(startDate.TimeOfDay),
+                    Maximum = TimeSpanAxis.ToDouble(startDate.TimeOfDay + TimeSpan.FromDays(1)),
                     MaximumPadding = 0,
                     MinimumPadding = 0,
+                    StringFormat = @"hh:mm"
                 });
             }
             else
@@ -66,15 +70,18 @@ namespace MieszkanieOswieceniaBot
                 for (var i = 0; i < numberOfDays; i++)
                 {
                     var serie = new LineSeries();
-                    var dayStart = startDate.Date + TimeSpan.FromDays(i);
+                    var dayStart = startDate + TimeSpan.FromDays(i);
                     var dayEnd = dayStart + TimeSpan.FromDays(1);
-                    serie.Title = dayStart.ToString("d");
-                    var samplesThatDay = samples.Where(x => x.Date < dayEnd && x.Date >= dayStart);
+                    serie.Title = dayStart.ToString("dd.MM");
+                    var samplesThatDay = samples.Where(x => x.Date < dayEnd && x.Date >= dayStart).OrderBy(x => x.Date);
 
                     foreach(var sample in samplesThatDay)
                     {
-                        serie.Points.Add(new DataPoint(TimeSpanAxis.ToDouble(sample.Date.TimeOfDay), Convert.ToDouble(sample.Temperature)));
+                        var adjustedTimeSpan = sample.Date - TimeSpan.FromDays(i) - startDate + startDate.TimeOfDay;
+                        serie.Points.Add(new DataPoint(TimeSpanAxis.ToDouble(adjustedTimeSpan), Convert.ToDouble(sample.Temperature)));
                     }
+
+                    plotModel.Series.Add(serie);
                 }
             }
             else
@@ -84,6 +91,7 @@ namespace MieszkanieOswieceniaBot
                 {
                     serie.Points.Add(new DataPoint(DateTimeAxis.ToDouble(sample.Date), Convert.ToDouble(sample.Temperature)));
                 }
+
                 plotModel.Series.Add(serie);
             }
 
