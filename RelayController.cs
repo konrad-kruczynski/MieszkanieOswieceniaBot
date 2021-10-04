@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -37,6 +38,13 @@ namespace MieszkanieOswieceniaBot
 
         public void SetState(int relayNo, bool state)
         {
+            if (relayNo == 3)
+            {
+                var stateAsText = state ? "on" : "off";
+                $"http://192.168.71.33/relay/0?turn={stateAsText}".GetAsync().GetAwaiter().GetResult();
+                return;
+            }
+
             if(state == relayStateCache[relayNo])
             {
                 return;
