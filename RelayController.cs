@@ -38,7 +38,7 @@ namespace MieszkanieOswieceniaBot
 
         public void SetState(int relayNo, bool state)
         {
-            if (relayNo == 3)
+            if (relayNo == 2)
             {
                 var stateAsText = state ? "on" : "off";
                 $"http://192.168.71.33/relay/0?turn={stateAsText}".GetAsync().GetAwaiter().GetResult();
