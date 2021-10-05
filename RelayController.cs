@@ -110,10 +110,11 @@ namespace MieszkanieOswieceniaBot
 
         private static readonly Dictionary<int, int> LogicalToPhysicalRelayNo = new Dictionary<int, int>
         {
-            { 0, 1 },
-            { 1, 2 },
-            { 2, 0 },
-            { 3, 3 }
+            // W komentarzu fizyczne podłączenia
+            { 0, 2 }, // 1 = pusty
+            { 1, 3 }, // 2 = doniczka
+            { 2, 1 }, // 3 = lampa stojąca
+            { 3, 0 }  // 0 = głośniki
         };
     }
 }
