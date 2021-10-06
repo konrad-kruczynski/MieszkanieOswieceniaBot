@@ -639,6 +639,12 @@ namespace MieszkanieOswieceniaBot
                 return "Dodano";
             }
 
+            if(text == "z")
+            {
+                "http://192.168.71.34/relay/0?turn=toggle".GetAsync().GetAwaiter().GetResult();
+                return "Przełączono";
+            }
+
             if(text == "reset różanego")
             {
                 Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
