@@ -63,7 +63,9 @@ namespace MieszkanieOswieceniaBot
 
         public bool[] GetStateArray()
         {
-            return relayStateCache.ToArray();
+            var result = relayStateCache.ToArray();
+            result[2] = GetState(2);
+            return result;
         }
 
         public void SetStateFromArray(bool[] state)
