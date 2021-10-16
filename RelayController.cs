@@ -33,6 +33,12 @@ namespace MieszkanieOswieceniaBot
 
         public bool GetState(int relayNo)
         {
+            if (relayNo == 2)
+            {
+                var jsonState = "http://192.168.71.33/relay/0".GetJsonAsync().GetAwaiter().GetResult();
+                return jsonState.ison;
+            }
+
             return relayStateCache[relayNo];
         }
 
