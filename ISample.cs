@@ -7,5 +7,6 @@ namespace MieszkanieOswieceniaBot
         DateTime Date { get; }
         int Id { get; }
         bool CanSampleBeSquashed(T t);
+        bool IsSampleComparable(T t);
     }
 }

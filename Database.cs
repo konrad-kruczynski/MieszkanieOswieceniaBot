@@ -30,34 +30,15 @@ namespace MieszkanieOswieceniaBot
             newestRosyCreekShortNews = new CachedKeyValue<string>(this, "newestRosyCreekShortNews");
         }
 
-        public void AddSample(RelaySample sample)
-        {
-            var lastSample = samplesCache.OfType<RelaySample>().SingleOrDefault(x => x.RelayId == sample.RelayId);
-            if (lastSample != null && lastSample.CanSampleBeSquashed(sample))
-            {
-                return;
-            }
-
-            samplesCache.Remove(lastSample);
-            samplesCache.Add(sample);
-
-            using(var database = new LiteDatabase(DatabaseFileName))
-            {
-                var samples = database.GetCollection<RelaySample>(CollectionNameOfType<RelaySample>());
-                samples.Insert(sample);
-                samples.EnsureIndex(x => x.Date);
-            }
-        }
-
         public void AddSample<T>(T sample) where T : ISample<T>
         {
-            var lastSample = samplesCache.OfType<T>().SingleOrDefault();
-            if(lastSample != null && lastSample.CanSampleBeSquashed(sample))
+            var lastComparableSample = samplesCache.OfType<T>().SingleOrDefault(x => x.IsSampleComparable(sample));
+            if(lastComparableSample != null && lastComparableSample.CanSampleBeSquashed(sample))
             {
                 return;
             }
 
-            samplesCache.Remove(lastSample);
+            samplesCache.Remove(lastComparableSample);
             samplesCache.Add(sample);
 
             using(var database = new LiteDatabase(DatabaseFileName))
