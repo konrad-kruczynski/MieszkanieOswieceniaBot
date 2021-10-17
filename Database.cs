@@ -32,7 +32,7 @@ namespace MieszkanieOswieceniaBot
 
         public void AddSample(RelaySample sample)
         {
-            var lastSample = samplesCache.OfType<RelaySample>().SingleOrDefault(x => x.RelayId == sample.Id);
+            var lastSample = samplesCache.OfType<RelaySample>().SingleOrDefault(x => x.RelayId == sample.RelayId);
             if (lastSample != null && lastSample.CanSampleBeSquashed(sample))
             {
                 return;
