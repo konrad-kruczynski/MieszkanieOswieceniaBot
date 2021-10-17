@@ -27,6 +27,11 @@ namespace MieszkanieOswieceniaBot.Relays
 
             set
             {
+                if (cachedState.HasValue && cachedState.Value == value)
+                {
+                    return;
+                }
+
                 cachedState = null;
                 WriteMessage(CommandBase + relayOffset + (value ? TurnOnOffset : TurnOffOffset));
             }
