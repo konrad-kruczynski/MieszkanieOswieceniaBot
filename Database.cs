@@ -37,8 +37,10 @@ namespace MieszkanieOswieceniaBot
             {
                 return;
             }
+
             samplesCache.Remove(lastSample);
             samplesCache.Add(sample);
+
             using(var database = new LiteDatabase(DatabaseFileName))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
@@ -222,9 +224,9 @@ namespace MieszkanieOswieceniaBot
             {
                 return TemperatureCollectionName;
             }
-            if(type == typeof(StateSample))
+            if(type == typeof(RelaySample))
             {
-                return StateCollectionName;
+                return RelayCollectionName;
             }
             if(type == typeof(KeyValueItem))
             {
@@ -243,7 +245,7 @@ namespace MieszkanieOswieceniaBot
 
         private const string DatabaseFileName = "temperature.db";
         private const string TemperatureCollectionName = "samples";
-        private const string StateCollectionName = "stany";
+        private const string RelayCollectionName = "stany_nowe";
         private const string KeyValueCollectionName = "keyval";
         private const string ChatIdColectionName = "hcChatIds";
 

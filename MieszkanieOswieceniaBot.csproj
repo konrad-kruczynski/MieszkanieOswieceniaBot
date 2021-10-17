@@ -110,7 +110,6 @@
     <Compile Include="Controller.cs" />
     <Compile Include="LogEntry.cs" />
     <Compile Include="CircularLogger.cs" />
-    <Compile Include="RelayController.cs" />
     <Compile Include="SerialPortHelpers.cs" />
     <Compile Include="Authorizer.cs" />
     <Compile Include="AsyncPump.cs" />
@@ -120,14 +119,23 @@
     <Compile Include="Step.cs" />
     <Compile Include="PekaClient.cs" />
     <Compile Include="PekaDb.cs" />
-    <Compile Include="StateSample.cs" />
     <Compile Include="ISample.cs" />
     <Compile Include="KeyValueItem.cs" />
     <Compile Include="DatabaseChatId.cs" />
     <Compile Include="RosyCreekClient.cs" />
+    <Compile Include="Relays\IRelay.cs" />
+    <Compile Include="Relays\Shelly.cs" />
+    <Compile Include="Relays\Tasmota.cs" />
+    <Compile Include="Relays\Uart.cs" />
+    <Compile Include="RelayEntry.cs" />
+    <Compile Include="Scenario.cs" />
+    <Compile Include="RelaySample.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Relays\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
