@@ -126,7 +126,7 @@ namespace MieszkanieOswieceniaBot
             {
                 foreach(var sample in samples)
                 {
-                    var active = sample.State && sample.RelayId == i;
+                    var active = sample.State && sample.RelayId == relayNos[i];
                     if (!active)
                     {
                         continue;
