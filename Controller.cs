@@ -24,7 +24,7 @@ namespace MieszkanieOswieceniaBot
     {
         public Controller()
         {
-            Console.WriteLine("Starting bot...");
+            CircularLogger.Instance.Log("Starting bot...");
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             stats = new Stats();
             pekaClients = new Dictionary<string, PekaClient>();
@@ -45,7 +45,7 @@ namespace MieszkanieOswieceniaBot
             bot.OnCallbackQuery += HandleCallbackQuery;
             bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.ToString());
             bot.OnReceiveError += (sender, e) => HandleError(e.ApiRequestException.ToString());
-            Console.WriteLine("Bot started.");
+            CircularLogger.Instance.Log("Bot started.");
         }
 
         public void Start()
@@ -519,16 +519,11 @@ namespace MieszkanieOswieceniaBot
 
             if(text.StartsWith("grzanie"))
             {
-                string targetIp;
+                int relayNo;
                 if(text == "grzanie")
                 {
-                    var urlTemplate = @"http://192.168.71.{0}/cm?cmnd=Power";
-                    var urls = new[] { "31", "32" }.Select(x => string.Format(urlTemplate, x));
-                    var statuses = urls.Select(x => PowerStateToNBool(x.GetJsonAsync().GetAwaiter().GetResult())).ToArray();
-                    if (statuses.Any(x => x == null))
-                    {
-                        return "Błąd podczas pobierania stanu grzania";
-                    }
+                    var relayNos = new[] { 4, 5 };
+                    var statuses = relayNos.Select(x => Relays[x].Relay.State).ToArray();
 
                     string BoolToString(bool value)
                     {
@@ -541,27 +536,24 @@ namespace MieszkanieOswieceniaBot
                 }
                 else if(text == "grzanie kot")
                 {
-                    targetIp = "31";
+                    relayNo = 4;
                 }
                 else if(text == "grzanie kocica")
                 {
-                    targetIp = "32";
+                    relayNo = 5;
                 }
                 else
                 {
                     return "Niepoprawna informacja kogo grzać";
                 }
 
-                var url = string.Format(@"http://192.168.71.{0}/cm?cmnd=Power%20Toggle", targetIp);
-                var result = url.GetJsonAsync().GetAwaiter().GetResult();
-                switch(PowerStateToNBool(result))
+                var result = Relays[relayNo].Relay.Toggle();
+                switch(result)
                 {
                     case true:
                         return "Grzanie włączono";
                     case false:
                         return "Grzanie wyłączono";
-                    case null:
-                        return string.Format("Błąd: {0}", result);
                 }
             }
 
