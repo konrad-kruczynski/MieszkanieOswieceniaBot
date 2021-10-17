@@ -115,7 +115,7 @@ namespace MieszkanieOswieceniaBot
                                    Action<int> onDataCount = null)
         {
             stepHandler(Step.RetrievingData);
-            var samples = Database.Instance.GetAllSamples<StateSample>();
+            var samples = Database.Instance.GetAllSamples<RelaySample>();
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
 
@@ -126,11 +126,12 @@ namespace MieszkanieOswieceniaBot
             {
                 foreach(var sample in samples)
                 {
-                    var active = sample.GetStateArray()[relayNos[i]];
-                    if(!active)
+                    var active = sample.State && sample.RelayId == i;
+                    if (!active)
                     {
                         continue;
                     }
+
                     var minutesFromDayStart = sample.Date.Hour * 60 + sample.Date.Minute;
                     var bucketNo = minutesFromDayStart / minutesInBucket;
                     buckets[i, bucketNo]++;
@@ -183,23 +184,6 @@ namespace MieszkanieOswieceniaBot
             bitmap.Save(pngFile, System.Drawing.Imaging.ImageFormat.Png);
 
             return pngFile;
-        }
-
-        private static string GetRelayFriendlyName(int relayNo)
-        {
-            switch(relayNo)
-            {
-                case 0:
-                    return "doniczka";
-                case 1:
-                    return "regał";
-                case 2:
-                    return "kanapa";
-                case 3:
-                    return "głośniki";
-                default:
-                    return "nieznany";
-            }
         }
 
         private readonly string dateTimeFormat;

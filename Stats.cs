@@ -26,7 +26,7 @@ namespace MieszkanieOswieceniaBot
             builder.AppendLine();
             builder.AppendFormat("Liczba próbek temperatury: {0}.", Database.Instance.GetSampleCount<TemperatureSample>());
             builder.AppendLine();
-            builder.AppendFormat("Liczba próbek stanu: {0}.", Database.Instance.GetSampleCount<StateSample>());
+            builder.AppendFormat("Liczba próbek stanu: {0}.", Database.Instance.GetSampleCount<RelaySample>());
             return builder.ToString();
         }
 
