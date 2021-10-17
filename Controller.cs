@@ -230,9 +230,27 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "histogram4")
+                {
+                    CreateHistogram(chatId, new[] { 4 });
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "histogram5")
+                {
+                    CreateHistogram(chatId, new[] { 5 });
+                    return;
+                }
+
+                if(e.Message.Text.ToLower() == "histogram6")
+                {
+                    CreateHistogram(chatId, new[] { 6 });
+                    return;
+                }
+
                 if(e.Message.Text.ToLower() == "superhistogram")
                 {
-                    CreateHistogram(chatId, new[] { 0, 1, 2, 3 });
+                    CreateHistogram(chatId, new[] { 0, 1, 2, 3, 4, 5, 6 });
                     return;
                 }
 
