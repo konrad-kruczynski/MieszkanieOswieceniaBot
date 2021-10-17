@@ -23,7 +23,7 @@ namespace MieszkanieOswieceniaBot
 
         public bool CanSampleBeSquashed(RelaySample sample)
         {
-            return !sample.State && !State;
+            return !sample.State && !State && sample.RelayId == RelayId;
         }
 
         public override string ToString() => $"{RelayId}: {State}";
