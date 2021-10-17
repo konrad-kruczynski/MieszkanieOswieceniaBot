@@ -16,11 +16,17 @@ namespace MieszkanieOswieceniaBot.Relays
         {
             get
             {
+                if (cachedState.HasValue)
+                {
+                    return cachedState.Value;
+                }
+
                 return WriteAndReadMessage(CommandBase + relayOffset + StateOffset) == TurnOnOffset;
             }
 
             set
             {
+                cachedState = value;
                 WriteMessage(CommandBase + relayOffset + (value ? TurnOnOffset : TurnOffOffset));
             }
         }
@@ -32,6 +38,7 @@ namespace MieszkanieOswieceniaBot.Relays
             return newState;
         }
 
+        private bool? cachedState;
 
         private readonly string deviceName;
         private readonly byte relayOffset;
