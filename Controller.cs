@@ -24,6 +24,7 @@ namespace MieszkanieOswieceniaBot
     {
         public Controller()
         {
+            Console.WriteLine("Starting bot...");
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             stats = new Stats();
             pekaClients = new Dictionary<string, PekaClient>();
@@ -44,6 +45,7 @@ namespace MieszkanieOswieceniaBot
             bot.OnCallbackQuery += HandleCallbackQuery;
             bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.ToString());
             bot.OnReceiveError += (sender, e) => HandleError(e.ApiRequestException.ToString());
+            Console.WriteLine("Bot started.");
         }
 
         public void Start()
@@ -53,8 +55,8 @@ namespace MieszkanieOswieceniaBot
             var udpClient = new UdpClient(12345);
             Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
                       .Subscribe(HandleUdp);
-            Observable.Interval(TimeSpan.FromSeconds(10)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => RefreshSpeakerState());
+            /*Observable.Interval(TimeSpan.FromSeconds(10)).ObserveOn(SynchronizationContext.Current)
+                      .Subscribe(_ => RefreshSpeakerState());*/
             Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
             Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
@@ -629,7 +631,7 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "z")
             {
-                "http://192.168.71.34/relay/0?turn=toggle".GetAsync().GetAwaiter().GetResult();
+                Relays[6].Relay.Toggle();
                 return "Przełączono";
             }
 
