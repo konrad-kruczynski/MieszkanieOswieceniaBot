@@ -523,14 +523,9 @@ namespace MieszkanieOswieceniaBot
                 if(text == "grzanie")
                 {
                     var relayNos = new[] { 4, 5 };
-                    var statuses = relayNos.Select(x => Relays[x].Relay.State).ToArray();
+                    var statuses = relayNos.Select(x => Relays[x].Relay).ToArray();
 
-                    string BoolToString(bool value)
-                    {
-                        return value ? "właczone" : "wyłączone";
-                    }
-
-                    var friendlyStatuses = statuses.Select(x => BoolToString(x)).ToArray();
+                    var friendlyStatuses = statuses.Select(x => x.GetFriendlyState()).ToArray();
 
                     return string.Format("Kot: {0}{1}Kocica: {2}", friendlyStatuses[0], Environment.NewLine, friendlyStatuses[1]);
                 }
@@ -624,7 +619,7 @@ namespace MieszkanieOswieceniaBot
             if(text == "z")
             {
                 Relays[6].Relay.Toggle();
-                return "Przełączono";
+                return $"Przełączono, teraz status: {Relays[6].Relay.GetFriendlyState()}";
             }
 
             if(text == "reset różanego")
@@ -675,19 +670,6 @@ namespace MieszkanieOswieceniaBot
 
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
-        }
-
-        private static bool? PowerStateToNBool(dynamic result)
-        {
-            switch((string)result.POWER)
-            {
-                case "ON":
-                    return true;
-                case "OFF":
-                    return false;
-                default:
-                    return null;
-            }
         }
 
         private static bool TryGetTemperature(out decimal temperature, out string rawData)
@@ -836,13 +818,6 @@ namespace MieszkanieOswieceniaBot
             (new TimeSpan(8, 0, 0), 1),
             (new TimeSpan(20, 0, 0), 2),
             (new TimeSpan(22, 0, 0), 3)
-        };
-
-        private static readonly Dictionary<int, string> FriendlyNames = new Dictionary<int, string>
-        {
-            { 0, "doniczka" },
-            { 1, "lampa przy regale" },
-            { 2, "lampa przy kanapie" }
         };
 
         private static readonly Dictionary<int, RelayEntry> Relays = new[]
