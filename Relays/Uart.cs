@@ -31,8 +31,7 @@ namespace MieszkanieOswieceniaBot.Relays
                 {
                     return;
                 }
-
-                cachedState = null;
+                
                 WriteMessage(CommandBase + relayOffset + (value ? TurnOnOffset : TurnOffOffset));
             }
         }
