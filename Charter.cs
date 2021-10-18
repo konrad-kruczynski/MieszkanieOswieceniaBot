@@ -119,7 +119,7 @@ namespace MieszkanieOswieceniaBot
             var samplesCount = samples.Count();
             onDataCount(samplesCount);
 
-            var minutesInBucket = 10;
+            var minutesInBucket = 6;
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[relayNos.Length, bucketsCount];
             for(var i = 0; i < relayNos.Length; i++)
