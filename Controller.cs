@@ -270,7 +270,7 @@ namespace MieszkanieOswieceniaBot
                     var maximalRelayNumber = Relays.Max(x => x.Key);
                     foreach (var group in samplesGroupedByMinutes)
                     {
-                        resultString.AppendFormat("{0:R}: `", group.Key);
+                        resultString.AppendFormat("`{0:R}: ", group.Key);
                         for (var i = 0; i <= maximalRelayNumber; i++)
                         {
                             if (!Relays.ContainsKey(i))
