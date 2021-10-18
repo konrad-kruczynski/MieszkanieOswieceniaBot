@@ -265,7 +265,7 @@ namespace MieszkanieOswieceniaBot
                 if(e.Message.Text.ToLower() == "historia2")
                 {
                     var samples = Database.Instance.GetNewestSamples<RelaySample>(20 * Relays.Count);
-                    var samplesGroupedByMinutes = samples.GroupBy(x => x.Date.AddSeconds(-x.Date.Second));
+                    var samplesGroupedByMinutes = samples.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, x.Date.Day, x.Date.Hour, x.Date.Minute, 0));
                     var resultString = new StringBuilder();
                     var maximalRelayNumber = Relays.Max(x => x.Key);
                     foreach (var group in samplesGroupedByMinutes)
