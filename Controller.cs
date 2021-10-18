@@ -265,7 +265,33 @@ namespace MieszkanieOswieceniaBot
                 if(e.Message.Text.ToLower() == "historia2")
                 {
                     var samples = Database.Instance.GetNewestSamples<RelaySample>(30);
-                    var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
+                    var samplesGroupedByMinutes = samples.GroupBy(x => x.Date.AddSeconds(-x.Date.Second));
+                    var resultString = new StringBuilder();
+                    var maximalRelayNumber = Relays.Max(x => x.Key);
+                    foreach (var group in samplesGroupedByMinutes)
+                    {
+                        resultString.AppendFormat("{0:R}: `", group.Key);
+                        for (var i = 0; i <= maximalRelayNumber; i++)
+                        {
+                            if (!Relays.ContainsKey(i))
+                            {
+                                resultString.Append('◌');
+                            }
+                            else if(group.Any(x => x.RelayId == i))
+                            {
+                                resultString.Append('●');
+                            }
+                            else
+                            {
+                                resultString.Append('○');
+                            }
+                        }
+
+                        resultString.Append('`');
+                        resultString.AppendLine();
+                    }
+
+                    var text = resultString.ToString();
                     bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
                     return;
                 }
