@@ -277,7 +277,7 @@ namespace MieszkanieOswieceniaBot
                             {
                                 resultString.Append('◌');
                             }
-                            else if(group.Any(x => x.RelayId == i))
+                            else if(group.Any(x => x.RelayId == i && x.State))
                             {
                                 resultString.Append('●');
                             }
