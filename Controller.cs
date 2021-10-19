@@ -715,6 +715,18 @@ namespace MieszkanieOswieceniaBot
                 return result.ToString();
             }
 
+            if (text == "stan")
+            {
+                var result = new StringBuilder();
+
+                foreach (var relay in Relays.OrderBy(x => x.Key))
+                {
+                    result.AppendLine($"{relay.Value.FriendlyName}: {relay.Value.Relay.GetFriendlyState()}");
+                }
+
+                return result.ToString();
+            }
+
             CircularLogger.Instance.Log($"Unknown text command '{text}'.");
             return "Nieznana komenda.";
         }
