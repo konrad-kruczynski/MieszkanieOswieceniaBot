@@ -47,12 +47,12 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public string GetEntriesAsAString()
+        public IEnumerable<string> GetEntriesAsStrings()
         {
             lock(sync)
             {
                 return entries.Select(x => string.Format("`{0:d MMM HH:mm:ss} {1}`", x.Date, x.Text))
-                    .Aggregate((x, y) => x + Environment.NewLine + y);
+                    .ToArray();
             }
         }
 
