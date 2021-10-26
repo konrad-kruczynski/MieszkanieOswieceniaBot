@@ -3,34 +3,28 @@ using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
-    public sealed class Tasmota : IRelay
+    public sealed class Tasmota : HttpBasedRelay
     {
-        public Tasmota(string hostname)
+        public Tasmota(string hostname) : base(hostname, TimeSpan.FromSeconds(10))
         {
-            flurlClient = new FlurlClient($"http://{hostname}").WithTimeout(TimeSpan.FromSeconds(10));
         }
 
-        public bool State
+        protected override bool Toggle()
         {
-            get
-            {
-                return PowerStateToBool(flurlClient.Request("cm?cmnd=Power").GetJsonAsync().GetAwaiter().GetResult().POWER);
-            }
-
-            set
-            {
-                var commandValue = value ? "On" : "off";
-                flurlClient.Request($"cm?cmnd=Power%20{commandValue}").GetAsync().GetAwaiter().GetResult();
-            }
-        }
-
-        public bool Toggle()
-        {
-            var jsonResult = flurlClient.Request("/cm?cmnd=Power%20Toggle").GetJsonAsync().GetAwaiter().GetResult();
+            var jsonResult = FlurlClient.Request("cm?cmnd=Power%20Toggle").GetJsonAsync().GetAwaiter().GetResult();
             return PowerStateToBool(jsonResult.POWER);
         }
 
-        private readonly IFlurlClient flurlClient;
+        protected override bool GetState()
+        {
+            return PowerStateToBool(FlurlClient.Request("cm?cmnd=Power").GetJsonAsync().GetAwaiter().GetResult().POWER);
+        }
+
+        protected override void SetState(bool state)
+        {
+            var commandValue = state ? "On" : "off";
+            FlurlClient.Request($"cm?cmnd=Power%20{commandValue}").GetAsync().GetAwaiter().GetResult();
+        }
 
         private static bool PowerStateToBool(string state)
         {

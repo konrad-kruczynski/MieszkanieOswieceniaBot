@@ -4,7 +4,8 @@ namespace MieszkanieOswieceniaBot.Relays
 {
     public interface IRelay
     {
-        bool State { get; set; }
-        bool Toggle();
+        bool TryGetState(out bool state);
+        bool TrySetState(bool state);
+        bool TryToggle(out bool currentState);
     }
 }

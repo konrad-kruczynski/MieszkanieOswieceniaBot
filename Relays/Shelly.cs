@@ -3,31 +3,28 @@ using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
-    public sealed class Shelly : IRelay
+    public sealed class Shelly : HttpBasedRelay
     {
-        public Shelly(string hostname)
+        public Shelly(string hostname) : base(hostname)
         {
             this.hostname = hostname;
         }
 
-        public bool State
+        protected override bool Toggle()
         {
-            get
-            {
-                var jsonState = $"http://{hostname}/relay/0".GetJsonAsync().GetAwaiter().GetResult();
-                return jsonState.ison;
-            }
-
-            set
-            {
-                var stateAsText = value ? "on" : "off";
-                $"http://{hostname}/relay/0?turn={stateAsText}".GetAsync().GetAwaiter().GetResult();
-            }
+            return FlurlClient.Request("relay/0?turn=toggle").GetJsonAsync().GetAwaiter().GetResult().ison;
         }
 
-        public bool Toggle()
+        protected override bool GetState()
         {
-            return $"http://{hostname}/relay/0?turn=toggle".GetJsonAsync().GetAwaiter().GetResult().ison;
+            var jsonState = FlurlClient.Request("relay/0").GetJsonAsync().GetAwaiter().GetResult();
+            return jsonState.ison;
+        }
+
+        protected override void SetState(bool state)
+        {
+            var stateAsText = state ? "on" : "off";
+            FlurlClient.Request($"relay/0?turn={stateAsText}").GetAsync().GetAwaiter().GetResult();
         }
 
         private readonly string hostname;

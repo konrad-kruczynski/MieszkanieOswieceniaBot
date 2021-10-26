@@ -82,12 +82,14 @@ namespace MieszkanieOswieceniaBot
             {
                 if(number == 10)
                 {
-                    Relays[3].Relay.State = true;
+                    Relays[3].Relay.TrySetState(true);
                 }
+
                 if(number == 11)
                 {
-                    Relays[3].Relay.State = false;
+                    Relays[3].Relay.TrySetState(false);
                 }
+
                 HandleScenario(number);
                 return;
             }
@@ -589,8 +591,12 @@ namespace MieszkanieOswieceniaBot
                     return "Niepoprawna informacja kogo grzać";
                 }
 
-                var result = Relays[relayNo].Relay.Toggle();
-                switch(result)
+                if (!Relays[relayNo].Relay.TryToggle(out var result))
+                {
+                    return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";
+                }
+
+                switch (result)
                 {
                     case true:
                         return "Grzanie włączono";
@@ -607,23 +613,23 @@ namespace MieszkanieOswieceniaBot
             if(text == "miganie" || text == "alarm")
             {
                 var random = new Random();
-                var state1 = Relays[1].Relay.State;
-                var state2 = Relays[2].Relay.State;
+                Relays[1].Relay.TryGetState(out var state1);
+                Relays[2].Relay.TryGetState(out var state2); ;
 
                 for(var i = 0; i < 10; i++)
                 {
-                    Relays[1].Relay.State = true;
+                    Relays[1].Relay.TrySetState(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Relays[2].Relay.State = true;
+                    Relays[2].Relay.TrySetState(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
-                    Relays[1].Relay.State = false;
+                    Relays[1].Relay.TrySetState(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Relays[2].Relay.State = false;
+                    Relays[2].Relay.TrySetState(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                 }
 
-                Relays[1].Relay.State = state1;
-                Relays[2].Relay.State = state2;
+                Relays[1].Relay.TrySetState(state1);
+                Relays[2].Relay.TrySetState(state2);
                 return "Wykonano.";
             }
 
@@ -665,8 +671,18 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "z")
             {
-                Relays[6].Relay.Toggle();
-                return $"Przełączono, teraz status: {Relays[6].Relay.GetFriendlyState()}";
+                if (!Relays[6].Relay.TryToggle(out var state))
+                {
+                    return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";
+                }
+
+                switch (state)
+                {
+                    case true:
+                        return "Światło włączono";
+                    case false:
+                        return "Światło wyłączono";
+                }
             }
 
             if(text == "reset różanego")
@@ -754,7 +770,11 @@ namespace MieszkanieOswieceniaBot
             }
             autoScenarioEnabled = false; // every scenario disables autoscenario
             var scenario = Scenarios[scenarioNo];
-            scenario.Apply(Relays);
+            if (!scenario.TryApply(Relays))
+            {
+                return "Nie udało się w całości wykonać scenariusza";
+            }
+
             return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, scenario.GetFriendlyDescription(Relays));
         }
 
@@ -774,14 +794,14 @@ namespace MieszkanieOswieceniaBot
             var currentTime = DateTime.Now.TimeOfDay;
             var currentScenarioNo = AutoScenario.Last(x => x.Item1 <= currentTime).Item2;
             var currentScenario = Scenarios[currentScenarioNo];
-            currentScenario.Apply(Relays);
+            currentScenario.TryApply(Relays);
         }
 
         private void RefreshSpeakerState()
         {
             if(!Database.Instance.HolidayMode)
             {
-                Relays[3].Relay.State = DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout;
+                Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
                 return;
             }
 
@@ -793,14 +813,14 @@ namespace MieszkanieOswieceniaBot
 
             if(holidayGracePeriodStopwatch.IsRunning && holidayGracePeriodStopwatch.Elapsed < HolidayWindowLength)
             {
-                Relays[3].Relay.State = true;
+                Relays[3].Relay.TrySetState(true);
                 return;
             }
 
             holidayGracePeriodStopwatch.Stop();
             var database = Database.Instance;
             var timeOfDay = DateTime.Now.TimeOfDay;
-            Relays[3].Relay.State = timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength);
+            Relays[3].Relay.TrySetState(timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
         }
 
         private void CheckHousingCooperativeNews()
@@ -835,7 +855,12 @@ namespace MieszkanieOswieceniaBot
         {
             foreach (var entry in Relays)
             {
-                var relaySample = new RelaySample(entry.Key, entry.Value.Relay.State);
+                if (!entry.Value.Relay.TryGetState(out var state))
+                {
+                    continue;
+                }
+
+                var relaySample = new RelaySample(entry.Key, state);
                 Database.Instance.AddSample(relaySample);
             }
         }
@@ -858,7 +883,7 @@ namespace MieszkanieOswieceniaBot
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly int[] BasicRange = new[] { 0, 1, 2, 3 };
+        private static readonly int[] BasicRange = new[] { 0, 1, 2 };
 
         private static readonly Scenario[] Scenarios = new Scenario[]
         {

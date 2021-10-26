@@ -129,6 +129,7 @@
     <Compile Include="Scenario.cs" />
     <Compile Include="RelaySample.cs" />
     <Compile Include="RelayExtensions.cs" />
+    <Compile Include="Relays\HttpBasedRelay.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

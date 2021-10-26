@@ -18,12 +18,19 @@ namespace MieszkanieOswieceniaBot
 
         }
 
-        public void Apply(IDictionary<int, RelayEntry> relayEntries)
+        public bool TryApply(IDictionary<int, RelayEntry> relayEntries)
         {
+            var success = true;
+
             foreach (var id in coveredRange)
             {
-                relayEntries[id].Relay.State = turnedOn.Contains(id);
+                if (!relayEntries[id].Relay.TrySetState(turnedOn.Contains(id)))
+                {
+                    success = false;
+                }
             }
+
+            return success;
         }
 
         public string GetFriendlyDescription(IDictionary<int, RelayEntry> relayEntries)

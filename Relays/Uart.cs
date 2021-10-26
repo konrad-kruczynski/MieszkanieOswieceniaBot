@@ -12,36 +12,48 @@ namespace MieszkanieOswieceniaBot.Relays
             relayOffset = (byte)(relayNumber * 3);
         }
 
-        public bool State
+        public bool TryGetState(out bool state)
         {
-            get
+            if(cachedState.HasValue)
             {
-                if (cachedState.HasValue)
-                {
-                    return cachedState.Value;
-                }
-
-                cachedState = WriteAndReadMessage(CommandBase + relayOffset + StateOffset) == CommandBase + TurnOnOffset;
-                return cachedState.Value;
+                state = cachedState.Value;
+                return true;
             }
 
-            set
+            var success = WriteAndReadMessage(CommandBase + relayOffset + StateOffset, out var result);
+            if (success)
             {
-                if (cachedState.HasValue && cachedState.Value == value)
-                {
-                    return;
-                }
-                
-                WriteMessage(CommandBase + relayOffset + (value ? TurnOnOffset : TurnOffOffset));
-                cachedState = value;
+                cachedState = result == CommandBase + TurnOnOffset;
+                state = cachedState.Value;
+                return true;
             }
+
+            state = false;
+            return false;
         }
 
-        public bool Toggle()
+        public bool TrySetState(bool state)
         {
-            var newState = !State;
-            State = newState;
-            return newState;
+            if(cachedState.HasValue && cachedState.Value == state)
+            {
+                return true;
+            }
+
+            var success = WriteMessage(CommandBase + relayOffset + (state ? TurnOnOffset : TurnOffOffset));
+
+            if (success)
+            {
+                cachedState = state;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryToggle(out bool currentState)
+        {
+            currentState = false;
+            return TryGetState(out var state) && TrySetState(currentState = !state);
         }
 
         private bool? cachedState;
@@ -54,42 +66,44 @@ namespace MieszkanieOswieceniaBot.Relays
         private const int TurnOnOffset = 1;
         private const int TurnOffOffset = 0;
 
-        private static void WithSerialPort(string name, Action<SerialPort> action)
+        private static bool WithSerialPort(string name, Action<SerialPort> action)
         {
             using(var serialPort = new SerialPort(name, 9600))
             {
                 try
                 {
                     serialPort.Open();
-                    CircularLogger.Instance.Log("Serial port '{0}' opened.", name);
                     action(serialPort);
+                    return true;
                 }
                 catch(IOException)
                 {
                     CircularLogger.Instance.Log("Could not open port '{0}', did nothing.", name);
+                    return false;
                 }
             }
         }
 
-        private void WriteMessage(int message)
+        private bool WriteMessage(int message)
         {
-            WithSerialPort(deviceName, serialPort =>
+            return WithSerialPort(deviceName, serialPort =>
             {
                 serialPort.Write(new[] { checked((byte)message) }, 0, 1);
             });
         }
 
-        private byte WriteAndReadMessage(int message)
+        private bool WriteAndReadMessage(int message, out byte result)
         {
-            var result = new byte[1];
+            var resultArray = new byte[1];
 
-            WithSerialPort(deviceName, serialPort =>
+            var success = WithSerialPort(deviceName, serialPort =>
             {
                 serialPort.Write(new[] { checked((byte)message) }, 0, 1);
-                serialPort.Read(result, 0, 1);
+                serialPort.Read(resultArray, 0, 1);
             });
 
-            return result[0];
+            result = resultArray[0];
+            return success;
         }
     }
 }
