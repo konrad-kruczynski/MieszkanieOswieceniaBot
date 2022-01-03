@@ -718,13 +718,23 @@ namespace MieszkanieOswieceniaBot
 
                 var wasteData = wasteEntries.GroupBy(x => x.Item1).ToDictionary(x => x.Key, x => x.Select(y => y.Item2).ToArray());
 
+                string WasteDateToString(DateTime date)
+                {
+                    if (date == default)
+                    {
+                        return "???";
+                    }
+
+                    return String.Format("{0:ddd dd MMM}", date);
+                }
+
                 var result = new StringBuilder();
                 foreach(var waste in wasteData)
                 {
                     var dates = waste.Value;
-                    var nearestInFuture = dates.Where(x => x > DateTime.Now).OrderBy(x => x - DateTime.Now).First();
-                    var nearestInPast = dates.Where(x => x <= DateTime.Now).OrderBy(x => DateTime.Now - x).First();
-                    result.AppendFormat("{0}: {1:ddd dd MMM} <-> {2:ddd dd MMM}", waste.Key, nearestInPast, nearestInFuture);
+                    var nearestInFuture = dates.Where(x => x > DateTime.Now).OrderBy(x => x - DateTime.Now).FirstOrDefault();
+                    var nearestInPast = dates.Where(x => x <= DateTime.Now).OrderBy(x => DateTime.Now - x).FirstOrDefault();
+                    result.AppendFormat("{0}: {1} <-> {2}", waste.Key, WasteDateToString(nearestInPast), WasteDateToString(nearestInFuture));
                     result.AppendLine();
                 }
 
