@@ -1,0 +1,7 @@
+bin/
+obj/
+*.userprefs
+test-results/
+/packages/*/
+/.vs
+.idea/
