@@ -72,12 +72,12 @@ namespace MieszkanieOswieceniaBot
             {
                 if(number == 10)
                 {
-                    Relays[3].Relay.TrySetState(true);
+                    Globals.Relays[3].Relay.TrySetState(true);
                 }
 
                 if(number == 11)
                 {
-                    Relays[3].Relay.TrySetState(false);
+                    Globals.Relays[3].Relay.TrySetState(false);
                 }
 
                 HandleScenario(number);
@@ -256,17 +256,17 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "historia2")
                 {
-                    var samples = Database.Instance.GetNewestSamples<RelaySample>(20 * Relays.Count);
+                    var samples = Database.Instance.GetNewestSamples<RelaySample>(20 * Globals.Relays.Count);
                     var samplesGroupedByMinutes = samples.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, x.Date.Day, x.Date.Hour, x.Date.Minute, 0));
                     samplesGroupedByMinutes = samplesGroupedByMinutes.OrderByDescending(x => x.Key).Take(20).OrderBy(x => x.Key);
                     var resultString = new StringBuilder();
-                    var maximalRelayNumber = Relays.Max(x => x.Key);
+                    var maximalRelayNumber = Globals.Relays.Max(x => x.Key);
                     foreach (var group in samplesGroupedByMinutes)
                     {
                         resultString.AppendFormat("`{0:R}: ", group.Key);
                         for (var i = 0; i <= maximalRelayNumber; i++)
                         {
-                            if (!Relays.ContainsKey(i))
+                            if (!Globals.Relays.ContainsKey(i))
                             {
                                 resultString.Append('◌');
                             }
@@ -557,7 +557,7 @@ namespace MieszkanieOswieceniaBot
                 if(text == "grzanie")
                 {
                     var relayNos = new[] { 4, 5 };
-                    var statuses = relayNos.Select(x => Relays[x].Relay).ToArray();
+                    var statuses = relayNos.Select(x => Globals.Relays[x].Relay).ToArray();
 
                     var friendlyStatuses = statuses.Select(x => x.GetFriendlyState()).ToArray();
 
@@ -576,7 +576,7 @@ namespace MieszkanieOswieceniaBot
                     return "Niepoprawna informacja kogo grzać";
                 }
 
-                if (!Relays[relayNo].Relay.TryToggle(out var result))
+                if (!Globals.Relays[relayNo].Relay.TryToggle(out var result))
                 {
                     return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";
                 }
@@ -598,23 +598,23 @@ namespace MieszkanieOswieceniaBot
             if(text == "miganie" || text == "alarm")
             {
                 var random = new Random();
-                Relays[1].Relay.TryGetState(out var state1);
-                Relays[2].Relay.TryGetState(out var state2); ;
+                Globals.Relays[1].Relay.TryGetState(out var state1);
+                Globals.Relays[2].Relay.TryGetState(out var state2); ;
 
                 for(var i = 0; i < 10; i++)
                 {
-                    Relays[1].Relay.TrySetState(true);
+                    Globals.Relays[1].Relay.TrySetState(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Relays[2].Relay.TrySetState(true);
+                    Globals.Relays[2].Relay.TrySetState(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
-                    Relays[1].Relay.TrySetState(false);
+                    Globals.Relays[1].Relay.TrySetState(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Relays[2].Relay.TrySetState(false);
+                    Globals.Relays[2].Relay.TrySetState(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                 }
 
-                Relays[1].Relay.TrySetState(state1);
-                Relays[2].Relay.TrySetState(state2);
+                Globals.Relays[1].Relay.TrySetState(state1);
+                Globals.Relays[2].Relay.TrySetState(state2);
                 return "Wykonano.";
             }
 
@@ -656,7 +656,7 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "z")
             {
-                if (!Relays[6].Relay.TryToggle(out var state))
+                if (!Globals.Relays[6].Relay.TryToggle(out var state))
                 {
                     return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";
                 }
@@ -730,7 +730,7 @@ namespace MieszkanieOswieceniaBot
             {
                 var result = new StringBuilder();
 
-                foreach (var relay in Relays.OrderBy(x => x.Key))
+                foreach (var relay in Globals.Relays.OrderBy(x => x.Key))
                 {
                     result.AppendLine($"{relay.Value.FriendlyName}: {relay.Value.Relay.GetFriendlyState()}");
                 }
@@ -765,12 +765,12 @@ namespace MieszkanieOswieceniaBot
             }
          
             var scenario = Scenarios[scenarioNo];
-            if (!scenario.TryApply(Relays))
+            if (!scenario.TryApply(Globals.Relays))
             {
                 return "Nie udało się w całości wykonać scenariusza";
             }
 
-            return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, scenario.GetFriendlyDescription(Relays));
+            return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, scenario.GetFriendlyDescription(Globals.Relays));
         }
 
         private void HandleAutoScenarioTimer()
@@ -785,7 +785,7 @@ namespace MieszkanieOswieceniaBot
         {
             if(!Database.Instance.HolidayMode)
             {
-                Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
+                Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
                 return;
             }
 
@@ -797,14 +797,14 @@ namespace MieszkanieOswieceniaBot
 
             if(holidayGracePeriodStopwatch.IsRunning && holidayGracePeriodStopwatch.Elapsed < HolidayWindowLength)
             {
-                Relays[3].Relay.TrySetState(true);
+                Globals.Relays[3].Relay.TrySetState(true);
                 return;
             }
 
             holidayGracePeriodStopwatch.Stop();
             var database = Database.Instance;
             var timeOfDay = DateTime.Now.TimeOfDay;
-            Relays[3].Relay.TrySetState(timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
+            Globals.Relays[3].Relay.TrySetState(timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
         }
 
         private void CheckHousingCooperativeNews()
@@ -837,7 +837,7 @@ namespace MieszkanieOswieceniaBot
 
         private void WriteStateToDatabase()
         {
-            foreach (var entry in Relays)
+            foreach (var entry in Globals.Relays)
             {
                 if (!entry.Value.Relay.TryGetState(out var state))
                 {
@@ -883,19 +883,7 @@ namespace MieszkanieOswieceniaBot
 
         private static readonly AutoScenarioHandler[] AutoScenarios = new[]
         {
-            new AutoScenarioHandler(Relays[7].Relay, ("12:40", true), ("12:42", false), ("12:44", true), ("12:46", false), ("12:48", true), ("12:50", false))
-        };
-
-        private static readonly Dictionary<int, RelayEntry> Relays = new[]
-        {
-            new RelayEntry(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
-            new RelayEntry(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
-            new RelayEntry(2, new Relays.Shelly("192.168.71.33"), "lampa przy kanapie"),
-            new RelayEntry(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki"),
-            new RelayEntry(4, new Relays.Tasmota("192.168.71.31"), "mata grzejna Kota"),
-            new RelayEntry(5, new Relays.Tasmota("192.168.71.32"), "mata grzejna Kocicy"),
-            new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
-            new RelayEntry(7, new Relays.Tasmota("192.168.71.35"), "oświetlenie akwarium"),
-        }.ToDictionary(x => x.Id, x => x);
+            new AutoScenarioHandler(7, ("12:50", true), ("12:52", false), ("12:54", true), ("12:56", false), ("12:58", true), ("13:00", false))
+        };        
     }
 }

@@ -131,6 +131,7 @@
     <Compile Include="RelayExtensions.cs" />
     <Compile Include="Relays\HttpBasedRelay.cs" />
     <Compile Include="AutoScenarioHandler.cs" />
+    <Compile Include="Globals.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
