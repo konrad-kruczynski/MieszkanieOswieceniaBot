@@ -17,5 +17,26 @@ namespace MieszkanieOswieceniaBot
             new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
             new RelayEntry(7, new Relays.Tasmota("192.168.71.35"), "oświetlenie akwarium"),
         }.ToDictionary(x => x.Id, x => x);
+
+        public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
+
+        private static readonly int[] BasicRange = new[] { 0, 1, 2 };
+
+        public static readonly Scenario[] Scenarios = new Scenario[]
+        {
+            new Scenario(BasicRange, Array.Empty<int>()),
+            new Scenario(BasicRange, new [] { 0, 1 }),
+            new Scenario(BasicRange, new [] { 1, 2 }),
+            new Scenario(BasicRange, new [] { 2 }),
+            new Scenario(BasicRange, new [] { 1 }),
+            new Scenario(BasicRange, new [] { 0 }),
+            new Scenario(BasicRange, new [] { 0, 1, 2}),
+            new Scenario(BasicRange, new [] { 0, 2 }),
+        };
+
+        public static readonly AutoScenarioHandler[] AutoScenarios = new[]
+        {
+            new AutoScenarioHandler(7, true, ("13:15", true), ("13:17", false), ("13:19", true), ("13:21", false), ("13:23", true), ("13:25", false))
+        };
     }
 }

@@ -743,12 +743,12 @@ namespace MieszkanieOswieceniaBot
 
         private string HandleScenario(int scenarioNo)
         {
-            if(Scenarios.Length <= scenarioNo)
+            if(Globals.Scenarios.Length <= scenarioNo)
             {
                 return "Nie ma takiego scenariusza.";
             }
          
-            var scenario = Scenarios[scenarioNo];
+            var scenario = Globals.Scenarios[scenarioNo];
             if (!scenario.TryApply(Globals.Relays))
             {
                 return "Nie udało się w całości wykonać scenariusza";
@@ -759,7 +759,7 @@ namespace MieszkanieOswieceniaBot
 
         private void HandleAutoScenarioTimer()
         {
-            foreach (var autoScenario in AutoScenarios)
+            foreach (var autoScenario in Globals.AutoScenarios)
             {
                 autoScenario.Refresh();
             }
@@ -767,7 +767,7 @@ namespace MieszkanieOswieceniaBot
 
         private void RefreshSpeakerState()
         {
-            Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
+            Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < Globals.HeartbeatTimeout);
             return;
         }
 
@@ -824,27 +824,6 @@ namespace MieszkanieOswieceniaBot
         private readonly TelegramBotClient bot;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
-        private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
-
-        private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
-
-        private static readonly int[] BasicRange = new[] { 0, 1, 2 };
-
-        private static readonly Scenario[] Scenarios = new Scenario[]
-        {
-            new Scenario(BasicRange, Array.Empty<int>()),
-            new Scenario(BasicRange, new [] { 0, 1 }),
-            new Scenario(BasicRange, new [] { 1, 2 }),
-            new Scenario(BasicRange, new [] { 2 }),
-            new Scenario(BasicRange, new [] { 1 }),
-            new Scenario(BasicRange, new [] { 0 }),
-            new Scenario(BasicRange, new [] { 0, 1, 2}),
-            new Scenario(BasicRange, new [] { 0, 2 }),
-        };
-
-        private static readonly AutoScenarioHandler[] AutoScenarios = new[]
-        {
-            new AutoScenarioHandler(7, ("13:15", true), ("13:17", false), ("13:19", true), ("13:21", false), ("13:23", true), ("13:25", false))
-        };        
+        private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");               
     }
 }
