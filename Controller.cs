@@ -724,12 +724,15 @@ namespace MieszkanieOswieceniaBot
                     }
                 }
 
-                result.AppendLine();
-                result.AppendLine("Włączone:");
-
-                foreach (var turnedOn in turnedOns)
+                if(turnedOns.Count > 0)
                 {
-                    result.AppendLine(turnedOn);
+                    result.AppendLine();
+                    result.AppendLine("Włączone:");
+
+                    foreach(var turnedOn in turnedOns)
+                    {
+                        result.AppendLine(turnedOn);
+                    }
                 }
 
                 return result.ToString();
