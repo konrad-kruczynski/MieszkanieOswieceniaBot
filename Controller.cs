@@ -883,7 +883,7 @@ namespace MieszkanieOswieceniaBot
 
         private static readonly AutoScenarioHandler[] AutoScenarios = new[]
         {
-            new AutoScenarioHandler(7, ("12:50", true), ("12:52", false), ("12:54", true), ("12:56", false), ("12:58", true), ("13:00", false))
+            new AutoScenarioHandler(7, ("13:00", true), ("13:02", false), ("13:04", true), ("13:06", false), ("13:08", true), ("13:10", false))
         };        
     }
 }
