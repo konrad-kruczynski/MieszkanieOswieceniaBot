@@ -10,7 +10,7 @@ namespace MieszkanieOswieceniaBot
 		{
 			this.switchingEvents = switchingEvents.Select(x => (TimeSpan.Parse(x.Item1), x.Item2)).OrderBy(x => x.Item1).ToArray();
 			this.relayId = relayId;
-			enabled = enabled;
+			Enabled = enabled;
 		}
 
 		public bool Enabled { get; set; }
