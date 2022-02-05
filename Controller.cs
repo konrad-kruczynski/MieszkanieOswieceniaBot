@@ -333,47 +333,9 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
-                string GetHolidayInfo(Database database) 
-                {
-                    if(!database.HolidayMode)
-                    {
-                        return "Brak trybu wakacyjnego.";
-                    }
-                    var message =  string.Format("Tryb wakacyjny w przedziale {0:hh\\:mm} - {1:hh\\:mm}.",
-                                         database.HolidayModeStartedAt,
-                                         database.HolidayModeStartedAt + HolidayWindowLength);
-                    if(holidayGracePeriodStopwatch.IsRunning)
-                    {
-                        var timeLeft = (HolidayWindowLength - holidayGracePeriodStopwatch.Elapsed).Humanize(culture: PolishCultureInfo);
-                        message += $"Do końca okresu ochronnego pozostało {timeLeft}.";
-                    }
-                    return message;
-                }
-
                 if(e.Message.Text.ToLower() == "zdjęcie")
                 {
                     MakePhoto(e.Message.Chat.Id).Wait();
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "wakacje")
-                {
-                    var database = Database.Instance;
-                    database.HolidayModeStartedAt = DateTime.Now.TimeOfDay;
-                    database.HolidayMode = true;
-                    bot.SendTextMessageAsync(chatId, GetHolidayInfo(database)).Wait();
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "po wakacjach")
-                {
-                    Database.Instance.HolidayMode = false;
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "o wakacjach")
-                {
-                    bot.SendTextMessageAsync(chatId, GetHolidayInfo(Database.Instance)).Wait();
                     return;
                 }
 
@@ -805,28 +767,8 @@ namespace MieszkanieOswieceniaBot
 
         private void RefreshSpeakerState()
         {
-            if(!Database.Instance.HolidayMode)
-            {
-                Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
-                return;
-            }
-
-            if(holidayGracePeriodStopwatch == null)
-            {
-                holidayGracePeriodStopwatch = new Stopwatch();
-                holidayGracePeriodStopwatch.Start();
-            }
-
-            if(holidayGracePeriodStopwatch.IsRunning && holidayGracePeriodStopwatch.Elapsed < HolidayWindowLength)
-            {
-                Globals.Relays[3].Relay.TrySetState(true);
-                return;
-            }
-
-            holidayGracePeriodStopwatch.Stop();
-            var database = Database.Instance;
-            var timeOfDay = DateTime.Now.TimeOfDay;
-            Globals.Relays[3].Relay.TrySetState(timeOfDay > database.HolidayModeStartedAt && timeOfDay < (database.HolidayModeStartedAt + HolidayWindowLength));
+            Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < HeartbeatTimeout);
+            return;
         }
 
         private void CheckHousingCooperativeNews()
@@ -878,14 +820,11 @@ namespace MieszkanieOswieceniaBot
 
         private DateTime lastSpeakerHeartbeat;
         private DateTime startDate;
-        private bool autoScenarioEnabled;
-        private Stopwatch holidayGracePeriodStopwatch;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
         private static readonly CultureInfo PolishCultureInfo = new CultureInfo("pl-PL");
-        private static readonly TimeSpan HolidayWindowLength = TimeSpan.FromMinutes(15);
 
         private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 

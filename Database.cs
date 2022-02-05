@@ -23,8 +23,6 @@ namespace MieszkanieOswieceniaBot
         {
             samplesCache = new HashSet<object>();
             serializer = new Serializer(new Antmicro.Migrant.Customization.Settings(disableTypeStamping: true));
-            holidayMode = new CachedKeyValue<bool>(this, "holidayMode");
-            holidayModeStartedAt = new CachedKeyValue<TimeSpan>(this, "holidayModeStartedAt");
             newestKnownRosyCreekHeader = new CachedKeyValue<string>(this, "newestRosyCreekHeader");
             newestKnownRosyCreekNewsDate = new CachedKeyValue<DateTime>(this, "newestRosyCreekNewsDate");
             newestRosyCreekShortNews = new CachedKeyValue<string>(this, "newestRosyCreekShortNews");
@@ -140,18 +138,6 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public bool HolidayMode
-        {
-            get => holidayMode.Value;
-            set => holidayMode.Value = value;
-        }
-
-        public TimeSpan HolidayModeStartedAt
-        {
-            get => holidayModeStartedAt.Value;
-            set => holidayModeStartedAt.Value = value;
-        }
-
         public DateTime NewestKnownRosyCreekNewsDate
         {
             get => newestKnownRosyCreekNewsDate.Value;
@@ -237,8 +223,6 @@ namespace MieszkanieOswieceniaBot
 
         private readonly HashSet<object> samplesCache;
         private readonly Serializer serializer;
-        private readonly CachedKeyValue<bool> holidayMode;
-        private readonly CachedKeyValue<TimeSpan> holidayModeStartedAt;
         private readonly CachedKeyValue<DateTime> newestKnownRosyCreekNewsDate;
         private readonly CachedKeyValue<string> newestKnownRosyCreekHeader;
         private readonly CachedKeyValue<string> newestRosyCreekShortNews;
