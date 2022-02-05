@@ -676,6 +676,22 @@ namespace MieszkanieOswieceniaBot
                 }
             }
 
+            if(text == "r")
+            {
+                if(!Globals.Relays[7].Relay.TryToggle(out var state))
+                {
+                    return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";
+                }
+
+                switch(state)
+                {
+                    case true:
+                        return "Światło włączono";
+                    case false:
+                        return "Światło wyłączono";
+                }
+            }
+
             if(text == "reset różanego")
             {
                 Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
