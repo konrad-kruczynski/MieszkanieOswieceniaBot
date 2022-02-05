@@ -240,6 +240,12 @@ namespace MieszkanieOswieceniaBot
                     return;
                 }
 
+                if(e.Message.Text.ToLower() == "histogram7")
+                {
+                    CreateHistogram(chatId, new[] { 7 });
+                    return;
+                }
+
                 if(e.Message.Text.ToLower() == "superhistogram")
                 {
                     CreateHistogram(chatId, new[] { 0, 1, 2, 3, 4, 5, 6 });
