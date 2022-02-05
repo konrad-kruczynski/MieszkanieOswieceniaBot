@@ -713,10 +713,23 @@ namespace MieszkanieOswieceniaBot
             if (text == "stan")
             {
                 var result = new StringBuilder();
+                var turnedOns = new List<string>();
 
                 foreach (var relay in Globals.Relays.OrderBy(x => x.Key))
                 {
                     result.AppendLine($"{relay.Value.FriendlyName}: {relay.Value.Relay.GetFriendlyState()}");
+                    if (relay.Value.Relay.TryGetState(out var state) && state)
+                    {
+                        turnedOns.Add(relay.Value.FriendlyName);
+                    }
+                }
+
+                result.AppendLine();
+                result.AppendLine("Włączone:");
+
+                foreach (var turnedOn in turnedOns)
+                {
+                    result.AppendLine(turnedOn);
                 }
 
                 return result.ToString();
