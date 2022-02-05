@@ -61,16 +61,6 @@ namespace MieszkanieOswieceniaBot
                       .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
             Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
                       .Subscribe(_ => HandleAutoScenarioTimer());
-            var random = new Random();
-            Observable.Interval(TimeSpan.FromHours(24)).ObserveOn(SynchronizationContext.Current)
-                .Subscribe(_ =>
-                {
-                    for(var i = 0; i < AutoScenario.Length; i++)
-                    {
-                        AutoScenario[i].Item1 += TimeSpan.FromMinutes(random.Next(-10, 11));
-                    }
-
-                });
             Observable.Interval(TimeSpan.FromHours(8)).ObserveOn(SynchronizationContext.Current)
                 .Subscribe(_ => CheckHousingCooperativeNews());
         }
@@ -534,11 +524,6 @@ namespace MieszkanieOswieceniaBot
                 return HandleScenario(int.Parse(text));
             }
 
-            if(text == "auto")
-            {
-                return HandleAutoScenario();
-            }
-
             if(text == "staty" || text == "statystyki")
             {
                 return stats.GetStats();
@@ -778,7 +763,7 @@ namespace MieszkanieOswieceniaBot
             {
                 return "Nie ma takiego scenariusza.";
             }
-            autoScenarioEnabled = false; // every scenario disables autoscenario
+         
             var scenario = Scenarios[scenarioNo];
             if (!scenario.TryApply(Relays))
             {
@@ -788,23 +773,12 @@ namespace MieszkanieOswieceniaBot
             return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, scenario.GetFriendlyDescription(Relays));
         }
 
-        private string HandleAutoScenario()
-        {
-            autoScenarioEnabled = true;
-            HandleAutoScenarioTimer();
-            return "Autoscenariusz uaktywniony";
-        }
-
         private void HandleAutoScenarioTimer()
         {
-            if(!autoScenarioEnabled)
+            foreach (var autoScenario in AutoScenarios)
             {
-                return;
+                autoScenario.Refresh();
             }
-            var currentTime = DateTime.Now.TimeOfDay;
-            var currentScenarioNo = AutoScenario.Last(x => x.Item1 <= currentTime).Item2;
-            var currentScenario = Scenarios[currentScenarioNo];
-            currentScenario.TryApply(Relays);
         }
 
         private void RefreshSpeakerState()
@@ -907,11 +881,9 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, new [] { 0, 2 }),
         };
 
-        private static readonly (TimeSpan, int)[] AutoScenario = {
-            (new TimeSpan(0, 0, 0), 3),
-            (new TimeSpan(8, 0, 0), 1),
-            (new TimeSpan(20, 0, 0), 2),
-            (new TimeSpan(22, 0, 0), 3)
+        private static readonly AutoScenarioHandler[] AutoScenarios = new[]
+        {
+            new AutoScenarioHandler(Relays[7].Relay, ("12:40", true), ("12:42", false), ("12:44", true), ("12:46", false), ("12:48", true), ("12:50", false))
         };
 
         private static readonly Dictionary<int, RelayEntry> Relays = new[]
@@ -922,7 +894,8 @@ namespace MieszkanieOswieceniaBot
             new RelayEntry(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki"),
             new RelayEntry(4, new Relays.Tasmota("192.168.71.31"), "mata grzejna Kota"),
             new RelayEntry(5, new Relays.Tasmota("192.168.71.32"), "mata grzejna Kocicy"),
-            new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna")
+            new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
+            new RelayEntry(7, new Relays.Tasmota("192.168.71.35"), "oświetlenie akwarium"),
         }.ToDictionary(x => x.Id, x => x);
     }
 }

@@ -130,6 +130,7 @@
     <Compile Include="RelaySample.cs" />
     <Compile Include="RelayExtensions.cs" />
     <Compile Include="Relays\HttpBasedRelay.cs" />
+    <Compile Include="AutoScenarioHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
