@@ -51,7 +51,7 @@ namespace MieszkanieOswieceniaBot
         {
             lock(sync)
             {
-                return entries.Select(x => string.Format("`{0:d MMM HH:mm:ss} {1}`", x.Date, x.Text))
+                return entries.Select(x => string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>", x.Date, x.Text))
                     .ToArray();
             }
         }
