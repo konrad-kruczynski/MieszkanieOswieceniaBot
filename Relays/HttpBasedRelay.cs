@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
@@ -24,14 +23,8 @@ namespace MieszkanieOswieceniaBot.Relays
                 state = GetState();
                 return true;
             }
-            catch (Exception e) when (e.InnerException is AggregateException aggregateException)
+            catch (Exception e) when (e.InnerException is FlurlHttpException flurlException)
             {
-                var flurlException = aggregateException.InnerExceptions.OfType<FlurlHttpException>().FirstOrDefault();
-                if (flurlException == null)
-                {
-                    throw;
-                }
-
                 CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException.Message}");
                 state = false;
                 return false;
