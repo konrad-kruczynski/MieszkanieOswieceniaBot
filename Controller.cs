@@ -593,8 +593,8 @@ namespace MieszkanieOswieceniaBot
                 {
                     return "Brak pliku z wielkością portfeli.";
                 }
-                var btcData = "https://api.bitbay.net/rest/trading/stats/BTC-PLN".GetJsonAsync().Result;
-                var ltcData = "https://api.bitbay.net/rest/trading/stats/LTC-PLN".GetJsonAsync().Result;
+                var btcData = "https://api.zonda.exchange/rest/trading/stats/BTC-PLN".GetJsonAsync().Result;
+                var ltcData = "https://api.zonda.exchange/rest/trading/stats/LTC-PLN".GetJsonAsync().Result;
                 var currencyFileLines = File.ReadAllLines(currencyFile);
                 var btcValue = decimal.Parse(btcData.stats.l) * decimal.Parse(currencyFileLines[0]);
                 var originalBtcValue = decimal.Parse(currencyFileLines[1]);
