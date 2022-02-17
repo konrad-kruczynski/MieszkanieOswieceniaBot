@@ -326,7 +326,7 @@ namespace MieszkanieOswieceniaBot
 
                 if(e.Message.Text.ToLower() == "log")
                 {
-                    foreach (var line in CircularLogger.Instance.GetEntriesAsStrings())
+                    foreach (var line in CircularLogger.Instance.GetEntriesAsHtmlStrings())
                     {
                         bot.SendTextMessageAsync(chatId, line, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html).Wait();
                     }

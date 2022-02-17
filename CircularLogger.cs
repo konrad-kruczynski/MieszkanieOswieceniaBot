@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -47,11 +48,14 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<string> GetEntriesAsStrings()
+        public IEnumerable<string> GetEntriesAsHtmlStrings()
         {
             lock(sync)
             {
-                return entries.Select(x => string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>", x.Date, x.Text))
+                return entries.Select(
+                    x => string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>",
+                    x.Date,
+                    WebUtility.HtmlEncode(x.Text)))
                     .ToArray();
             }
         }
