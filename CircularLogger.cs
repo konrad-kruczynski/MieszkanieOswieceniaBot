@@ -9,7 +9,7 @@ namespace MieszkanieOswieceniaBot
     {
         static CircularLogger()
         {
-            Instance = new CircularLogger(40);
+            Instance = new CircularLogger(10);
         }
 
         public static CircularLogger Instance { get; private set; }
