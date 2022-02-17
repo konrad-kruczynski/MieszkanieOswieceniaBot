@@ -25,7 +25,7 @@ namespace MieszkanieOswieceniaBot.Relays
             }
             catch (FlurlHttpException flurlException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException.Message}");
                 state = false;
                 return false;
             }
