@@ -23,9 +23,9 @@ namespace MieszkanieOswieceniaBot.Relays
                 state = GetState();
                 return true;
             }
-            catch (Exception e) when (e.InnerException is FlurlHttpException flurlException)
+            catch (FlurlHttpException flurlException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException.Message}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
                 state = false;
                 return false;
             }
