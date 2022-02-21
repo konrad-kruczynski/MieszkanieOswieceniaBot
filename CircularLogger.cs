@@ -9,7 +9,7 @@ namespace MieszkanieOswieceniaBot
     {
         static CircularLogger()
         {
-            Instance = new CircularLogger(10);
+            Instance = new CircularLogger(100);
         }
 
         public static CircularLogger Instance { get; private set; }
@@ -52,11 +52,29 @@ namespace MieszkanieOswieceniaBot
         {
             lock(sync)
             {
-                return entries.Select(
-                    x => string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>",
-                    x.Date,
-                    WebUtility.HtmlEncode(x.Text)))
-                    .ToArray();
+                var grouped = entries.GroupBy(x => x.Text);
+                var result = new List<string>();
+
+                foreach (var group in grouped)
+                {
+                    var orderedGroup = group.OrderBy(x => x.Date);
+                    if (group.Count() == 1)
+                    {
+                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>",
+                            orderedGroup.First().Date,
+                            WebUtility.HtmlEncode(group.Key)));
+                    }
+                    else
+                    {
+                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss +{2} in last {3} hours.} {1}</pre>",
+                            orderedGroup.Last().Date,
+                            WebUtility.HtmlEncode(group.Key),
+                            group.Count() - 1,
+                            (orderedGroup.Last().Date - orderedGroup.First().Date).TotalHours));
+                    }
+                }
+
+                return result;
             }
         }
 
