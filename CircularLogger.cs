@@ -9,7 +9,7 @@ namespace MieszkanieOswieceniaBot
     {
         static CircularLogger()
         {
-            Instance = new CircularLogger(100);
+            Instance = new CircularLogger(1000);
         }
 
         public static CircularLogger Instance { get; private set; }
@@ -66,7 +66,7 @@ namespace MieszkanieOswieceniaBot
                     }
                     else
                     {
-                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss +{2} in last {3} hours.} {1}</pre>",
+                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} in last {3} hours) {1}</pre>",
                             orderedGroup.Last().Date,
                             WebUtility.HtmlEncode(group.Key),
                             group.Count() - 1,
