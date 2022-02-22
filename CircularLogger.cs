@@ -52,7 +52,7 @@ namespace MieszkanieOswieceniaBot
         {
             lock(sync)
             {
-                var grouped = entries.GroupBy(x => x.Text);
+                var grouped = entries.GroupBy(x => x.Text).OrderBy(x => x.Max(y => y.Date));
                 var result = new List<string>();
 
                 foreach (var group in grouped)
