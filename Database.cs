@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Antmicro.Migrant;
+using System.Threading.Tasks;
 using LiteDB;
+using Migrantoid;
 using Newtonsoft.Json;
 
 namespace MieszkanieOswieceniaBot
@@ -22,7 +23,7 @@ namespace MieszkanieOswieceniaBot
         private Database()
         {
             samplesCache = new HashSet<object>();
-            serializer = new Serializer(new Antmicro.Migrant.Customization.Settings(disableTypeStamping: true));
+            serializer = new Serializer(new Migrantoid.Customization.Settings(disableTypeStamping: true));
             newestKnownRosyCreekHeader = new CachedKeyValue<string>(this, "newestRosyCreekHeader");
             newestKnownRosyCreekNewsDate = new CachedKeyValue<DateTime>(this, "newestRosyCreekNewsDate");
             newestRosyCreekShortNews = new CachedKeyValue<string>(this, "newestRosyCreekShortNews");
@@ -39,44 +40,53 @@ namespace MieszkanieOswieceniaBot
             samplesCache.Remove(lastComparableSample);
             samplesCache.Add(sample);
 
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
+                if (samples.FindOne(Query.All()) != null)
+                {
+                    samples.EnsureIndex(x => x.Date);
+                }
                 samples.Insert(sample);
-                samples.EnsureIndex(x => x.Date);
             }
         }
 
         public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample<T>
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
-                return samples.Find(x => x.Date >= startDate && x.Date <= endDate);
+                foreach (var sample in samples.Find(x => x.Date >= startDate && x.Date <= endDate))
+                {
+                    yield return sample;
+                }
             }
         }
 
         public IEnumerable<T> GetAllSamples<T>() where T : ISample<T>
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
-                return samples.FindAll();
+                foreach (var sample in samples.FindAll())
+                {
+                    yield return sample;
+                }
             }
         }
 
         public IEnumerable<T> GetNewestSamples<T>(int howMany) where T : ISample<T>
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
-                return samples.Find(Query.All("Date", Query.Descending), 0, howMany).Reverse();
+                return samples.Find(Query.All("Date", Query.Descending), 0, howMany).Reverse().ToArray();
             }
         }
 
         public int GetSampleCount<T>()
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 return database.GetCollection(CollectionNameOfType<T>()).Count();
             }
@@ -90,11 +100,12 @@ namespace MieszkanieOswieceniaBot
                 {
                     return 0;
                 }
+
                 return new FileInfo(DatabaseFileName).Length;
             }
         }
 
-        public string GetTemperatureSampleExport(Action<decimal> progressHandler = null)
+        public async Task<string> GetTemperatureSampleExport(Func<decimal, Task> progressHandler = null)
         {
             var stopwatch = Stopwatch.StartNew();
             var last = stopwatch.Elapsed;
@@ -105,7 +116,7 @@ namespace MieszkanieOswieceniaBot
                 {
                     using(var streamWriter = new StreamWriter(gzipStream))
                     {
-                        using(var database = new LiteDatabase(DatabaseFileName))
+                        using(var database = new LiteDatabase(ConnectionString))
                         {
                             var counter = 0;
                             var collection = database.GetCollection<TemperatureSample>(TemperatureCollectionName);
@@ -117,7 +128,7 @@ namespace MieszkanieOswieceniaBot
                                 streamWriter.WriteLine();
                                 if(stopwatch.Elapsed - last > TimeSpan.FromMilliseconds(300))
                                 {
-                                    progressHandler(1m * counter / allSamplesNumber);
+                                    await progressHandler(1m * counter / allSamplesNumber);
                                     last = stopwatch.Elapsed;
                                 }
                                 counter++;
@@ -127,15 +138,6 @@ namespace MieszkanieOswieceniaBot
                 }
             }
             return exportFileName;
-        }
-
-        public void Shrink()
-        {
-            using(var database = new LiteDatabase(DatabaseFileName))
-            {
-                var fileDiskService = new FileDiskService("szrink.tmp");
-                database.Engine.Shrink(tempDisk: fileDiskService);
-            }
         }
 
         public DateTime NewestKnownRosyCreekNewsDate
@@ -158,7 +160,7 @@ namespace MieszkanieOswieceniaBot
 
         public void AddHouseCooperativeChatId(long chatId)
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var collection = database.GetCollection<DatabaseChatId>(ChatIdColectionName);
                 collection.Upsert(new DatabaseChatId { Id = chatId });
@@ -167,17 +169,17 @@ namespace MieszkanieOswieceniaBot
 
         public IEnumerable<long> GetHouseCooperativeChatIds()
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var collection = database.GetCollection<DatabaseChatId>(ChatIdColectionName);
-                var result = collection.FindAll().Select(x => x.Id);
+                var result = collection.FindAll().Select(x => x.Id).ToArray();
                 return result;
             }
         }
 
         private T GetValueByKey<T>(string key)
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var collection = database.GetCollection<KeyValueItem>(KeyValueCollectionName);
                 var result = collection.FindOne(x => x.Key == key);
@@ -186,20 +188,33 @@ namespace MieszkanieOswieceniaBot
                     return default(T);
                 }
                 var memoryStream = new MemoryStream(result.Value);
-                return serializer.Deserialize<T>(memoryStream);
+
+                try
+                {
+                    return serializer.Deserialize<T>(memoryStream);
+                }
+                catch(InvalidOperationException e)
+                {
+                    CircularLogger.Instance.Log("Problem during deserialization of {0}: '{1}'. Resetting value.", key, e.Message);
+                    return default(T);
+                }
             }
         }
 
         private void SetValueByKey<T>(string key, T value)
         {
-            using(var database = new LiteDatabase(DatabaseFileName))
+            using(var database = new LiteDatabase(ConnectionString))
             {
                 var collection = database.GetCollection<KeyValueItem>(KeyValueCollectionName);
                 var memoryStream = new MemoryStream();
                 serializer.Serialize(value, memoryStream);
                 var item = new KeyValueItem { Key = key, Value = memoryStream.ToArray() };
+                if (collection.FindOne(Query.All()) != null)
+                {
+                    collection.EnsureIndex(x => x.Key, true);
+                }
+
                 collection.Upsert(item);
-                collection.EnsureIndex(x => x.Key);
             }
         }
 
@@ -228,6 +243,7 @@ namespace MieszkanieOswieceniaBot
         private readonly CachedKeyValue<string> newestRosyCreekShortNews;
 
         private const string DatabaseFileName = "temperature.db";
+        private const string ConnectionString = "Filename=" + DatabaseFileName + ";Upgrade=true";
         private const string TemperatureCollectionName = "samples";
         private const string RelayCollectionName = "stany_nowe";
         private const string KeyValueCollectionName = "keyval";

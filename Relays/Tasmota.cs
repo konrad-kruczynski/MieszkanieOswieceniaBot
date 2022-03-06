@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
@@ -9,21 +10,21 @@ namespace MieszkanieOswieceniaBot.Relays
         {
         }
 
-        protected override bool Toggle()
+        protected override async Task<bool> ToggleAsync()
         {
-            var jsonResult = FlurlClient.Request("cm?cmnd=Power%20Toggle").GetJsonAsync().GetAwaiter().GetResult();
+            var jsonResult = await FlurlClient.Request("cm?cmnd=Power%20Toggle").GetJsonAsync().ConfigureAwait(false);
             return PowerStateToBool(jsonResult.POWER);
         }
 
-        protected override bool GetState()
+        protected override async Task<bool> GetStateAsync()
         {
-            return PowerStateToBool(FlurlClient.Request("cm?cmnd=Power").GetJsonAsync().GetAwaiter().GetResult().POWER);
+            return PowerStateToBool((await FlurlClient.Request("cm?cmnd=Power").GetJsonAsync().ConfigureAwait(false)).POWER);
         }
 
-        protected override void SetState(bool state)
+        protected override Task SetStateAsync(bool state)
         {
             var commandValue = state ? "On" : "off";
-            FlurlClient.Request($"cm?cmnd=Power%20{commandValue}").GetAsync().GetAwaiter().GetResult();
+            return FlurlClient.Request($"cm?cmnd=Power%20{commandValue}").GetAsync();
         }
 
         private static bool PowerStateToBool(string state)

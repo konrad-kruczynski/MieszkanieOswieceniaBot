@@ -1,27 +1,25 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MieszkanieOswieceniaBot", "MieszkanieOswieceniaBot.csproj", "{C1CA7E43-0D87-4E55-944C-21CC41D7A4E2}"
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1700.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MieszkanieOswieceniaBot", "MieszkanieOswieceniaBot.csproj", "{DA08F667-3520-46F8-9E3A-66F8AF94AD70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x86 = Debug|x86
-		Release|x86 = Release|x86
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C1CA7E43-0D87-4E55-944C-21CC41D7A4E2}.Debug|x86.ActiveCfg = Debug|x86
-		{C1CA7E43-0D87-4E55-944C-21CC41D7A4E2}.Debug|x86.Build.0 = Debug|x86
-		{C1CA7E43-0D87-4E55-944C-21CC41D7A4E2}.Release|x86.ActiveCfg = Release|x86
-		{C1CA7E43-0D87-4E55-944C-21CC41D7A4E2}.Release|x86.Build.0 = Release|x86
+		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		Policies = $0
-		$0.TextStylePolicy = $1
-		$1.inheritsSet = null
-		$1.scope = text/x-csharp
-		$0.CSharpFormattingPolicy = $2
-		$2.SpaceAfterControlFlowStatementKeyword = False
-		$2.scope = text/x-csharp
-		$0.VersionControlPolicy = $3
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4011FF4A-D1FD-47C0-87F7-36AEA9CA0AB7}
 	EndGlobalSection
 EndGlobal

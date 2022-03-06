@@ -10,16 +10,16 @@ namespace MieszkanieOswieceniaBot
         public Authorizer()
         {
             configuration = Configuration.Instance;
-            users = new HashSet<int>();
+            users = new HashSet<long>();
             LoadUsers();
         }
 
-        public bool IsAuthorized(int userId)
+        public bool IsAuthorized(long userId)
         {
             return configuration.IsAdmin(userId) || ListUsers().Contains(userId);
         }
 
-        public void AddUser(int userId)
+        public void AddUser(long userId)
         {
             users.Add(userId);
             Write();
@@ -31,7 +31,7 @@ namespace MieszkanieOswieceniaBot
             Write();
         }
 
-        public IEnumerable<int> ListUsers()
+        public IEnumerable<long> ListUsers()
         {
             return users;
         }
@@ -54,7 +54,7 @@ namespace MieszkanieOswieceniaBot
         }
 
         private readonly Configuration configuration;
-        private readonly HashSet<int> users;
+        private readonly HashSet<long> users;
         private const string UsersFile = "users.txt";
     }
 }

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Flurl.Http;
 using HtmlAgilityPack;
 
@@ -10,12 +11,11 @@ namespace MieszkanieOswieceniaBot
 {
     public sealed class RosyCreekClient
     {
-        public bool TryGetNews(out string message)
+        public async Task<(bool Success, string Message)> TryGetNewsAsync()
         {
+            var message = string.Empty;
 
-            message = string.Empty;
-
-            var pageAsString = NewsUrl.GetStringAsync().GetAwaiter().GetResult();
+            var pageAsString = await NewsUrl.GetStringAsync();
             var page = new HtmlDocument();
             page.LoadHtml(pageAsString);
 
@@ -52,14 +52,14 @@ namespace MieszkanieOswieceniaBot
 
             if(message == string.Empty)
             {
-                return false;
+                return (false, message);
             }
 
             database.NewestKnownRosyCreekNewsDate = date;
             database.NewestKnownRosyCreekNewsHeader = header;
             database.NewestRosyCreekShortNews = newestShortNews;
 
-            return true;
+            return (true, message);
         }
 
         private static string RemoveConsecutiveSpacesAndNewlines(string text)

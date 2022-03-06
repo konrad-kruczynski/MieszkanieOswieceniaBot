@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
@@ -10,21 +11,21 @@ namespace MieszkanieOswieceniaBot.Relays
             this.hostname = hostname;
         }
 
-        protected override bool Toggle()
+        protected override async Task<bool> ToggleAsync()
         {
-            return FlurlClient.Request("relay/0?turn=toggle").GetJsonAsync().GetAwaiter().GetResult().ison;
+            return (await FlurlClient.Request("relay/0?turn=toggle").GetJsonAsync().ConfigureAwait(false)).ison;
         }
 
-        protected override bool GetState()
+        protected override async Task<bool> GetStateAsync()
         {
-            var jsonState = FlurlClient.Request("relay/0").GetJsonAsync().GetAwaiter().GetResult();
+            var jsonState = await FlurlClient.Request("relay/0").GetJsonAsync().ConfigureAwait(false);
             return jsonState.ison;
         }
 
-        protected override void SetState(bool state)
+        protected override Task SetStateAsync(bool state)
         {
             var stateAsText = state ? "on" : "off";
-            FlurlClient.Request($"relay/0?turn={stateAsText}").GetAsync().GetAwaiter().GetResult();
+            return FlurlClient.Request($"relay/0?turn={stateAsText}").GetAsync();
         }
 
         private readonly string hostname;

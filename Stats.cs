@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using Humanizer;
 using Humanizer.Bytes;
 
@@ -23,16 +24,12 @@ namespace MieszkanieOswieceniaBot
             builder.AppendFormat("To daje średnio ~{0:0.0} wiadomości dziennie.", messageCounter / runningTime.TotalDays);
             builder.AppendLine();
             builder.AppendFormat("Rozmiar bazy danych: {0}.", ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"));
-            builder.AppendLine();
-            builder.AppendFormat("Liczba próbek temperatury: {0}.", Database.Instance.GetSampleCount<TemperatureSample>());
-            builder.AppendLine();
-            builder.AppendFormat("Liczba próbek stanu: {0}.", Database.Instance.GetSampleCount<RelaySample>());
             return builder.ToString();
         }
 
         public void IncrementMessageCounter()
         {
-            messageCounter++;
+            Interlocked.Increment(ref messageCounter);
         }
 
         private int messageCounter;

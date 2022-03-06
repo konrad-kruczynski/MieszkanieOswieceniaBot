@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -18,13 +19,13 @@ namespace MieszkanieOswieceniaBot
 
         }
 
-        public bool TryApply(IDictionary<int, RelayEntry> relayEntries)
+        public async Task<bool> TryApplyAsync(IDictionary<int, RelayEntry> relayEntries)
         {
             var success = true;
 
             foreach (var id in coveredRange)
             {
-                if (!relayEntries[id].Relay.TrySetState(turnedOn.Contains(id)))
+                if (!await relayEntries[id].Relay.TrySetStateAsync(turnedOn.Contains(id)))
                 {
                     success = false;
                 }

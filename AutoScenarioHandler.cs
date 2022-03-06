@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using MieszkanieOswieceniaBot.Relays;
 
 namespace MieszkanieOswieceniaBot
@@ -15,7 +16,7 @@ namespace MieszkanieOswieceniaBot
 
         public bool Enabled { get; set; }
 
-        public void Refresh()
+        public async Task RefreshAsync()
         {
             if (!Enabled)
             {
@@ -39,7 +40,7 @@ namespace MieszkanieOswieceniaBot
             var relayEntry = Globals.Relays[relayId];
             var relay = relayEntry.Relay;
 
-            if (relay.TrySetState(currentEvent.Item2))
+            if (await relay.TrySetStateAsync(currentEvent.Item2))
             {
                 lastSwitchAt = currentEvent.Item1;
             }

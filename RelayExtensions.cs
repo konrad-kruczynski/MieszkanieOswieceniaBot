@@ -1,17 +1,29 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot
 {
     public static class RelayExtensions
     {
-        public static string GetFriendlyState(this Relays.IRelay relay)
+        public static async Task<string> GetFriendlyStateAsync(this Relays.IRelay relay)
         {
-            if (!relay.TryGetState(out var state))
+            var result = await relay.TryGetStateAsync();
+            if (!result.Success)
             {
                 return "nieznany";
             }
 
-            return state ? "włączony" : "wyłączony";
+            return result.State ? "włączony" : "wyłączony";
+        }
+
+        public static string GetFriendlyStateFromSuccessAndState((bool Success, bool State) input)
+        {
+            if (!input.Success)
+            {
+                return "nieznany";
+            }
+
+            return input.State ? "włączony" : "wyłączony";
         }
     }
 }

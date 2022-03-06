@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Flurl.Http;
 
 namespace MieszkanieOswieceniaBot.Relays
@@ -16,53 +17,51 @@ namespace MieszkanieOswieceniaBot.Relays
             FlurlClient = flurlClient;
         }
 
-        public bool TryGetState(out bool state)
+        public async Task<(bool Success, bool State)> TryGetStateAsync()
         {
             try
             {
-                state = GetState();
-                return true;
+                var state = await GetStateAsync().ConfigureAwait(false);
+                return (true, state);
             }
             catch (FlurlHttpException flurlException)
             {
                 CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException.Message}");
-                state = false;
-                return false;
+                return (false, false);
             }
         }
 
-        public bool TrySetState(bool state)
+        public async Task<bool> TrySetStateAsync(bool state)
         {
             try
             {
-                SetState(state);
+                await SetStateAsync(state).ConfigureAwait(false);
                 return true;
             }
-            catch(FlurlHttpException flurlException)
+            catch (FlurlHttpException flurlException)
             {
                 CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
                 return false;
             }
         }
 
-        public bool TryToggle(out bool currentState)
+        public async Task<(bool Success, bool CurrentState)> TryToggleAsync()
         {
             try
             {
-                currentState = Toggle();
-                return true;
+                var currentState = await ToggleAsync().ConfigureAwait(false);
+                return (true, currentState);
             }
-            catch(FlurlHttpException flurlException)
+            catch (FlurlHttpException flurlException)
             {
                 CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
-                currentState = false;
-                return false;
+                return (false, false);
             }
         }
 
-        protected abstract bool Toggle();
-        protected abstract bool GetState();
-        protected abstract void SetState(bool state);
+        protected abstract Task<bool> ToggleAsync();
+        protected abstract Task<bool> GetStateAsync();
+        protected abstract Task SetStateAsync(bool state);
 
         protected readonly IFlurlClient FlurlClient;
     }

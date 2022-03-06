@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.ImageSharp;
 using OxyPlot.Series;
-using Svg;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -17,15 +18,15 @@ namespace MieszkanieOswieceniaBot
             this.dateTimeFormat = dateTimeFormat;
         }
 
-        public string PrepareChart(DateTime startDate, DateTime endDate, bool oneDay, Action<Step> stepHandler = null,
-                                   Action<int> onDataCount = null)
+        public async Task<string> PrepareChart(DateTime startDate, DateTime endDate, bool oneDay, Func<Step, Task> stepHandler = null,
+                                   Func<int, Task> onDataCount = null)
         {
-            stepHandler(Step.RetrievingData);
+            await stepHandler(Step.RetrievingData);
 
             var samples = Database.Instance.GetSamples<TemperatureSample>(startDate, endDate);
             var samplesCount = samples.Count();
-            onDataCount(samplesCount);
-            stepHandler(Step.CreatingPlot);
+            await onDataCount(samplesCount);
+            await stepHandler(Step.CreatingPlot);
             var plotModel = new PlotModel { Title = "Temperatura" };
             plotModel.Background = OxyColors.White;
 
@@ -95,36 +96,29 @@ namespace MieszkanieOswieceniaBot
                 plotModel.Series.Add(serie);
             }
 
-            var svgFile = "chart.svg";
+            await stepHandler(Step.RenderingImage);
             var pngFile = "chart.png";
-
-            using (var stream = File.Create(svgFile))
+            using (var stream = File.Create(pngFile))
             {
-                var svgExporter = new SvgExporter { Width = 1300, Height = 800 };
-                svgExporter.Export(plotModel, stream);
+                var pngExporter = new PngExporter(1300, 800);
+                pngExporter.Export(plotModel, stream);
             }
-            stepHandler(Step.RenderingImage);
-            var svgDocument = SvgDocument.Open(svgFile);
-            var bitmap = svgDocument.Draw();
-            bitmap.Save(pngFile, System.Drawing.Imaging.ImageFormat.Png);
+
 
             return pngFile;
         }
-
-        public string PrepareHistogram(int[] relayNos, Action<Step> stepHandler = null,
-                                   Action<int> onDataCount = null)
+        
+        public async Task<string> PrepareHistogram(int[] relayNos, string relayName, Func<Step, Task> stepHandler = null)
         {
-            stepHandler(Step.RetrievingData);
+            await stepHandler(Step.RetrievingData);
             var samples = Database.Instance.GetAllSamples<RelaySample>();
-            var samplesCount = samples.Count();
-            onDataCount(samplesCount);
 
             var minutesInBucket = 6;
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[relayNos.Length, bucketsCount];
-            for(var i = 0; i < relayNos.Length; i++)
+            foreach (var sample in samples)
             {
-                foreach(var sample in samples)
+                for (var i = 0; i < relayNos.Length; i++)
                 {
                     var active = sample.State && sample.RelayId == relayNos[i];
                     if (!active)
@@ -138,8 +132,8 @@ namespace MieszkanieOswieceniaBot
                 }
             }
 
-            stepHandler(Step.CreatingPlot);
-            var plotModel = new PlotModel { Title = "Histogram", };
+            await stepHandler(Step.CreatingPlot);
+            var plotModel = new PlotModel { Title = "Histogram " + relayName, };
             plotModel.Background = OxyColors.White;
             plotModel.Axes.Add(new LinearAxis()
             {
@@ -170,18 +164,14 @@ namespace MieszkanieOswieceniaBot
                 plotModel.Series.Add(serie);
             }
 
-            var svgFile = "histogram.svg";
             var pngFile = "histogram.png";
 
-            using(var stream = File.Create(svgFile))
+            await stepHandler(Step.RenderingImage);
+            using (var stream = File.Create(pngFile))
             {
-                var svgExporter = new SvgExporter { Width = 1300, Height = 800 };
-                svgExporter.Export(plotModel, stream);
+                var pngExporter = new PngExporter(1300, 800);
+                pngExporter.Export(plotModel, stream);
             }
-            stepHandler(Step.RenderingImage);
-            var svgDocument = SvgDocument.Open(svgFile);
-            var bitmap = svgDocument.Draw();
-            bitmap.Save(pngFile, System.Drawing.Imaging.ImageFormat.Png);
 
             return pngFile;
         }
