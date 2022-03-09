@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Flurl.Http;
 using HtmlAgilityPack;
 
@@ -11,19 +12,25 @@ namespace MieszkanieOswieceniaBot
     {
         public PekaClient(string login, string password)
         {
-            client = new FlurlClient().EnableCookies();
-            this.login = login;
+            session = new CookieSession();
+            this.login = login; 
             this.password = password;
         }
 
-        public decimal GetCurrentBalance()
+        public async Task<decimal> GetCurrentBalance()
         {
-            string homePageAsString = GetHomePage();
+            string homePageAsString = await GetHomePage();
             if (!homePageAsString.Contains("Saldo"))
             {
-                LogIn();
-                homePageAsString = GetHomePage();
+                await LogIn();
+                homePageAsString = await GetHomePage();
             }
+
+            if (!homePageAsString.Contains("Saldo"))
+            {
+                return -1;
+            }
+
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(homePageAsString);
             var balanceText = htmlDocument.DocumentNode.Descendants().First(x => x.Id == "clientCards")
@@ -34,19 +41,18 @@ namespace MieszkanieOswieceniaBot
             return decimal.Parse(resultAsText, new CultureInfo("pl-PL"));
         }
 
-        private string GetHomePage()
+        private Task<string> GetHomePage()
         {
-            return "https://www.peka.poznan.pl/SOP/account/home.jspb".WithClient(client)
-                                                                                     .GetAsync().ReceiveString().Result;
+            return session.Request("https://www.peka.poznan.pl/SOP/account/home.jspb").GetAsync().ReceiveString();
         }
 
-        private void LogIn()
+        private async Task LogIn()
         {
-            "https://www.peka.poznan.pl/SOP/j_spring_security_check".WithClient(client)
-                                                                    .PostUrlEncodedAsync(new { j_username = login, j_password = password }).Wait();
+            await session.Request("https://www.peka.poznan.pl/SOP/j_spring_security_check").PostUrlEncodedAsync(new { j_username = login, j_password = password });
+        
         }
 
-        private readonly FlurlClient client;
+        private readonly CookieSession session;
         private readonly string login;
         private readonly string password;
     }

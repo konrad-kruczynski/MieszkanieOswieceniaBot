@@ -13,8 +13,17 @@ namespace MieszkanieOswieceniaBot
             AsyncPump.Run(async () =>
             {
                 var controller = new Controller();
-                controller.Start();
-                await Task.Delay(Timeout.InfiniteTimeSpan);
+
+                try
+                {
+                    await controller.Run();
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+
+                await Task.Delay(TimeSpan.FromMinutes(1));
             });
         }
     }

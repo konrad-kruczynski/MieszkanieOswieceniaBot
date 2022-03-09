@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
@@ -12,10 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Flurl.Http;
 using Humanizer;
-using Humanizer.Bytes;
-using Medallion.Shell;
 using Telegram.Bot;
-using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MieszkanieOswieceniaBot
@@ -24,243 +22,262 @@ namespace MieszkanieOswieceniaBot
     {
         public Controller()
         {
-            CircularLogger.Instance.Log("Starting bot...");
+            CircularLogger.Instance.Log("Initializing bot...");
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             stats = new Stats();
             pekaClients = new Dictionary<string, PekaClient>();
-            lastSpeakerHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
+            lastSpeakerHeartbeat = Enumerable.Repeat(new DateTime(2000, 1, 1).ToUniversalTime(), 2).ToArray();
             authorizer = new Authorizer();
-            bot.OnMessage += async (o, e) =>
-            {
-                try
-                {
-                    await HandleMessage(o, e);
-                }
-                catch(Exception exception)
-                {
-                    CircularLogger.Instance.Log("Exception '{1}' during message handling: {0}\n{2}",
-                        e.Message.Text, exception.Message, exception.StackTrace);
-                }
-            };
-            bot.OnCallbackQuery += HandleCallbackQuery;
-            bot.OnReceiveGeneralError += (sender, e) => HandleError(e.Exception.ToString());
-            bot.OnReceiveError += (sender, e) => HandleError(e.ApiRequestException.ToString());
-            CircularLogger.Instance.Log("Bot started.");
+            CircularLogger.Instance.Log("Bot initialized.");
         }
 
-        public void Start()
+        public async Task HandleUpdate(Telegram.Bot.Types.Update update)
         {
-            startDate = DateTime.Now;
-            bot.StartReceiving();
-            var udpClient = new UdpClient(12345);
-            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(HandleUdp);
-            Observable.Interval(TimeSpan.FromSeconds(10)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => RefreshSpeakerState());
-            Observable.Interval(TimeSpan.FromMinutes(2)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => { WriteTemperatureToDatabase(); WriteStateToDatabase(); });
-            Observable.Interval(TimeSpan.FromMinutes(1)).ObserveOn(SynchronizationContext.Current)
-                      .Subscribe(_ => HandleAutoScenarioTimer());
-            Observable.Interval(TimeSpan.FromHours(8)).ObserveOn(SynchronizationContext.Current)
-                .Subscribe(_ => CheckHousingCooperativeNews());
+            if (update.Type == UpdateType.CallbackQuery)
+            {
+                await HandleCallbackQuery(update.CallbackQuery);
+                return;
+            }
+
+            if (update.Type != UpdateType.Message)
+            {
+                return;
+            }
+
+            if (update.Message!.Type != MessageType.Text)
+            {
+                return;
+            }
+
+            await HandleMessage(update.Message);
         }
 
-        private void HandleUdp(UdpReceiveResult result)
+        private void SubscribeOnInterval(TimeSpan period, SynchronizationContext context, Func<Task> handlerAsync)
+        {
+            Observable.Interval(period)
+                .Select(x => Observable.FromAsync(handlerAsync).ObserveOn(context))
+                .Concat().Subscribe();
+        }
+
+        public async Task Run()
+        {
+            CircularLogger.Instance.Log("Starting bot...");
+            startDate = DateTime.UtcNow;
+            var udpEndPoint = new IPEndPoint(IPAddress.Any, 12345);
+            var udpClient = new UdpClient(udpEndPoint);
+
+            Observable.FromAsync(udpClient.ReceiveAsync).Repeat().ObserveOn(SynchronizationContext.Current)
+                .Select(x => Observable.FromAsync(async () => await HandleUdp(x)).ObserveOn(SynchronizationContext.Current))
+                .Concat().Subscribe();
+
+            SubscribeOnInterval(TimeSpan.FromSeconds(10), SynchronizationContext.Current, RefreshSpeakerState);
+            SubscribeOnInterval(TimeSpan.FromMinutes(2), SynchronizationContext.Current, WriteTemperatureAndStateToDatabase);
+            SubscribeOnInterval(TimeSpan.FromMinutes(1), SynchronizationContext.Current, HandleAutoScenarioTimer);
+            SubscribeOnInterval(TimeSpan.FromHours(8), SynchronizationContext.Current, CheckHousingCooperativeNews);
+
+            CircularLogger.Instance.Log("Bot started.");
+
+            await foreach (var update in new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot))
+            {
+                await HandleUpdate(update);
+            }
+        }
+
+        private async Task HandleUdp(UdpReceiveResult result)
         {
             var bufferAsString = Encoding.UTF8.GetString(result.Buffer);
             if(int.TryParse(bufferAsString, out var number))
             {
                 if(number == 10)
                 {
-                    Globals.Relays[3].Relay.TrySetState(true);
+                    await Globals.Relays[3].Relay.TrySetStateAsync(true);
                 }
 
                 if(number == 11)
                 {
-                    Globals.Relays[3].Relay.TrySetState(false);
+                    await Globals.Relays[3].Relay.TrySetStateAsync(false);
                 }
 
-                HandleScenario(number);
+                await HandleScenarioAsync(number);
                 return;
             }
 
-            if(lastSpeakerHeartbeat < DateTime.UtcNow)
+            if(lastSpeakerHeartbeat[0] < DateTime.UtcNow)
             {
-                lastSpeakerHeartbeat = DateTime.UtcNow;
+                lastSpeakerHeartbeat[0] = DateTime.UtcNow;
             }
-            RefreshSpeakerState();
+
+            await RefreshSpeakerState();
         }
 
         private void HandleError(string error)
         {
             CircularLogger.Instance.Log("Bot error: {0}.", error);
-            Thread.Sleep(1000);
         }
 
-        private async Task HandleMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        private async Task HandleMessage(Telegram.Bot.Types.Message message)
         {
             stats.IncrementMessageCounter();
-            var userId = e.Message.From.Id;
-            var chatId = e.Message.Chat.Id;
+            var userId = message.From.Id;
+            var chatId = message.Chat.Id;
             if(!authorizer.IsAuthorized(userId))
             {
-                bot.SendTextMessageAsync(chatId, "Brak dostępu.").Wait();
-                CircularLogger.Instance.Log($"Unauthorized access from {GetSender(e.Message.From)}.");
+                await bot.SendTextMessageAsync(chatId, "Brak dostępu.");
+                CircularLogger.Instance.Log($"Unauthorized access from {GetSender(message.From)}.");
                 return;
             }
 
-            if(e.Message.Date < startDate)
+            if(message.Date < startDate)
             {
-                bot.SendTextMessageAsync(e.Message.Chat.Id,
+                await bot.SendTextMessageAsync(message.Chat.Id,
                                          string.Format("Wiadomość '{0}' została wysłana {1}, tj. przed startem bota, który nastąpił {2}. Proszę ponowić.",
-                                         e.Message.Text, e.Message.Date, startDate)).Wait();
+                                         message.Text, message.Date, startDate));
                 return;
             }
 
-            if(e.Message.Text != null)
+            if(message.Text != null)
             {
-                if(e.Message.Text.ToLower() == "lista")
+                if(message.Text.ToLower() == "lista")
                 {
                     if(!Configuration.Instance.IsAdmin(userId))
                     {
-                        bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
-                        CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
+                        await bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.");
+                        CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(message.From)}.");
                         return;
                     }
                     var users = authorizer.ListUsers();
                     foreach(var user in users.Concat(Configuration.Instance.ListAdmins()))
                     {
                         var isAdmin = Configuration.Instance.IsAdmin(user);
-                        var photos = bot.GetUserProfilePhotosAsync(user).Result;
+                        var photos = await bot.GetUserProfilePhotosAsync(user);
                         if(photos.TotalCount < 1)
                         {
                             continue;
                         }
-                        var photo = photos.Photos[0][0];
-                        var memoryStream = new MemoryStream();
-                        await bot.GetFileAsync(photo.FileId, memoryStream);
 
-                        var photoToSend = new Telegram.Bot.Types.FileToSend(photo.FileId, memoryStream);
+                        var photo = photos.Photos[0][0];
+
                         var markup = new InlineKeyboardMarkup(
                             new[] { InlineKeyboardButton.WithCallbackData("Usuń", "r" + user) });
+                        var photoToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(photo.FileId.ToString());
                         await bot.SendPhotoAsync(chatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
                                                  replyMarkup: isAdmin ? null : markup);
                     }
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "restart")
+                if(message.Text.ToLower() == "restart")
                 {
                     if(!Configuration.Instance.IsAdmin(userId))
                     {
-                        bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.").Wait();
-                        CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(e.Message.From)}.");
+                        await bot.SendTextMessageAsync(chatId, "Tylko administrator może takie rzeczy.");
+                        CircularLogger.Instance.Log($"Unauthorized listing from {GetSender(message.From)}.");
                         return;
                     }
-                    bot.SendTextMessageAsync(chatId, "Teraz restart").Wait();
+                    await bot.SendTextMessageAsync(chatId, "Teraz restart");
                     Environment.Exit(0);
 
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres7")
+                if(message.Text.ToLower() == "wykres7")
                 {
-                    CreateChart(TimeSpan.FromDays(7), chatId, "ddd HH:mm", false);
+                    await CreateChart(TimeSpan.FromDays(7), chatId, "ddd HH:mm", false);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres24")
+                if(message.Text.ToLower() == "wykres24")
                 {
-                    CreateChart(TimeSpan.FromDays(1), chatId, "HH:mm", false);
+                    await CreateChart(TimeSpan.FromDays(1), chatId, "HH:mm", false);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres48")
+                if(message.Text.ToLower() == "wykres48")
                 {
-                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", false);
+                    await CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", false);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres30")
+                if(message.Text.ToLower() == "wykres30")
                 {
-                    CreateChart(TimeSpan.FromDays(30), chatId, "dd", false);
+                    await CreateChart(TimeSpan.FromDays(30), chatId, "dd", false);
                     return;
                 }
 
-                if (e.Message.Text.ToLower() == "wykres48-2")
+                if (message.Text.ToLower() == "wykres48-2")
                 {
-                    CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", true);
+                    await CreateChart(TimeSpan.FromDays(2), chatId, "HH:mm", true);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "wykres7-2")
+                if(message.Text.ToLower() == "wykres7-2")
                 {
-                    CreateChart(TimeSpan.FromDays(7), chatId, "HH:mm", true);
+                    await CreateChart(TimeSpan.FromDays(7), chatId, "HH:mm", true);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram0")
+                if(message.Text.ToLower() == "histogram0")
                 {
-                    CreateHistogram(chatId, new[] { 0 });
+                    await CreateHistogram(chatId, new[] { 0 });
                     return;
                 }
-                if(e.Message.Text.ToLower() == "histogram1")
+                if(message.Text.ToLower() == "histogram1")
                 {
-                    CreateHistogram(chatId, new[] { 1 });
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "histogram2")
-                {
-                    CreateHistogram(chatId, new[] { 2 });
+                    await CreateHistogram(chatId, new[] { 1 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram3")
+                if(message.Text.ToLower() == "histogram2")
                 {
-                    CreateHistogram(chatId, new[] { 3 });
+                    await CreateHistogram(chatId, new[] { 2 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram4")
+                if(message.Text.ToLower() == "histogram3")
                 {
-                    CreateHistogram(chatId, new[] { 4 });
+                    await CreateHistogram(chatId, new[] { 3 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram5")
+                if(message.Text.ToLower() == "histogram4")
                 {
-                    CreateHistogram(chatId, new[] { 5 });
+                    await CreateHistogram(chatId, new[] { 4 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram6")
+                if(message.Text.ToLower() == "histogram5")
                 {
-                    CreateHistogram(chatId, new[] { 6 });
+                    await CreateHistogram(chatId, new[] { 5 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "histogram7")
+                if(message.Text.ToLower() == "histogram6")
                 {
-                    CreateHistogram(chatId, new[] { 7 });
+                    await CreateHistogram(chatId, new[] { 6 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "superhistogram")
+                if(message.Text.ToLower() == "histogram7")
                 {
-                    CreateHistogram(chatId, new[] { 0, 1, 2, 3, 4, 5, 6 });
+                    await CreateHistogram(chatId, new[] { 7 });
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "historia")
+                if(message.Text.ToLower() == "superhistogram")
+                {
+                    await CreateHistogram(chatId, new[] { 0, 1, 2, 3, 4, 5, 6 });
+                    return;
+                }
+
+                if(message.Text.ToLower() == "historia")
                 {
                     var samples = Database.Instance.GetNewestSamples<TemperatureSample>(30);
                     var text = samples.Select(x => "`" + x.ToString() + "`").Aggregate((x, y) => x + Environment.NewLine + y);
-                    bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    await bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "historia2")
+                if(message.Text.ToLower() == "historia2")
                 {
                     var samples = Database.Instance.GetNewestSamples<RelaySample>(20 * Globals.Relays.Count);
                     var samplesGroupedByMinutes = samples.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, x.Date.Day, x.Date.Hour, x.Date.Minute, 0));
@@ -291,25 +308,25 @@ namespace MieszkanieOswieceniaBot
                     }
 
                     var text = resultString.ToString();
-                    bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown).Wait();
+                    await bot.SendTextMessageAsync(chatId, text, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "eksport")
+                if(message.Text.ToLower() == "eksport")
                 {
-                    var progressMessage = bot.SendTextMessageAsync(chatId, "Przygotowuję...").Result;
-                    var exportFile = Database.Instance.GetTemperatureSampleExport(progress =>
+                    var progressMessage = await bot.SendTextMessageAsync(chatId, "Przygotowuję...");
+                    var exportFile = await Database.Instance.GetTemperatureSampleExport(async progress =>
                     {
-                        bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100 * progress)).Wait();
+                        await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100 * progress));
                     });
-                    bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...").Wait();
-                    var fileToSend = new Telegram.Bot.Types.FileToSend("probki.json.gz", File.OpenRead(exportFile));
-                    bot.SendDocumentAsync(chatId, fileToSend).Wait();
-                    bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Gotowe").Wait();
+                    await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...");
+                    var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(exportFile), "probki.json.gz");
+                    await bot.SendDocumentAsync(chatId, fileToSend);
+                    await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Gotowe");
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "peka")
+                if(message.Text.ToLower() == "peka")
                 {
                     foreach(var pekaEntry in PekaDb.Instance.GetData())
                     {
@@ -318,13 +335,13 @@ namespace MieszkanieOswieceniaBot
                             client = new PekaClient(pekaEntry.Item2, pekaEntry.Item3);
                             pekaClients[pekaEntry.Item2] = client;
                         }
-                        var balance = client.GetCurrentBalance();
-                        bot.SendTextMessageAsync(chatId, string.Format("{0}: {1:0.00} PLN", pekaEntry.Item1, balance)).Wait();
+                        var balance = await client.GetCurrentBalance();
+                        await bot.SendTextMessageAsync(chatId, string.Format("{0}: {1:0.00} PLN", pekaEntry.Item1, balance));
                     }
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "log")
+                if(message.Text.ToLower() == "log")
                 {
                     var entries = CircularLogger.Instance.GetEntriesAsHtmlStrings().ToList();
                     if (entries.Count > 10)
@@ -334,123 +351,109 @@ namespace MieszkanieOswieceniaBot
 
                     foreach (var line in entries)
                     {
-                        bot.SendTextMessageAsync(chatId, line, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html).Wait();
+                        await bot.SendTextMessageAsync(chatId, line, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                     }
                     return;
                 }
 
-                if(e.Message.Text.ToLower() == "zdjęcie")
-                {
-                    MakePhoto(e.Message.Chat.Id).Wait();
-                    return;
-                }
-
-                if(e.Message.Text.ToLower() == "zmniejsz")
-                {
-                    bot.SendTextMessageAsync(chatId, string.Format("Rozmiar bazy danych przed: {0}.", 
-                                                                   ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"))).Wait();
-                    bot.SendTextMessageAsync(chatId, "Zmniejszam...").Wait();
-                    Database.Instance.Shrink();
-                    bot.SendTextMessageAsync(chatId, string.Format("Rozmiar bazy danych po: {0}.",
-                                                                   ByteSize.FromBytes(Database.Instance.FileSize).Humanize("#.##"))).Wait();
-                    return;
-                }
-
-                var result = await HandleTextCommand(e.Message);
-                bot.SendTextMessageAsync(chatId, result).Wait();
+                var result = await HandleTextCommand(message);
+                await bot.SendTextMessageAsync(chatId, result);
                 return;
             }
 
-            if(e.Message.Contact != null)
+            if(message.Contact != null)
             {
                 if(!Configuration.Instance.IsAdmin(userId))
                 {
-                    bot.SendTextMessageAsync(chatId, "Tylko administrator może dodawać użytownkików.").Wait();
-                    CircularLogger.Instance.Log($"Trying to add remove/user from {GetSender(e.Message.From)}.");
+                    await bot.SendTextMessageAsync(chatId, "Tylko administrator może dodawać użytownkików.");
+                    CircularLogger.Instance.Log($"Trying to add remove/user from {GetSender(message.From)}.");
                     return;
                 }
-                var contactUserId = e.Message.Contact.UserId;
+                var contactUserId = message.Contact.UserId;
 
 
                 var yesButton = InlineKeyboardButton.WithCallbackData("Tak", "a" + contactUserId);
                 var noButton = InlineKeyboardButton.WithCallbackData("Przeciwnie, chcę go usunąć", "r");
                 var keyboardMarkup = new InlineKeyboardMarkup(new[] { yesButton, noButton });
 
-                bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup).Wait();
+                await bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup);
                 return;
             }
 
-            CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(e.Message.From));
+            CircularLogger.Instance.Log("Unexpected (no-text) message from {0}.", GetSender(message.From));
             return;
         }
 
-        private void CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat, bool oneDay)
+        private async Task CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat, bool oneDay)
         {
-            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
+            var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję...");
             var charter = new Charter(dateTimeFormat);
-            var pngFile = charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
-                                               step =>
+            var pngFile = await charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
+                                               async step =>
                                                {
                                                    switch(step)
                                                    {
                                                        case Step.RetrievingData:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...");
                                                            break;
                                                        case Step.CreatingPlot:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...");
                                                            break;
                                                        case Step.RenderingImage:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...");
                                                            break;
 
                                                    }
                                                }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
 
-            var fileToSend = new Telegram.Bot.Types.FileToSend("wykres", File.OpenRead(pngFile));
-            bot.SendPhotoAsync(chatId, fileToSend).Wait();
-            bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
+
+            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(pngFile));
+            await bot.SendPhotoAsync(chatId, fileToSend);
+            await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.");
 
         }
 
-        private void CreateHistogram(long chatId, int[] relayNos)
+        private async Task CreateHistogram(long chatId, int[] relayNos)
         {
-            var messageToEdit = bot.SendTextMessageAsync(chatId, "Wykonuję...").Result;
+            var names = relayNos.Select(x => Globals.Relays[x].FriendlyName);
+            var chartName = names.Aggregate(string.Empty, (x, y) => x + "/" + y);
+            var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję..."); ;
             var charter = new Charter("");
-            var pngFile = charter.PrepareHistogram(relayNos, step =>
+            var pngFile = await charter.PrepareHistogram(relayNos, chartName, async step =>
                                                {
                                                    switch(step)
                                                    {
                                                        case Step.RetrievingData:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...");
                                                            break;
                                                        case Step.CreatingPlot:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...");
                                                            break;
                                                        case Step.RenderingImage:
-                                                           bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...").Wait();
+                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...");
                                                            break;
 
                                                    }
-                                               }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
+                                               });
 
-            var fileToSend = new Telegram.Bot.Types.FileToSend("histogram", File.OpenRead(pngFile));
-            bot.SendPhotoAsync(chatId, fileToSend).Wait();
-            bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.").Wait();
+            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(pngFile));
+            await bot.SendPhotoAsync(chatId, fileToSend);
+            await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.");
 
         }
 
-        private void HandleCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        private async Task HandleCallbackQuery(Telegram.Bot.Types.CallbackQuery callbackQuery)
         {
             stats.IncrementMessageCounter();
-            if(!Configuration.Instance.IsAdmin(e.CallbackQuery.From.Id))
+            if(!Configuration.Instance.IsAdmin(callbackQuery.From.Id))
             {
-                bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.").Wait();
-                CircularLogger.Instance.Log($"Trying to remove user by {GetSender(e.CallbackQuery.From)}.");
+                await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
+                CircularLogger.Instance.Log($"Trying to remove user by {GetSender(callbackQuery.From)}.");
                 return;
             }
             var empty = new InlineKeyboardMarkup(new InlineKeyboardButton[0]);
-            bot.EditMessageReplyMarkupAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId, empty).Wait();
-            var data = e.CallbackQuery.Data;
+            await bot.EditMessageReplyMarkupAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, empty);
+            var data = callbackQuery.Data;
             var contactId = int.Parse(data.Substring(1));
             string operation;
             if(data[0] == 'a')
@@ -463,30 +466,9 @@ namespace MieszkanieOswieceniaBot
                 operation = "Usunięto";
                 authorizer.RemoveUser(contactId);
             }
-            bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id,
-                                     $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.").Wait();
-            bot.SendTextMessageAsync(e.CallbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.").Wait();
-        }
-
-        private async Task MakePhoto(long chatId)
-        {
-            var command = Command.Run("fswebcam", "-D", "1", "-S", "5",
-                "-F", "15", "-R", "-r", "640x480", "camera.jpg");
-            var result = await command.Task;
-            if(result.ExitCode == 0)
-            {
-                using(var photoStream = File.OpenRead("camera.jpg"))
-                {
-                    var photo = new Telegram.Bot.Types.FileToSend("photo", File.OpenRead("camera.jpg"));
-                    await bot.SendPhotoAsync(chatId, photo);
-                }
-                File.Delete("camera.jpg");
-            }
-            else
-            {
-                var output = command.GetOutputAndErrorLines().Aggregate((x, y) => x + Environment.NewLine + y);
-                await bot.SendTextMessageAsync(chatId, "Error during taking image." + Environment.NewLine + output);
-            }
+            await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id,
+                                     $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.");
+            await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.");
         }
 
         private async Task<string> HandleTextCommand(Telegram.Bot.Types.Message message)
@@ -495,7 +477,7 @@ namespace MieszkanieOswieceniaBot
             var chatId = message.Chat.Id;
             if(text.Length == 1 && char.IsDigit(text[0]))
             {
-                return HandleScenario(int.Parse(text));
+                return await HandleScenarioAsync(int.Parse(text));
             }
 
             if(text == "staty" || text == "statystyki")
@@ -508,21 +490,23 @@ namespace MieszkanieOswieceniaBot
                 return "pong";
             }
 
-            if(text == "czuwanie")
+            if(text.StartsWith("czuwanie"))
             {
-                lastSpeakerHeartbeat = (lastSpeakerHeartbeat < DateTime.UtcNow ? DateTime.UtcNow : lastSpeakerHeartbeat)
+                var index = text == "czuwanie" ? 0 : 1;
+                lastSpeakerHeartbeat[index] = ((lastSpeakerHeartbeat[index] < DateTime.UtcNow ? DateTime.UtcNow : lastSpeakerHeartbeat[index]))
                     + TimeSpan.FromHours(1);
-                RefreshSpeakerState();
+                await RefreshSpeakerState();
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
-                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
+                                     lastSpeakerHeartbeat[index], (lastSpeakerHeartbeat[index] - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
 
-            if(text == "antyczuwanie")
+            if(text.StartsWith("antyczuwanie"))
             {
-                lastSpeakerHeartbeat -= TimeSpan.FromHours(1);
-                RefreshSpeakerState();
+                var index = text == "czuwanie" ? 0 : 1;
+                lastSpeakerHeartbeat[index] -= TimeSpan.FromHours(1);
+                await RefreshSpeakerState();
                 return string.Format("Głośniki wyłączą się nie wcześniej niż o {0:HH:mm} UTC ({1}).",
-                                     lastSpeakerHeartbeat, (lastSpeakerHeartbeat - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
+                                     lastSpeakerHeartbeat[index], (lastSpeakerHeartbeat[index] - DateTime.UtcNow).Humanize(culture: PolishCultureInfo));
             }
 
             if(text.StartsWith("grzanie"))
@@ -531,11 +515,10 @@ namespace MieszkanieOswieceniaBot
                 if(text == "grzanie")
                 {
                     var relayNos = new[] { 4, 5 };
-                    var statuses = relayNos.Select(x => Globals.Relays[x].Relay).ToArray();
+                    var relays = relayNos.Select(x => Globals.Relays[x].Relay);
+                    var tasks = relays.Select(x => x.GetFriendlyStateAsync()).ToArray();
 
-                    var friendlyStatuses = statuses.Select(x => x.GetFriendlyState()).ToArray();
-
-                    return string.Format("Kot: {0}{1}Kocica: {2}", friendlyStatuses[0], Environment.NewLine, friendlyStatuses[1]);
+                    return string.Format("Kot: {0}{1}Kocica: {2}", await tasks[0], Environment.NewLine, await tasks[1]);
                 }
                 else if(text == "grzanie kot")
                 {
@@ -550,12 +533,13 @@ namespace MieszkanieOswieceniaBot
                     return "Niepoprawna informacja kogo grzać";
                 }
 
-                if (!Globals.Relays[relayNo].Relay.TryToggle(out var result))
+                var result = await Globals.Relays[relayNo].Relay.TryToggleAsync();
+                if (!result.Success)
                 {
                     return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";
                 }
 
-                switch (result)
+                switch (result.CurrentState)
                 {
                     case true:
                         return "Grzanie włączono";
@@ -572,23 +556,23 @@ namespace MieszkanieOswieceniaBot
             if(text == "miganie" || text == "alarm")
             {
                 var random = new Random();
-                Globals.Relays[1].Relay.TryGetState(out var state1);
-                Globals.Relays[2].Relay.TryGetState(out var state2); ;
+                var originalState1 = await Globals.Relays[1].Relay.TryGetStateAsync();
+                var originalState2 = await Globals.Relays[2].Relay.TryGetStateAsync();
 
                 for(var i = 0; i < 10; i++)
                 {
-                    Globals.Relays[1].Relay.TrySetState(true);
+                    await Globals.Relays[1].Relay.TrySetStateAsync(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Globals.Relays[2].Relay.TrySetState(true);
+                    await Globals.Relays[2].Relay.TrySetStateAsync(true);
                     await Task.Delay(TimeSpan.FromMilliseconds(400 * random.NextDouble()));
-                    Globals.Relays[1].Relay.TrySetState(false);
+                    await Globals.Relays[1].Relay.TrySetStateAsync(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(40 * random.NextDouble()));
-                    Globals.Relays[2].Relay.TrySetState(false);
+                    await Globals.Relays[2].Relay.TrySetStateAsync(false);
                     await Task.Delay(TimeSpan.FromMilliseconds(200 * random.NextDouble()));
                 }
 
-                Globals.Relays[1].Relay.TrySetState(state1);
-                Globals.Relays[2].Relay.TrySetState(state2);
+                await Globals.Relays[1].Relay.TrySetStateAsync(originalState1.State);
+                await Globals.Relays[2].Relay.TrySetStateAsync(originalState2.State);
                 return "Wykonano.";
             }
 
@@ -599,8 +583,10 @@ namespace MieszkanieOswieceniaBot
                 {
                     return "Brak pliku z wielkością portfeli.";
                 }
-                var btcData = "https://api.zonda.exchange/rest/trading/stats/BTC-PLN".GetJsonAsync().Result;
-                var ltcData = "https://api.zonda.exchange/rest/trading/stats/LTC-PLN".GetJsonAsync().Result;
+                var btcTask = "https://api.zonda.exchange/rest/trading/stats/BTC-PLN".GetJsonAsync();
+                var ltcTask = "https://api.zonda.exchange/rest/trading/stats/LTC-PLN".GetJsonAsync();
+                var btcData = await btcTask;
+                var ltcData = await ltcTask;
                 var currencyFileLines = File.ReadAllLines(currencyFile);
                 var btcValue = decimal.Parse(btcData.stats.l) * decimal.Parse(currencyFileLines[0]);
                 var originalBtcValue = decimal.Parse(currencyFileLines[1]);
@@ -630,12 +616,13 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "z")
             {
-                if (!Globals.Relays[6].Relay.TryToggle(out var state))
+                var result = await Globals.Relays[6].Relay.TryToggleAsync();
+                if (!result.Success)
                 {
                     return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";
                 }
 
-                switch (state)
+                switch (result.CurrentState)
                 {
                     case true:
                         return "Światło włączono";
@@ -646,12 +633,13 @@ namespace MieszkanieOswieceniaBot
 
             if(text == "r")
             {
-                if(!Globals.Relays[7].Relay.TryToggle(out var state))
+                var result = await Globals.Relays[7].Relay.TryToggleAsync();
+                if (!result.Success)
                 {
                     return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";
                 }
 
-                switch(state)
+                switch (result.CurrentState)
                 {
                     case true:
                         return "Światło włączono";
@@ -721,12 +709,16 @@ namespace MieszkanieOswieceniaBot
                 var result = new StringBuilder();
                 var turnedOns = new List<string>();
 
-                foreach (var relay in Globals.Relays.OrderBy(x => x.Key))
+                var relays = Globals.Relays.OrderBy(x => x.Key);
+                var relaysWithStates = relays.Select(x => (x.Value, x.Value.Relay.TryGetStateAsync())).ToArray();
+
+                foreach (var (relay, stateTask) in relaysWithStates)
                 {
-                    result.AppendLine($"{relay.Value.FriendlyName}: {relay.Value.Relay.GetFriendlyState()}");
-                    if (relay.Value.Relay.TryGetState(out var state) && state)
+                    var state = await stateTask;
+                    result.AppendLine($"{relay.Id} ({relay.FriendlyName}): {RelayExtensions.GetFriendlyStateFromSuccessAndState(state)}");
+                    if (state.Success && state.State)
                     {
-                        turnedOns.Add(relay.Value.FriendlyName);
+                        turnedOns.Add(relay.FriendlyName);
                     }
                 }
 
@@ -763,7 +755,7 @@ namespace MieszkanieOswieceniaBot
             return true;
         }
 
-        private string HandleScenario(int scenarioNo)
+        private async Task<string> HandleScenarioAsync(int scenarioNo)
         {
             if(Globals.Scenarios.Length <= scenarioNo)
             {
@@ -771,7 +763,7 @@ namespace MieszkanieOswieceniaBot
             }
          
             var scenario = Globals.Scenarios[scenarioNo];
-            if (!scenario.TryApply(Globals.Relays))
+            if (!await scenario.TryApplyAsync(Globals.Relays))
             {
                 return "Nie udało się w całości wykonać scenariusza";
             }
@@ -779,38 +771,40 @@ namespace MieszkanieOswieceniaBot
             return string.Format("Scenariusz {0} uaktywniony ({1}).", scenarioNo, scenario.GetFriendlyDescription(Globals.Relays));
         }
 
-        private void HandleAutoScenarioTimer()
+        private async Task HandleAutoScenarioTimer()
         {
             foreach (var autoScenario in Globals.AutoScenarios)
             {
-                autoScenario.Refresh();
+                await autoScenario.RefreshAsync();
             }
         }
 
-        private void RefreshSpeakerState()
+        private async Task RefreshSpeakerState()
         {
-            Globals.Relays[3].Relay.TrySetState(DateTime.UtcNow - lastSpeakerHeartbeat < Globals.HeartbeatTimeout);
-            return;
+            await Globals.Relays[3].Relay.TrySetStateAsync(DateTime.UtcNow - lastSpeakerHeartbeat[0] < Globals.HeartbeatTimeout);
+            await Globals.Relays[8].Relay.TrySetStateAsync(DateTime.UtcNow - lastSpeakerHeartbeat[1] < Globals.HeartbeatTimeout);
         }
 
-        private void CheckHousingCooperativeNews()
+        private async Task CheckHousingCooperativeNews()
         {
             var rosyCreekClient = new RosyCreekClient();
-            if(!rosyCreekClient.TryGetNews(out var message))
+            var result = await rosyCreekClient.TryGetNewsAsync();
+            if (!result.Success)
             {
                 return;
             }
 
+            var message = result.Message;
             var chatIds = Database.Instance.GetHouseCooperativeChatIds();
             foreach(var chatId in chatIds)
             {
-                bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
+                await bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
                     Telegram.Bot.Types.Enums.ParseMode.Markdown);
-                bot.SendTextMessageAsync(chatId, message);
+                await bot.SendTextMessageAsync(chatId, message);
             }
         }
 
-        private void WriteTemperatureToDatabase()
+        private async Task WriteTemperatureAndStateToDatabase()
         {
             if(!TryGetTemperature(out decimal temperature, out string rawData))
             {
@@ -819,18 +813,16 @@ namespace MieszkanieOswieceniaBot
             }
             var database = Database.Instance;
             database.AddSample(new TemperatureSample { Date = DateTime.Now, Temperature = temperature });
-        }
 
-        private void WriteStateToDatabase()
-        {
             foreach (var entry in Globals.Relays)
             {
-                if (!entry.Value.Relay.TryGetState(out var state))
+                var currentState = await entry.Value.Relay.TryGetStateAsync();
+                if (!currentState.Success)
                 {
                     continue;
                 }
 
-                var relaySample = new RelaySample(entry.Key, state);
+                var relaySample = new RelaySample(entry.Key, currentState.State);
                 Database.Instance.AddSample(relaySample);
             }
         }
@@ -840,7 +832,7 @@ namespace MieszkanieOswieceniaBot
             return $"{user.FirstName} {user.LastName}";
         }
 
-        private DateTime lastSpeakerHeartbeat;
+        private DateTime[] lastSpeakerHeartbeat;
         private DateTime startDate;
         private readonly Dictionary<string, PekaClient> pekaClients;
         private readonly TelegramBotClient bot;

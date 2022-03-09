@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
     public interface IRelay
     {
-        bool TryGetState(out bool state);
-        bool TrySetState(bool state);
-        bool TryToggle(out bool currentState);
+        Task<(bool Success, bool State)> TryGetStateAsync();
+        Task<bool> TrySetStateAsync(bool state);
+        Task<(bool Success, bool CurrentState)> TryToggleAsync();
     }
 }

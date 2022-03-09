@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.IO.Ports;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
@@ -12,31 +13,28 @@ namespace MieszkanieOswieceniaBot.Relays
             relayOffset = (byte)(relayNumber * 3);
         }
 
-        public bool TryGetState(out bool state)
+        public Task<(bool Success, bool State)> TryGetStateAsync()
         {
-            if(cachedState.HasValue)
+            if (cachedState.HasValue)
             {
-                state = cachedState.Value;
-                return true;
+                return Task.FromResult((true, cachedState.Value));
             }
 
             var success = WriteAndReadMessage(CommandBase + relayOffset + StateOffset, out var result);
             if (success)
             {
                 cachedState = result == CommandBase + TurnOnOffset;
-                state = cachedState.Value;
-                return true;
+                return Task.FromResult((true, cachedState.Value));
             }
 
-            state = false;
-            return false;
+            return Task.FromResult((false, false));
         }
 
-        public bool TrySetState(bool state)
+        public Task<bool> TrySetStateAsync(bool state)
         {
             if(cachedState.HasValue && cachedState.Value == state)
             {
-                return true;
+                return Task.FromResult(true);
             }
 
             var success = WriteMessage(CommandBase + relayOffset + (state ? TurnOnOffset : TurnOffOffset));
@@ -44,43 +42,44 @@ namespace MieszkanieOswieceniaBot.Relays
             if (success)
             {
                 cachedState = state;
-                return true;
+                return Task.FromResult(true);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public bool TryToggle(out bool currentState)
+        public async Task<(bool Success, bool CurrentState)> TryToggleAsync()
         {
-            currentState = false;
-            return TryGetState(out var state) && TrySetState(currentState = !state);
-        }
-
-        private bool? cachedState;
-
-        private readonly string deviceName;
-        private readonly byte relayOffset;
-
-        private const int CommandBase = 48;
-        private const int StateOffset = 2;
-        private const int TurnOnOffset = 1;
-        private const int TurnOffOffset = 0;
-
-        private static bool WithSerialPort(string name, Action<SerialPort> action)
-        {
-            using(var serialPort = new SerialPort(name, 9600))
+            var currentState = await TryGetStateAsync();
+            if (!currentState.Success)
             {
-                try
+                return currentState;
+            }
+
+            var settingSuccess = await TrySetStateAsync(!currentState.State);
+            return (settingSuccess, !currentState.State);
+        }
+
+        private static bool WithSerialPort(string name, Action<FileStream> action)
+        {
+            try
+            {
+                lock (PortCache)
                 {
-                    serialPort.Open();
-                    action(serialPort);
+                    var serialPort = PortCache.GetPort(name);
+                    if (!Task.Run(() => action(serialPort)).Wait(TimeSpan.FromSeconds(3)))
+                    {
+                        CircularLogger.Instance.Log("Timeout during open/read/write port '{0}', did nothing.", name);
+                        return false;
+                    }
+
                     return true;
                 }
-                catch(IOException)
-                {
-                    CircularLogger.Instance.Log("Could not open port '{0}', did nothing.", name);
-                    return false;
-                }
+            }
+            catch (IOException)
+            {
+                CircularLogger.Instance.Log("Could not open/read/write port '{0}', did nothing.", name);
+                return false;
             }
         }
 
@@ -94,16 +93,36 @@ namespace MieszkanieOswieceniaBot.Relays
 
         private bool WriteAndReadMessage(int message, out byte result)
         {
-            var resultArray = new byte[1];
+            var resultAsInt = -1;
 
             var success = WithSerialPort(deviceName, serialPort =>
             {
-                serialPort.Write(new[] { checked((byte)message) }, 0, 1);
-                serialPort.Read(resultArray, 0, 1);
+                serialPort.WriteByte(checked((byte)message));
+                resultAsInt = serialPort.ReadByte();
             });
 
-            result = resultArray[0];
-            return success;
+            if (resultAsInt != -1)
+            {
+                result = (byte)resultAsInt;
+                return true;
+            }
+            else
+            {
+                result = 0;
+                return false;
+            }
         }
+
+        private bool? cachedState;
+
+        private readonly string deviceName;
+        private readonly byte relayOffset;
+
+        private const int CommandBase = 48;
+        private const int StateOffset = 2;
+        private const int TurnOnOffset = 1;
+        private const int TurnOffOffset = 0;
+
+        private static readonly SerialPortCache PortCache = new SerialPortCache();
     }
 }
