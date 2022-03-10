@@ -38,9 +38,9 @@ namespace MieszkanieOswieceniaBot.Relays
                 await SetStateAsync(state).ConfigureAwait(false);
                 return true;
             }
-            catch (FlurlHttpException flurlException)
+            catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {exception}");
                 return false;
             }
         }
