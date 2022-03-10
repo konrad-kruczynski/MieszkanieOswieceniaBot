@@ -315,9 +315,15 @@ namespace MieszkanieOswieceniaBot
                 if(message.Text.ToLower() == "eksport")
                 {
                     var progressMessage = await bot.SendTextMessageAsync(chatId, "Przygotowuję...");
+                    var lastMessage = string.Empty;
                     var exportFile = await Database.Instance.GetTemperatureSampleExport(async progress =>
                     {
-                        await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, string.Format("Wykonuję ({0:0}%)...", 100 * progress));
+                        var message = string.Format("Wykonuję ({0:0}%)...", 100 * progress);
+                        if (message != lastMessage)
+                        {
+                            await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, message);
+                            lastMessage = message;
+                        }
                     });
                     await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...");
                     var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(exportFile), "probki.json.gz");
