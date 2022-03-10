@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using MieszkanieOswieceniaBot.Handlers;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -31,7 +33,7 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, new [] { 2 }),
             new Scenario(BasicRange, new [] { 1 }),
             new Scenario(BasicRange, new [] { 0 }),
-            new Scenario(BasicRange, new [] { 0, 1, 2}),
+            new Scenario(BasicRange, new [] { 0, 1, 2 }),
             new Scenario(BasicRange, new [] { 0, 2 }),
         };
 
@@ -39,5 +41,13 @@ namespace MieszkanieOswieceniaBot
         {
             new AutoScenarioHandler(7, true, ("10:00", true), ("19:00", false))
         };
+
+        public static readonly HeartbeatenHandler[] Heartbeatings = new[]
+        {
+            new HeartbeatenHandler(3, HeartbeatTimeout),
+            new HeartbeatenHandler(8, HeartbeatTimeout)
+        };
+
+        public static readonly CultureInfo BotCommunicationCultureInfo = new CultureInfo("pl-PL");
     }
 }

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1700.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MieszkanieOswieceniaBot", "MieszkanieOswieceniaBot.csproj", "{DA08F667-3520-46F8-9E3A-66F8AF94AD70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MieszkanieOswieceniaBot", "Source\MieszkanieOswieceniaBot.csproj", "{DA08F667-3520-46F8-9E3A-66F8AF94AD70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{B57D56F0-A113-4B00-8F9C-85604533192C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA08F667-3520-46F8-9E3A-66F8AF94AD70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57D56F0-A113-4B00-8F9C-85604533192C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57D56F0-A113-4B00-8F9C-85604533192C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57D56F0-A113-4B00-8F9C-85604533192C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57D56F0-A113-4B00-8F9C-85604533192C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

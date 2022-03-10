@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using MieszkanieOswieceniaBot.Relays;
 
-namespace MieszkanieOswieceniaBot
+namespace MieszkanieOswieceniaBot.Handlers
 {
-    public sealed class AutoScenarioHandler
+    public sealed class AutoScenarioHandler : IHandler
     {
         public AutoScenarioHandler(int relayId, bool enabled, params (string, bool)[] switchingEvents)
         {

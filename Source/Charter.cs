@@ -108,17 +108,17 @@ namespace MieszkanieOswieceniaBot
             return pngFile;
         }
         
-        public async Task<string> PrepareHistogram(int[] relayNos, string relayName, Func<Step, Task> stepHandler = null)
+        public async Task<string> PrepareHistogram(List<int> relayNos, string relayName, Func<Step, Task> stepHandler = null)
         {
             await stepHandler(Step.RetrievingData);
             var samples = Database.Instance.GetAllSamples<RelaySample>();
 
             var minutesInBucket = 6;
             var bucketsCount = 24 * 60 / minutesInBucket;
-            var buckets = new int[relayNos.Length, bucketsCount];
+            var buckets = new int[relayNos.Count, bucketsCount];
             foreach (var sample in samples)
             {
-                for (var i = 0; i < relayNos.Length; i++)
+                for (var i = 0; i < relayNos.Count; i++)
                 {
                     var active = sample.State && sample.RelayId == relayNos[i];
                     if (!active)
@@ -154,7 +154,7 @@ namespace MieszkanieOswieceniaBot
             });
             plotModel.IsLegendVisible = true;
 
-            for(var j = 0; j < relayNos.Length; j++)
+            for(var j = 0; j < relayNos.Count; j++)
             {
                 var serie = new LineSeries();
                 for(var i = 0; i < bucketsCount; i++)
