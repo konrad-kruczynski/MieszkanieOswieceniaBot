@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
+using System.IO.Ports;
 using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot.Relays
@@ -32,7 +32,7 @@ namespace MieszkanieOswieceniaBot.Relays
 
         public Task<bool> TrySetStateAsync(bool state)
         {
-            if(cachedState.HasValue && cachedState.Value == state)
+            if (cachedState.HasValue && cachedState.Value == state)
             {
                 return Task.FromResult(true);
             }
@@ -50,36 +50,47 @@ namespace MieszkanieOswieceniaBot.Relays
 
         public async Task<(bool Success, bool CurrentState)> TryToggleAsync()
         {
-            var currentState = await TryGetStateAsync();
-            if (!currentState.Success)
+            var (success, state) = await TryGetStateAsync();
+            if (!success)
             {
-                return currentState;
+                return (false, false);
             }
 
-            var settingSuccess = await TrySetStateAsync(!currentState.State);
-            return (settingSuccess, !currentState.State);
+            success = await TrySetStateAsync(!state);
+
+            if (!success)
+            {
+                return (false, false);
+            }
+
+            return (true, !state);
         }
 
-        private static bool WithSerialPort(string name, Action<FileStream> action)
-        {
-            try
-            {
-                lock (PortCache)
-                {
-                    var serialPort = PortCache.GetPort(name);
-                    if (!Task.Run(() => action(serialPort)).Wait(TimeSpan.FromSeconds(3)))
-                    {
-                        CircularLogger.Instance.Log("Timeout during open/read/write port '{0}', did nothing.", name);
-                        return false;
-                    }
+        private bool? cachedState;
 
+        private readonly string deviceName;
+        private readonly byte relayOffset;
+
+        private const int CommandBase = 48;
+        private const int StateOffset = 2;
+        private const int TurnOnOffset = 1;
+        private const int TurnOffOffset = 0;
+
+        private static bool WithSerialPort(string name, Action<SerialPort> action)
+        {
+            using (var serialPort = new SerialPort(name, 9600))
+            {
+                try
+                {
+                    serialPort.Open();
+                    action(serialPort);
                     return true;
                 }
-            }
-            catch (IOException)
-            {
-                CircularLogger.Instance.Log("Could not open/read/write port '{0}', did nothing.", name);
-                return false;
+                catch (IOException)
+                {
+                    CircularLogger.Instance.Log("Could not open port '{0}', did nothing.", name);
+                    return false;
+                }
             }
         }
 
@@ -93,36 +104,16 @@ namespace MieszkanieOswieceniaBot.Relays
 
         private bool WriteAndReadMessage(int message, out byte result)
         {
-            var resultAsInt = -1;
+            var resultArray = new byte[1];
 
             var success = WithSerialPort(deviceName, serialPort =>
             {
-                serialPort.WriteByte(checked((byte)message));
-                resultAsInt = serialPort.ReadByte();
+                serialPort.Write(new[] { checked((byte)message) }, 0, 1);
+                serialPort.Read(resultArray, 0, 1);
             });
 
-            if (resultAsInt != -1)
-            {
-                result = (byte)resultAsInt;
-                return true;
-            }
-            else
-            {
-                result = 0;
-                return false;
-            }
+            result = resultArray[0];
+            return success;
         }
-
-        private bool? cachedState;
-
-        private readonly string deviceName;
-        private readonly byte relayOffset;
-
-        private const int CommandBase = 48;
-        private const int StateOffset = 2;
-        private const int TurnOnOffset = 1;
-        private const int TurnOffOffset = 0;
-
-        private static readonly SerialPortCache PortCache = new SerialPortCache();
     }
 }
