@@ -748,17 +748,27 @@ namespace MieszkanieOswieceniaBot
 
         private static bool TryGetTemperature(out decimal temperature, out string rawData)
         {
-            rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
-            var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
-            if(crcMatch.Groups["yesorno"].Value != "YES")
+            try
             {
-                temperature = default(decimal);
+                rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+                var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
+                if (crcMatch.Groups["yesorno"].Value != "YES")
+                {
+                    temperature = default;
+                    return false;
+                }
+                var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
+                temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+                return true;
+            }
+            catch (IOException e)
+            {
+                CircularLogger.Instance.Log($"Error during getting temperature: {e.Message}.");
+                temperature = default;
+                rawData = default;
                 return false;
             }
-            var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
-            temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
-            return true;
         }
 
         private async Task<string> HandleScenarioAsync(int scenarioNo)
