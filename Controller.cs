@@ -79,7 +79,14 @@ namespace MieszkanieOswieceniaBot
 
             await foreach (var update in new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot))
             {
-                await HandleUpdate(update);
+                try
+                {
+                    await HandleUpdate(update);
+                }
+                catch (Exception e)
+                {
+                    CircularLogger.Instance.Log("Error during receiving Telegram message: {0}.", e.Message);
+                }
             }
         }
 
