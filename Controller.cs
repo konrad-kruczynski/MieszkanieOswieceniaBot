@@ -77,7 +77,23 @@ namespace MieszkanieOswieceniaBot
 
             CircularLogger.Instance.Log("Bot started.");
 
-            await foreach (var update in new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot))
+            var botConnected = false;
+            Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver receiver = default;
+
+            while (!botConnected)
+            {
+                try
+                {
+                    receiver = new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot);
+                    botConnected = true;
+                }
+                catch (Exception e)
+                {
+                    CircularLogger.Instance.Log("Error during connecting Telegram bot: {0}.", e.Message);
+                }
+            }
+
+            await foreach (var update in receiver)
             {
                 try
                 {
