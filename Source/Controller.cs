@@ -55,9 +55,9 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("r", relayToggleCommand);
             register.RegisterCommand("z", relayToggleCommand);
 
-            var heartbeatProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[0..1]);
+            var heartbeatProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[0..2]);
             register.RegisterCommand("czuwanie", heartbeatProlongerCommand);
-            var hearbeatAntiProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(-1), Globals.Heartbeatings[0..1]);
+            var hearbeatAntiProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(-1), Globals.Heartbeatings[0..2]);
             register.RegisterCommand("antyczuwanie", hearbeatAntiProlongerCommand);
 
             var alarmCommand = new Commands.Alarm();
