@@ -15,6 +15,7 @@
     <PackageReference Include="OxyPlot.ImageSharp" Version="2.1.0" />
     <PackageReference Include="Humanizer.Core.pl" Version="2.14.1" />
     <PackageReference Include="StringSimilarity" Version="1.0.2.1" />
+    <PackageReference Include="SystemIOPorts.SerialPort_Mono" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Telegram.Bot.Extensions.Polling" />
@@ -23,6 +24,7 @@
     <None Remove="Commands\" />
     <None Remove="StringSimilarity" />
     <None Remove="Handlers\" />
+    <None Remove="SystemIOPorts.SerialPort_Mono" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Commands\" />

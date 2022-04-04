@@ -62,13 +62,13 @@ namespace MieszkanieOswieceniaBot
                     {
                         result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} {1}</pre>",
                             orderedGroup.First().Date,
-                            WebUtility.HtmlEncode(group.Key)));
+                            WebUtility.HtmlEncode(TrimIfNecessary(group.Key))));
                     }
                     else
                     {
                         result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} in last {3} hours) {1}</pre>",
                             orderedGroup.Last().Date,
-                            WebUtility.HtmlEncode(group.Key),
+                            WebUtility.HtmlEncode(TrimIfNecessary(group.Key)),
                             group.Count() - 1,
                             (orderedGroup.Last().Date - orderedGroup.First().Date).TotalHours));
                     }
@@ -76,6 +76,16 @@ namespace MieszkanieOswieceniaBot
 
                 return result;
             }
+        }
+
+        private string TrimIfNecessary(string message)
+        {
+            if (message.Length > 2000)
+            {
+                return message.Substring(0, 2000) + "... (trimmed)";
+            }
+
+            return message;
         }
 
         private readonly Queue<LogEntry> entries;

@@ -120,9 +120,21 @@ namespace MieszkanieOswieceniaBot
 
             CircularLogger.Instance.Log("Bot started.");
 
-            await foreach (var update in new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot))
+            while (true)
             {
-                await HandleUpdate(update);
+                try
+                {
+                    await foreach (var update in new Telegram.Bot.Extensions.Polling.QueuedUpdateReceiver(bot))
+                    {
+                        await HandleUpdate(update);
+                    }
+                }
+                catch (Exception e)
+                {
+                    CircularLogger.Instance.Log("Error during receiving Telegram message: {0}.", e.Message);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
 
@@ -242,17 +254,27 @@ namespace MieszkanieOswieceniaBot
         // TODO: move
         internal static bool TryGetTemperature(out decimal temperature, out string rawData)
         {
-            rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
-            var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
-            if(crcMatch.Groups["yesorno"].Value != "YES")
+            try
             {
-                temperature = default(decimal);
+                rawData = File.ReadAllText("/sys/bus/w1/devices/28-000008e3442c/w1_slave");
+                var lines = rawData.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                var crcMatch = new Regex(@"crc=.. (?<yesorno>\w+)").Match(lines[0]);
+                if (crcMatch.Groups["yesorno"].Value != "YES")
+                {
+                    temperature = default(decimal);
+                    return false;
+                }
+                var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
+                temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+                return true;
+            }
+            catch (IOException e)
+            {
+                CircularLogger.Instance.Log($"Error during getting temperature: {e.Message}.");
+                temperature = default;
+                rawData = default;
                 return false;
             }
-            var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
-            temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
-            return true;
         }
 
         private async Task RefreshHandlers()

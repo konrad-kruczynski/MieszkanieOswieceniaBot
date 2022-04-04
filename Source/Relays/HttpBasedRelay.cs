@@ -24,9 +24,9 @@ namespace MieszkanieOswieceniaBot.Relays
                 var state = await GetStateAsync().ConfigureAwait(false);
                 return (true, state);
             }
-            catch (FlurlHttpException flurlException)
+            catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException.Message}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {exception.Message}");
                 return (false, false);
             }
         }
@@ -38,9 +38,9 @@ namespace MieszkanieOswieceniaBot.Relays
                 await SetStateAsync(state).ConfigureAwait(false);
                 return true;
             }
-            catch (FlurlHttpException flurlException)
+            catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {exception.Message}");
                 return false;
             }
         }
@@ -52,9 +52,9 @@ namespace MieszkanieOswieceniaBot.Relays
                 var currentState = await ToggleAsync().ConfigureAwait(false);
                 return (true, currentState);
             }
-            catch (FlurlHttpException flurlException)
+            catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
             {
-                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {flurlException}");
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {exception.Message}");
                 return (false, false);
             }
         }
