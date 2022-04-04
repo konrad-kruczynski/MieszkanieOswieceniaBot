@@ -22,7 +22,6 @@ namespace MieszkanieOswieceniaBot
             CircularLogger.Instance.Log("Initializing bot...");
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             stats = new Stats();
-            lastSpeakerHeartbeat = Enumerable.Repeat(new DateTime(2000, 1, 1).ToUniversalTime(), 2).ToArray();
             authorizer = new Authorizer();
             commandRegister = InitializeCommandRegister();
             CircularLogger.Instance.Log("Bot initialized.");
@@ -160,16 +159,8 @@ namespace MieszkanieOswieceniaBot
                 return;
             }
 
-            if(lastSpeakerHeartbeat[0] < DateTime.UtcNow)
-            {
-                lastSpeakerHeartbeat[0] = DateTime.UtcNow;
-            }
-
-            // TODO
-            foreach (var handler in Globals.Heartbeatings)
-            {
-                await handler.RefreshAsync();
-            }
+            // TODO:
+            await Globals.Heartbeatings[0].HeartbeatAsync();
         }
 
         private async Task HandleMessage(Telegram.Bot.Types.Message message)
@@ -337,7 +328,6 @@ namespace MieszkanieOswieceniaBot
             return $"{user.FirstName} {user.LastName}";
         }
 
-        private DateTime[] lastSpeakerHeartbeat;
         private DateTime startDate;
         private readonly TelegramBotClient bot;
         private readonly Authorizer authorizer;
