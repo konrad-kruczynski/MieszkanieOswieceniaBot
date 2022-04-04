@@ -45,6 +45,8 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("historia2", new Commands.StateHistory(bot));
             register.RegisterCommand("eksport", new Commands.Export(bot));
             register.RegisterCommand("lista", new Commands.UserList(bot));
+            register.RegisterCommand("restart", new Commands.Restart(bot));
+            register.RegisterCommand("log", new Commands.Log(bot));
 
             var statsCommand = new Commands.Stats(stats);
             register.RegisterCommand("staty", statsCommand);
