@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,35 +15,69 @@ namespace MieszkanieOswieceniaBot.Commands
 
         protected override Task<string> ExecuteInnerAsync(Parameters parameters)
         {
-            var samples = Database.Instance.GetNewestSamples<RelaySample>(20 * Globals.Relays.Count);
-            var samplesGroupedByMinutes = samples.GroupBy(x => new DateTime(x.Date.Year, x.Date.Month, x.Date.Day, x.Date.Hour, x.Date.Minute, 0));
-            samplesGroupedByMinutes = samplesGroupedByMinutes.OrderByDescending(x => x.Key).Take(20).OrderBy(x => x.Key);
-            var resultString = new StringBuilder();
-            var maximalRelayNumber = Globals.Relays.Max(x => x.Key);
-            foreach (var group in samplesGroupedByMinutes)
+            var samplesStack = new Stack<RelaySample>();
+            var oldStateFor = new bool?[Globals.Relays.Count];
+
+            foreach (var sample in Database.Instance.TakeNewestSamples<RelaySample>())
             {
-                resultString.AppendFormat("`{0:R}: ", group.Key);
-                for (var i = 0; i <= maximalRelayNumber; i++)
+                if (oldStateFor.All(x => x.HasValue))
                 {
-                    if (!Globals.Relays.ContainsKey(i))
-                    {
-                        resultString.Append('◌');
-                    }
-                    else if (group.Any(x => x.RelayId == i && x.State))
-                    {
-                        resultString.Append('●');
-                    }
-                    else
-                    {
-                        resultString.Append('○');
-                    }
+                    break;
                 }
 
-                resultString.Append('`');
-                resultString.AppendLine();
+                oldStateFor[sample.RelayId] = sample.State;
+                samplesStack.Push(sample);
             }
 
-            return Task.FromResult(resultString.ToString());
+            var lastKnownStateFor = new bool?[Globals.Relays.Count];
+
+            while(!lastKnownStateFor.All(x => x.HasValue))
+            {
+                var sample = samplesStack.Pop();
+                lastKnownStateFor[sample.RelayId] = sample.State;
+            }
+
+            var resultQueue = new Queue<string>();
+            var currentStateFor = lastKnownStateFor.Select(x => x.Value).ToArray();
+
+            foreach (var sample in samplesStack)
+            {
+                currentStateFor[sample.RelayId] = sample.State;
+                resultQueue.Enqueue(CreateStateLine(currentStateFor, sample.Date));
+            }
+
+            while (resultQueue.Count > 20)
+            {
+                resultQueue.Dequeue();
+            }
+
+            var result = new StringBuilder();
+            foreach (var line in resultQueue)
+            {
+                result.AppendLine(line);
+            }
+
+            return Task.FromResult(result.ToString());
+        }
+
+        private static string CreateStateLine(bool[] states, DateTime date)
+        {
+            var resultString = new StringBuilder();
+            resultString.AppendFormat("`{0:R}: ", date);
+            for (var i = 0; i < states.Length; i++)
+            {
+                if (states[i])
+                {
+                    resultString.Append('●');
+                }
+                else
+                {
+                    resultString.Append('○');
+                }
+            }
+
+            resultString.Append('`');
+            return resultString.ToString();
         }
     }
 }

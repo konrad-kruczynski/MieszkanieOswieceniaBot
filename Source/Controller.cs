@@ -46,6 +46,7 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("lista", new Commands.UserList(bot));
             register.RegisterCommand("restart", new Commands.Restart(bot));
             register.RegisterCommand("log", new Commands.Log(bot));
+            register.RegisterCommand("bitcoin", new Commands.Bitcoin());
 
             var statsCommand = new Commands.Stats(stats);
             register.RegisterCommand("staty", statsCommand);

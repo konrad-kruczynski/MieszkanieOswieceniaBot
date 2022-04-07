@@ -75,12 +75,36 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
+        public IEnumerable<RelaySample> GetSamplesForRelay(int id)
+        {
+            using (var database = new LiteDatabase(ConnectionString))
+            {
+                var samples = database.GetCollection<RelaySample>(RelayCollectionName);
+                foreach (var sample in samples.Find(Query.All("Date", Query.Ascending)).Where(x => x.RelayId == id))
+                {
+                    yield return sample;
+                }
+            }
+        }
+
         public IEnumerable<T> GetNewestSamples<T>(int howMany) where T : ISample<T>
         {
             using(var database = new LiteDatabase(ConnectionString))
             {
                 var samples = database.GetCollection<T>(CollectionNameOfType<T>());
                 return samples.Find(Query.All("Date", Query.Descending), 0, howMany).Reverse().ToArray();
+            }
+        }
+
+        public IEnumerable<T> TakeNewestSamples<T>() where T : ISample<T>
+        {
+            using (var database = new LiteDatabase(ConnectionString))
+            {
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
+                foreach (var sample in samples.Find(Query.All("Date", Query.Descending)))
+                {
+                    yield return sample;
+                }
             }
         }
 

@@ -111,25 +111,77 @@ namespace MieszkanieOswieceniaBot
         public async Task<string> PrepareHistogram(List<int> relayNos, string relayName, Func<Step, Task> stepHandler = null)
         {
             await stepHandler(Step.RetrievingData);
-            var samples = Database.Instance.GetAllSamples<RelaySample>();
 
             var minutesInBucket = 6;
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[relayNos.Count, bucketsCount];
-            foreach (var sample in samples)
+
+            foreach (var relayNo in relayNos)
             {
-                for (var i = 0; i < relayNos.Count; i++)
+                var relayNumberInChart = 0;
+                var samplesForRelay = Database.Instance.GetSamplesForRelay(relayNo);
+                var formerSample = new RelaySample(relayNo, false);
+
+                foreach (var sample in samplesForRelay)
                 {
-                    var active = sample.State && sample.RelayId == relayNos[i];
-                    if (!active)
+                    if (sample.CanSampleBeSquashed(formerSample))
                     {
                         continue;
                     }
 
-                    var minutesFromDayStart = sample.Date.Hour * 60 + sample.Date.Minute;
-                    var bucketNo = minutesFromDayStart / minutesInBucket;
-                    buckets[i, bucketNo]++;
+                    // If current sample has positive state, but former doesn't, then this
+                    // marks activation and no samples go to buckets. What's important here is
+                    // deactivation - in such case we have to fill buckets accordingly.
+
+                    if (sample.State || !formerSample.State)
+                    {
+                        formerSample = sample;
+                        continue;
+                    }
+
+                    var startDateTime = formerSample.Date;
+                    var endDateTime = sample.Date;
+                    var startingDay = startDateTime.Date;
+                    var endingDay = endDateTime.Date;
+                    var startingBucket = (int)startDateTime.TimeOfDay.TotalMinutes / minutesInBucket;
+                    var endingBucket = (int)endDateTime.TimeOfDay.TotalMinutes / minutesInBucket;
+                    var fullDaysInBetween = (int)(endingDay - startingDay).TotalDays - 1;
+
+                    // Yup, fullDaysInBetween can have value -1.
+
+                    if (fullDaysInBetween == -1)
+                    {
+                        // Same day for turning on and off
+                        for (var i = startingBucket; i <= endingBucket; i++)
+                        {
+                            buckets[relayNumberInChart, i]++;
+                        }
+                    }
+                    else
+                    {
+                        for (var i = startingBucket; i < bucketsCount; i++)
+                        {
+                            buckets[relayNumberInChart, i]++;
+                        }
+
+                        if (fullDaysInBetween > 0)
+                        {
+                            for (var i = 0; i < bucketsCount; i++)
+                            {
+                                buckets[relayNumberInChart, i] += fullDaysInBetween;
+                            }
+                        }
+
+                        for (var i = 0; i < endingBucket; i++)
+                        {
+                            buckets[relayNumberInChart, i]++;
+                        }
+                    }
+
+                    formerSample = sample;
                 }
+
+                relayNumberInChart++;
             }
 
             await stepHandler(Step.CreatingPlot);
