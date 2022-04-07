@@ -6,7 +6,7 @@ namespace MieszkanieOswieceniaBot.Relays
 {
     public abstract class HttpBasedRelay : IRelay
     {
-        protected HttpBasedRelay(string hostname, TimeSpan timeout = default)
+        protected HttpBasedRelay(string hostname, TimeSpan timeout = default, bool cacheable = false)
         {
             var flurlClient = new FlurlClient($"http://{hostname}");
             if (timeout != default)
@@ -15,13 +15,24 @@ namespace MieszkanieOswieceniaBot.Relays
             }
             
             FlurlClient = flurlClient;
+            this.cacheable = cacheable;
         }
 
         public async Task<(bool Success, bool State)> TryGetStateAsync()
         {
+            if (cacheable && cachedValue.HasValue)
+            {
+                return (true, cachedValue.Value);
+            }
+
             try
             {
                 var state = await GetStateAsync().ConfigureAwait(false);
+                if (cacheable)
+                {
+                    cachedValue = state;
+                }
+
                 return (true, state);
             }
             catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
@@ -36,6 +47,11 @@ namespace MieszkanieOswieceniaBot.Relays
             try
             {
                 await SetStateAsync(state).ConfigureAwait(false);
+                if (cacheable)
+                {
+                    cachedValue = state;
+                }
+
                 return true;
             }
             catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
@@ -50,6 +66,11 @@ namespace MieszkanieOswieceniaBot.Relays
             try
             {
                 var currentState = await ToggleAsync().ConfigureAwait(false);
+                if (cacheable)
+                {
+                    cachedValue = currentState;
+                }
+
                 return (true, currentState);
             }
             catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
@@ -64,5 +85,8 @@ namespace MieszkanieOswieceniaBot.Relays
         protected abstract Task SetStateAsync(bool state);
 
         protected readonly IFlurlClient FlurlClient;
+
+        private bool? cachedValue;
+        private readonly bool cacheable;
     }
 }

@@ -6,7 +6,7 @@ namespace MieszkanieOswieceniaBot.Relays
 {
     public sealed class Tasmota : HttpBasedRelay
     {
-        public Tasmota(string hostname) : base(hostname, TimeSpan.FromSeconds(10))
+        public Tasmota(string hostname, bool cacheable = false) : base(hostname, TimeSpan.FromSeconds(10), cacheable)
         {
         }
 

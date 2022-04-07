@@ -17,8 +17,8 @@ namespace MieszkanieOswieceniaBot
             new RelayEntry(4, new Relays.Tasmota("192.168.71.31"), "mata grzejna Kota"),
             new RelayEntry(5, new Relays.Tasmota("192.168.71.32"), "mata grzejna Kocicy"),
             new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
-            new RelayEntry(7, new Relays.Tasmota("192.168.71.35"), "oświetlenie akwarium"),
-            new RelayEntry(8, new Relays.Tasmota("192.168.71.36"), "głośniki w sypialni")
+            new RelayEntry(7, new Relays.Tasmota("192.168.71.35", true), "oświetlenie akwarium"),
+            new RelayEntry(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
