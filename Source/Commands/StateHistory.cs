@@ -40,9 +40,16 @@ namespace MieszkanieOswieceniaBot.Commands
             var resultQueue = new Queue<string>();
             var currentStateFor = lastKnownStateFor.Select(x => x.Value).ToArray();
 
-            foreach (var sample in samplesStack)
+            while (samplesStack.TryPop(out var sample))
             {
                 currentStateFor[sample.RelayId] = sample.State;
+
+                while (samplesStack.TryPeek(out var consecutiveSample) && consecutiveSample.Date == sample.Date)
+                {
+                    sample = samplesStack.Pop();
+                    lastKnownStateFor[sample.RelayId] = sample.State;
+                }
+
                 resultQueue.Enqueue(CreateStateLine(currentStateFor, sample.Date));
             }
 
