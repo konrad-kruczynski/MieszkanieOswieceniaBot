@@ -39,7 +39,8 @@ namespace MieszkanieOswieceniaBot
                 using var database = new LiteDatabase(ConnectionString);
                 var collection = database.GetCollection<T>(CollectionNameOfType<T>());
                 // look for a comparable sample, but with a limit
-                using var enumerator = collection.Find(Query.All("Date"), Query.Descending).GetEnumerator();
+                using var enumerator = collection.Find(Query.All("Date", Query.Descending)).GetEnumerator();
+
                 var triedSamplesCount = 0;
                 while (enumerator.MoveNext() && triedSamplesCount++ < 100)
                 {
