@@ -261,6 +261,7 @@ namespace MieszkanieOswieceniaBot
                 }
                 var temperatureMatch = new Regex(@"t=(?<temperature>\d+)").Match(lines[1]);
                 temperature = decimal.Parse(temperatureMatch.Groups["temperature"].Value) / 1000;
+                temperature = Math.Round(temperature, 1);
                 return true;
             }
             catch (IOException e)
