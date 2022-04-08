@@ -35,6 +35,12 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 var sample = samplesStack.Pop();
                 lastKnownStateFor[sample.RelayId] = sample.State;
+
+                while (samplesStack.Peek().Date == sample.Date)
+                {
+                    sample = samplesStack.Pop();
+                    lastKnownStateFor[sample.RelayId] = sample.State;
+                }
             }
 
             var resultQueue = new Queue<string>();
