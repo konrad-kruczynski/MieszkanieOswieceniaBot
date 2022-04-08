@@ -305,13 +305,16 @@ namespace MieszkanieOswieceniaBot
 
         private async Task WriteTemperatureAndStateToDatabase()
         {
-            if(!TryGetTemperature(out decimal temperature, out string rawData))
+            var database = Database.Instance;
+
+            if (TryGetTemperature(out decimal temperature, out string rawData))
+            {
+                database.AddSample(new TemperatureSample { Date = DateTime.Now, Temperature = temperature });
+            }
+            else
             {
                 CircularLogger.Instance.Log("Error during adding new temperature sample to DB. Raw data: {1}{0}.", rawData, Environment.NewLine);
-                return;
             }
-            var database = Database.Instance;
-            database.AddSample(new TemperatureSample { Date = DateTime.Now, Temperature = temperature });
 
             foreach (var entry in Globals.Relays)
             {
