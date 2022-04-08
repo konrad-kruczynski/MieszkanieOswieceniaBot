@@ -38,7 +38,7 @@ namespace MieszkanieOswieceniaBot
                 // let's check in the database
                 using var database = new LiteDatabase(ConnectionString);
                 var collection = database.GetCollection<T>(CollectionNameOfType<T>());
-                // look for the comparable sample, but with a limit
+                // look for a comparable sample, but with a limit
                 using var enumerator = collection.Find(Query.All("Date"), Query.Descending).GetEnumerator();
                 var triedSamplesCount = 0;
                 while (enumerator.MoveNext() && triedSamplesCount++ < 100)
@@ -84,18 +84,6 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<T> GetAllSamples<T>() where T : ISample<T>
-        {
-            using(var database = new LiteDatabase(ConnectionString))
-            {
-                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
-                foreach (var sample in samples.FindAll())
-                {
-                    yield return sample;
-                }
-            }
-        }
-
         public IEnumerable<RelaySample> GetSamplesForRelay(int id)
         {
             using (var database = new LiteDatabase(ConnectionString))
@@ -126,14 +114,6 @@ namespace MieszkanieOswieceniaBot
                 {
                     yield return sample;
                 }
-            }
-        }
-
-        public int GetSampleCount<T>()
-        {
-            using(var database = new LiteDatabase(ConnectionString))
-            {
-                return database.GetCollection(CollectionNameOfType<T>()).Count();
             }
         }
 
