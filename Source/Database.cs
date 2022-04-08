@@ -32,6 +32,27 @@ namespace MieszkanieOswieceniaBot
         public void AddSample<T>(T sample) where T : ISample<T>
         {
             var lastComparableSample = samplesCache.OfType<T>().SingleOrDefault(x => x.IsSampleComparable(sample));
+
+            if (lastComparableSample == null)
+            {
+                // let's check in the database
+                using var database = new LiteDatabase(ConnectionString);
+                var collection = database.GetCollection<T>(CollectionNameOfType<T>());
+                // look for the comparable sample, but with a limit
+                using var enumerator = collection.Find(Query.All("Date"), Query.Descending).GetEnumerator();
+                var triedSamplesCount = 0;
+                while (enumerator.MoveNext() && triedSamplesCount++ < 100)
+                {
+                    var comparableSampleCandidate = enumerator.Current;
+                    if (comparableSampleCandidate.IsSampleComparable(sample))
+                    {
+                        samplesCache.Add(sample);
+                        lastComparableSample = comparableSampleCandidate;
+                        break;
+                    }
+                }
+            }
+
             if(lastComparableSample != null && lastComparableSample.CanSampleBeSquashed(sample))
             {
                 return;
