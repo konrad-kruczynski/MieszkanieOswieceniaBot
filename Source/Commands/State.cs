@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Humanizer;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
@@ -20,7 +21,15 @@ namespace MieszkanieOswieceniaBot.Commands
             foreach (var (relay, stateTask) in relaysWithStates)
             {
                 var state = await stateTask;
-                result.AppendLine($"{relay.Id} ({relay.FriendlyName}): {RelayExtensions.GetFriendlyStateFromSuccessAndState(state)}");
+                result.Append($"{relay.Id} ({relay.FriendlyName}): {RelayExtensions.GetFriendlyStateFromSuccessAndState(state)}");
+                if (state.State)
+                {
+                    result.Append(" od ");
+                    result.Append(GetTurnedOnTime(relay.Id));
+                }
+
+                result.AppendLine();
+
                 if (state.Success && state.State)
                 {
                     turnedOns.Add(relay.FriendlyName);
@@ -55,6 +64,22 @@ namespace MieszkanieOswieceniaBot.Commands
             }
 
             return result.ToString();
+        }
+
+        private string GetTurnedOnTime(int relayId)
+        {
+            var database = Database.Instance;
+            using var enumerator = database.TakeNewestSamples<RelaySample>().GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var sample = enumerator.Current;
+                if (sample.RelayId == relayId && !sample.State)
+                {
+                    return (DateTime.Now - sample.Date).Humanize(culture: Globals.BotCommunicationCultureInfo);
+                }
+            }
+
+            return "???";
         }
     }
 }
