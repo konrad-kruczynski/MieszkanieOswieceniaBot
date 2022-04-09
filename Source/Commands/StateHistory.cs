@@ -47,7 +47,7 @@ namespace MieszkanieOswieceniaBot.Commands
                 while (samplesStack.TryPeek(out var consecutiveSample) && (consecutiveSample.Date - sample.Date) < TimeSpan.FromSeconds(5))
                 {
                     sample = samplesStack.Pop();
-                    lastKnownStateFor[sample.RelayId] = sample.State;
+                    lastKnownStateFor[consecutiveSample.RelayId] = consecutiveSample.State;
                 }
 
                 resultQueue.Enqueue(CreateStateLine(currentStateFor, sample.Date));
