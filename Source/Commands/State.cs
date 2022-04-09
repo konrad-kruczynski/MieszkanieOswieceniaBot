@@ -73,9 +73,16 @@ namespace MieszkanieOswieceniaBot.Commands
             while (enumerator.MoveNext())
             {
                 var sample = enumerator.Current;
-                if (sample.RelayId == relayId && sample.State)
+                if (sample.RelayId == relayId)
                 {
-                    return (DateTime.Now - sample.Date).Humanize(culture: Globals.BotCommunicationCultureInfo);
+                    if (sample.State)
+                    {
+                        return (DateTime.Now - sample.Date).Humanize(culture: Globals.BotCommunicationCultureInfo);
+                    }
+                    else
+                    {
+                        return "niedawna";
+                    }
                 }
             }
 
