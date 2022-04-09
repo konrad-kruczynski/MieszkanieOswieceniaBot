@@ -16,16 +16,16 @@ namespace MieszkanieOswieceniaBot.Commands
         protected override Task<string> ExecuteInnerAsync(Parameters parameters)
         {
             var samplesStack = new Stack<RelaySample>();
-            var oldStateFor = new bool?[Globals.Relays.Count];
+            var oldStateFor = new int[Globals.Relays.Count];
 
             foreach (var sample in Database.Instance.TakeNewestSamples<RelaySample>())
             {
-                if (oldStateFor.All(x => x.HasValue))
+                if (oldStateFor.All(x => x > 1))
                 {
                     break;
                 }
 
-                oldStateFor[sample.RelayId] = sample.State;
+                oldStateFor[sample.RelayId]++;
                 samplesStack.Push(sample);
             }
 
