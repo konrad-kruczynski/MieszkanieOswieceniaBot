@@ -20,7 +20,7 @@ namespace MieszkanieOswieceniaBot.Commands
 
             foreach (var sample in Database.Instance.TakeNewestSamples<RelaySample>())
             {
-                if (oldStateFor.All(x => x > 1))
+                if (oldStateFor.All(x => x > 2))
                 {
                     break;
                 }
