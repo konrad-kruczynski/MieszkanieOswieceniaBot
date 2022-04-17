@@ -108,7 +108,7 @@ namespace MieszkanieOswieceniaBot
             return pngFile;
         }
         
-        public async Task<string> PrepareHistogram(List<int> relayNos, string relayName, Func<Step, Task> stepHandler = null)
+        public async Task<string> PrepareHistogram(List<int> relayNos, Func<Step, Task> stepHandler = null)
         {
             await stepHandler(Step.RetrievingData);
 
@@ -116,9 +116,9 @@ namespace MieszkanieOswieceniaBot
             var bucketsCount = 24 * 60 / minutesInBucket;
             var buckets = new int[relayNos.Count, bucketsCount];
 
+            var relayNumberInChart = 0;
             foreach (var relayNo in relayNos)
-            {
-                var relayNumberInChart = 0;
+            {                
                 var samplesForRelay = Database.Instance.GetSamplesForRelay(relayNo);
                 var formerSample = new RelaySample(relayNo, false);
 
@@ -185,7 +185,7 @@ namespace MieszkanieOswieceniaBot
             }
 
             await stepHandler(Step.CreatingPlot);
-            var plotModel = new PlotModel { Title = "Histogram " + relayName, };
+            var plotModel = new PlotModel { Title = "Histogram" };
             plotModel.Background = OxyColors.White;
             plotModel.Axes.Add(new LinearAxis()
             {
@@ -204,13 +204,17 @@ namespace MieszkanieOswieceniaBot
                 Minimum = 0,
                 Maximum = buckets.Cast<int>().Max() + 1
             });
-            plotModel.IsLegendVisible = true;
+            var legend = new OxyPlot.Legends.Legend
+            {
+                LegendTitle = "Legenda"
+            };
+            plotModel.Legends.Add(legend);
 
             for(var j = 0; j < relayNos.Count; j++)
             {
                 var serie = new LineSeries
                 {
-                    LabelFormatString = Globals.Relays[relayNos[j]].FriendlyName
+                    Title = Globals.Relays[relayNos[j]].FriendlyName
                 };
                 for (var i = 0; i < bucketsCount; i++)
                 {
@@ -224,7 +228,7 @@ namespace MieszkanieOswieceniaBot
             await stepHandler(Step.RenderingImage);
             using (var stream = File.Create(chartFile))
             {
-                var pngExporter = new JpegExporter(1300, 800);
+                var pngExporter = new JpegExporter(1300, 800, quality: 100);
                 pngExporter.Export(plotModel, stream);
             }
 

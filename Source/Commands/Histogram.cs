@@ -33,10 +33,9 @@ namespace MieszkanieOswieceniaBot.Commands
         private async Task CreateHistogram(long chatId, List<int> relayNos)
         {
             var names = relayNos.Select(x => Globals.Relays[x].FriendlyName);
-            var chartName = names.Aggregate(string.Empty, (x, y) => x + "/" + y);
             var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję..."); ;
             var charter = new Charter("");
-            var pngFile = await charter.PrepareHistogram(relayNos, chartName, async step =>
+            var pngFile = await charter.PrepareHistogram(relayNos, async step =>
             {
                 switch (step)
                 {
