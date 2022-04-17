@@ -208,24 +208,27 @@ namespace MieszkanieOswieceniaBot
 
             for(var j = 0; j < relayNos.Count; j++)
             {
-                var serie = new LineSeries();
-                for(var i = 0; i < bucketsCount; i++)
+                var serie = new LineSeries
+                {
+                    LabelFormatString = Globals.Relays[relayNos[j]].FriendlyName
+                };
+                for (var i = 0; i < bucketsCount; i++)
                 {
                     serie.Points.Add(new DataPoint(i, buckets[j, i]));
                 }
                 plotModel.Series.Add(serie);
             }
 
-            var pngFile = "histogram.png";
+            var chartFile = "histogram.jpg";
 
             await stepHandler(Step.RenderingImage);
-            using (var stream = File.Create(pngFile))
+            using (var stream = File.Create(chartFile))
             {
-                var pngExporter = new PngExporter(1300, 800);
+                var pngExporter = new JpegExporter(1300, 800);
                 pngExporter.Export(plotModel, stream);
             }
 
-            return pngFile;
+            return chartFile;
         }
 
         private readonly string dateTimeFormat;

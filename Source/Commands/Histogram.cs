@@ -16,6 +16,11 @@ namespace MieszkanieOswieceniaBot.Commands
 
         public async Task ExecuteAsync(Parameters parameters)
         {
+            if (parameters.Count == 0)
+            {
+                throw new ParameterException(ParameterExceptionType.NotEnoughParameters);
+            }
+
             var relayNumbers = new List<int>();
             for (var i = 0; i < parameters.Count; i++)
             {
