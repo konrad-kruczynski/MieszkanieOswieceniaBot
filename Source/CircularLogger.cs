@@ -66,7 +66,7 @@ namespace MieszkanieOswieceniaBot
                     }
                     else
                     {
-                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} with rate {3:#.0} events/h) {1}</pre>",
+                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} with rate {3:0.0} events/h) {1}</pre>",
                             orderedGroup.Last().Date,
                             WebUtility.HtmlEncode(TrimIfNecessary(group.Key)),
                             group.Count() - 1,
@@ -78,11 +78,11 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        private string TrimIfNecessary(string message)
+        private static string TrimIfNecessary(string message)
         {
             if (message.Length > 2000)
             {
-                return message.Substring(0, 2000) + "... (trimmed)";
+                return message[..2000] + "... (trimmed)";
             }
 
             return message;
