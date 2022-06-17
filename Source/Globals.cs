@@ -17,7 +17,6 @@ namespace MieszkanieOswieceniaBot
             new RelayEntry(4, new Relays.Tasmota("192.168.71.31"), "mata grzejna Kota"),
             new RelayEntry(5, new Relays.Tasmota("192.168.71.32"), "mata grzejna Kocicy"),
             new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
-            new RelayEntry(7, new Relays.Tasmota("192.168.71.35", true), "oświetlenie akwarium"),
             new RelayEntry(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
         }.ToDictionary(x => x.Id, x => x);
 
@@ -37,9 +36,8 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, new [] { 0, 2 }),
         };
 
-        public static readonly AutoScenarioHandler[] AutoScenarios = new[]
+        public static readonly AutoScenarioHandler[] AutoScenarios = new AutoScenarioHandler[]
         {
-            new AutoScenarioHandler(7, true, ("10:00", true), ("18:00", false))
         };
 
         public static readonly HeartbeatenHandler[] Heartbeatings = new[]
