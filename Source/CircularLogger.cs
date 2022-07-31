@@ -66,11 +66,11 @@ namespace MieszkanieOswieceniaBot
                     }
                     else
                     {
-                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} with rate {3:0.0} events/h) {1}</pre>",
+                        result.Add(string.Format("<pre>{0:d MMM HH:mm:ss} (+{2} with period {3:0.0} minutes) {1}</pre>",
                             orderedGroup.Last().Date,
                             WebUtility.HtmlEncode(TrimIfNecessary(group.Key)),
                             group.Count() - 1,
-                            (group.Count() - 1.0)/(DateTime.Now - orderedGroup.First().Date).TotalHours));
+                            ((DateTime.Now - orderedGroup.First().Date)/(group.Count() - 1.0)).TotalMinutes));
                     }
                 }
 

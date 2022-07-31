@@ -31,12 +31,14 @@ namespace MieszkanieOswieceniaBot
                 return -1;
             }
 
+            System.IO.File.WriteAllText("/Users/konrad/Desktop/peka.html", homePageAsString);
+
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(homePageAsString);
             var balanceText = htmlDocument.DocumentNode.Descendants().First(x => x.Id == "clientCards")
                                           .Descendants().First(x => x.Name == "tr" && x.InnerText.Contains("Saldo"))
                                           .Descendants().First(x => x.Name == "td" && x.InnerText.Contains("Kwota")).InnerText;
-            var balanceRegex = new Regex(@"Kwota:\s+([-\d,]+) zł", RegexOptions.Singleline);
+            var balanceRegex = new Regex(@"Kwota:\s+([-\d,]+)\szł", RegexOptions.Singleline);
             var resultAsText = balanceRegex.Match(balanceText).Groups[1].Value;
             return decimal.Parse(resultAsText, new CultureInfo("pl-PL"));
         }
