@@ -19,6 +19,8 @@ namespace Tests
         public TimeSpan Timeout { get; set; }
         public IExceptionParser ExceptionsParser { get; set; }
 
+        public bool LocalBotServer => throw new NotImplementedException();
+
         public event AsyncEventHandler<ApiRequestEventArgs> OnMakingApiRequest;
         public event AsyncEventHandler<ApiResponseEventArgs> OnApiResponseReceived;
 

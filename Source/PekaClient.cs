@@ -31,8 +31,6 @@ namespace MieszkanieOswieceniaBot
                 return -1;
             }
 
-            System.IO.File.WriteAllText("/Users/konrad/Desktop/peka.html", homePageAsString);
-
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(homePageAsString);
             var balanceText = htmlDocument.DocumentNode.Descendants().First(x => x.Id == "clientCards")
