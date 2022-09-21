@@ -14,8 +14,8 @@ namespace MieszkanieOswieceniaBot
             new RelayEntry(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
             new RelayEntry(2, new Relays.Shelly("192.168.71.33"), "lampa przy kanapie"),
             new RelayEntry(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
-            new RelayEntry(4, new Relays.Shelly("192.168.71.37"), "mata grzejna Kota"),
-            new RelayEntry(5, new Relays.Shelly("192.168.71.38"), "mata grzejna Kocicy"),
+            new RelayEntry(4, new Relays.Shelly("192.168.71.38"), "mata grzejna Kota"),
+            new RelayEntry(5, new Relays.Shelly("192.168.71.37"), "mata grzejna Kocicy"),
             new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
             new RelayEntry(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             new RelayEntry(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
