@@ -57,7 +57,13 @@ namespace MieszkanieOswieceniaBot
 
             var relayToggleCommand = new Commands.RelayToggle();
             register.RegisterCommand("r", relayToggleCommand);
-            register.RegisterCommand("z", relayToggleCommand);
+            register.RegisterCommand("z1", relayToggleCommand);
+
+            var externalLampProlonger = new Commands.HearbeatProlonger(TimeSpan.FromMinutes(15), Globals.Heartbeatings[2]);
+            register.RegisterCommand("z", externalLampProlonger);
+            // actually a hacky way to switch it off
+            var externalLampTurnOffHandler = new Commands.HearbeatProlonger(TimeSpan.FromDays(-365), Globals.Heartbeatings[2]);
+            register.RegisterCommand("z0", externalLampTurnOffHandler);
 
             var heartbeatProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[0..2]);
             register.RegisterCommand("czuwanie", heartbeatProlongerCommand);

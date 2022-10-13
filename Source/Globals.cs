@@ -44,7 +44,8 @@ namespace MieszkanieOswieceniaBot
         public static readonly HeartbeatenHandler[] Heartbeatings = new[]
         {
             new HeartbeatenHandler(3, HeartbeatTimeout),
-            new HeartbeatenHandler(8, HeartbeatTimeout)
+            new HeartbeatenHandler(8, HeartbeatTimeout),
+            new HeartbeatenHandler(6, TimeSpan.Zero) // we do not really use "heartbeat" feature here
         };
 
         public static readonly CultureInfo BotCommunicationCultureInfo = new CultureInfo("pl-PL");
