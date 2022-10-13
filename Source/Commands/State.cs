@@ -26,6 +26,16 @@ namespace MieszkanieOswieceniaBot.Commands
                 {
                     result.Append(" od ");
                     result.Append(GetTurnedOnTime(relay.Id));
+
+                    var correspondingHeartbeatenHandler = Globals.Heartbeatings.FirstOrDefault(x => x.RelayEntry.Id == relay.Id);
+                    if (correspondingHeartbeatenHandler != null)
+                    {
+                        var timeLeft = correspondingHeartbeatenHandler.ProlongedTimeLeft;
+                        if (timeLeft > TimeSpan.Zero)
+                        {
+                            result.AppendFormat(", wyłączenie za {0}", timeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo));
+                        }
+                    }
                 }
 
                 result.AppendLine();
