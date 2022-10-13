@@ -19,6 +19,8 @@ namespace MieszkanieOswieceniaBot.Handlers
             await Globals.Relays[relayId].Relay.TrySetStateAsync(DateTime.UtcNow - lastHeartbeat < timeout);
         }
 
+        public RelayEntry RelayEntry => Globals.Relays[relayId];
+
         public Task HeartbeatAsync()
         {
             lastHeartbeat = DateTime.UtcNow;

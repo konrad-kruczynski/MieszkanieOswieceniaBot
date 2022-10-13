@@ -9,7 +9,6 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             var relayNo = parameters.CommandName switch
             {
-                "z1" => 6,
                 "r" => 7,
                 _ => throw new NotImplementedException("Unknown relay for toggling")
             };

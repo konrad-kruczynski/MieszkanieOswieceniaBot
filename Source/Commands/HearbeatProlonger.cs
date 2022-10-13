@@ -39,7 +39,9 @@ namespace MieszkanieOswieceniaBot.Commands
                 return "Przyjęto.";
             }
 
-            return $"Głośniki wyłączą się nie wcześniej niż o za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
+            var friendlyName = handler.RelayEntry.FriendlyName;
+
+            return $"{friendlyName}: wyłączenie za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
         }
 
         private readonly HeartbeatenHandler[] handlers;
