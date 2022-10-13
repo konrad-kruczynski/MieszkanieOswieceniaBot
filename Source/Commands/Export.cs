@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
 		}
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var chatId = parameters.ChatId;
             var progressMessage = await bot.SendTextMessageAsync(chatId, "Przygotowuję...");

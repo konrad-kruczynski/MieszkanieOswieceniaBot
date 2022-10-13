@@ -7,7 +7,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
 	public sealed class Bitcoin : ITextCommand
 	{
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             const string currencyFile = "currency.txt";
             if (!File.Exists(currencyFile))

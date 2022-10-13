@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
 		}
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             await bot.SendTextMessageAsync(parameters.ChatId, "Teraz restart");
             await Task.Delay(TimeSpan.FromSeconds(10));

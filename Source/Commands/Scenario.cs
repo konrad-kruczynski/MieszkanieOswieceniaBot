@@ -10,7 +10,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.scenarioNumber = scenarioNumber;
         }
 
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
             var scenario = Globals.Scenarios[scenarioNumber];

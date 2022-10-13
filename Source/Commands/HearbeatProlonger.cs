@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.prolongValue = prolongValue;
 		}
 
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             HeartbeatenHandler handler;
 

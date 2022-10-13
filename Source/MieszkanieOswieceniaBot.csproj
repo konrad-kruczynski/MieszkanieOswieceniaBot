@@ -16,6 +16,8 @@
     <PackageReference Include="Humanizer.Core.pl" Version="2.14.1" />
     <PackageReference Include="StringSimilarity" Version="1.0.2.1" />
     <PackageReference Include="SystemIOPorts.SerialPort_Mono" Version="1.0.0" />
+    <PackageReference Include="PeanutButter.SimpleHTTPServer" Version="3.0.58" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Telegram.Bot.Extensions.Polling" />
@@ -25,6 +27,8 @@
     <None Remove="StringSimilarity" />
     <None Remove="Handlers\" />
     <None Remove="SystemIOPorts.SerialPort_Mono" />
+    <None Remove="PeanutButter.SimpleHTTPServer" />
+    <None Remove="Nito.AsyncEx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Commands\" />

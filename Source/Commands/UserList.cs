@@ -15,7 +15,7 @@ namespace MieszkanieOswieceniaBot.Commands
             authorizer = new Authorizer();
 		}
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var users = authorizer.ListUsers();
             foreach (var user in users.Concat(Configuration.Instance.ListAdmins()))

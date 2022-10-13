@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MieszkanieOswieceniaBot.Handlers;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -24,6 +25,7 @@ namespace MieszkanieOswieceniaBot
             stats = new Stats();
             authorizer = new Authorizer();
             commandRegister = InitializeCommandRegister();
+            apiHandler = new ApiHandler();
             CircularLogger.Instance.Log("Bot initialized.");
         }
 
@@ -47,7 +49,7 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("restart", new Commands.Restart(bot));
             register.RegisterCommand("log", new Commands.Log(bot));
             register.RegisterCommand("bitcoin", new Commands.Bitcoin());
-            register.RegisterCommand("różany", new Commands.RosyCreekCooperative());
+            register.RegisterCommand("różany", new Commands.RosyCreekCooperative(bot));
 
             var statsCommand = new Commands.Stats(stats);
             register.RegisterCommand("staty", statsCommand);
@@ -117,6 +119,12 @@ namespace MieszkanieOswieceniaBot
                 .Select(x => Observable.FromAsync(async () => await HandleUdp(x)).ObserveOn(SynchronizationContext.Current))
                 .Concat().Subscribe();
 
+            apiHandler.Start();
+
+            Observable.FromAsync(apiHandler.GetNextRequestAsync).Repeat().ObserveOn(SynchronizationContext.Current)
+                .Select(x => Observable.FromAsync(async () => await HandleHttp(x)).ObserveOn(SynchronizationContext.Current))
+                .Concat().Subscribe();
+
             SubscribeOnInterval(TimeSpan.FromMinutes(2), SynchronizationContext.Current, WriteTemperatureAndStateToDatabase);
             SubscribeOnInterval(TimeSpan.FromMinutes(1), SynchronizationContext.Current, RefreshHandlers);
             SubscribeOnInterval(TimeSpan.FromHours(8), SynchronizationContext.Current, CheckHousingCooperativeNews);
@@ -139,6 +147,12 @@ namespace MieszkanieOswieceniaBot
 
                 await Task.Delay(TimeSpan.FromSeconds(30));
             }
+        }
+
+        private async Task HandleHttp((Guid Id, string CommandName, IReadOnlyDictionary<string, string> Parameters) request)
+        {
+            var result = await commandRegister.HandleApiRequestAsync(request.CommandName, request.Parameters);
+            apiHandler.AddResponseFor(request.Id, result.Status, result.Message);
         }
 
         private async Task HandleUdp(UdpReceiveResult result)
@@ -190,7 +204,7 @@ namespace MieszkanieOswieceniaBot
                 // TODO: move other message types away from here
                 // authorization can then be removed
 
-                await commandRegister.HandleMessage(message);
+                await commandRegister.HandleTelegramMessageAsync(message);
                 return;
             }
 
@@ -338,6 +352,7 @@ namespace MieszkanieOswieceniaBot
         private readonly TelegramBotClient bot;
         private readonly Authorizer authorizer;
         private readonly Stats stats;
-        private readonly CommandRegister commandRegister;                      
+        private readonly CommandRegister commandRegister;
+        private readonly ApiHandler apiHandler;
     }
 }

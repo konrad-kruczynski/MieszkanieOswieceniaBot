@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MieszkanieOswieceniaBot.Commands;
+using PeanutButter.SimpleHTTPServer;
 using Similarity;
 using Telegram.Bot;
 
@@ -30,7 +32,36 @@ namespace MieszkanieOswieceniaBot
 			commands.Add(name, commandListCommand);
         }
 
-		public async Task HandleMessage(Telegram.Bot.Types.Message message)
+		public async Task<(string Message, HttpStatusCode Status)> HandleApiRequestAsync(string commandName, IReadOnlyDictionary<string, string> parameters)
+		{
+            if (!commands.TryGetValue(commandName, out var command))
+			{
+				return ("Command not found", HttpStatusCode.NotFound);
+			}
+
+			if (command.IsPrivileged())
+			{
+                return ("Command is priviliged", HttpStatusCode.NotFound);
+            }
+
+			if (command is not ITextCommand textCommand)
+			{
+				return ("Command is not avaialble via HTTP API", HttpStatusCode.NotImplemented);
+			}
+
+			var textCommandParameters = new TextCommandParameters(commandName, parameters.Values.OrderBy(x => x).ToList());
+			try
+			{
+				var result = await textCommand.ExecuteAsync(textCommandParameters);
+				return (result, HttpStatusCode.OK);
+			}
+			catch(Exception e)
+			{
+				return (e.Message, HttpStatusCode.InternalServerError);
+			}
+        }
+
+		public async Task HandleTelegramMessageAsync(Telegram.Bot.Types.Message message)
         {
 			var chatId = message.Chat.Id;
 			var senderId = message.From.Id;
@@ -57,27 +88,28 @@ namespace MieszkanieOswieceniaBot
 				return;
             }
 
-			var privilegedAttribute = command.GetType().GetCustomAttribute<PrivilegedAttribute>();
-			if (privilegedAttribute != null && !Configuration.Instance.IsAdmin(senderId))
+			if (command.IsPrivileged() && !Configuration.Instance.IsAdmin(senderId))
 			{
 				await bot.SendTextMessageAsync(chatId, "Brak uprawnień - komenda dostępna tylko dla administratora.");
 				CircularLogger.Instance.Log(
 					$"Unauthorized (non-admin) attempt to execute '{commandName}' from {message.From.FirstName} {message.From.LastName}.");
 				return;
 			}
-
-			var parameters = new Parameters(commandParts[0], commandParts.Skip(1).ToArray(), chatId, senderId);
-
+				
 			try
 			{
+				TextCommandParameters parameters = default;
 				if (command is ITextCommand textCommand)
 				{
-					var response = await textCommand.ExecuteAsync(parameters);
+                    parameters = new TextCommandParameters(commandParts[0], commandParts.Skip(1).ToArray());
+                    var response = await textCommand.ExecuteAsync(parameters);
 					await bot.SendTextMessageAsync(chatId, response);
 				}
 				else if (command is IGeneralCommand nonTextCommand)
                 {
-					await nonTextCommand.ExecuteAsync(parameters);
+                    var generalCommandParameters = new GeneralCommandParameters(chatId, senderId, commandParts[0], commandParts.Skip(1).ToArray());
+                    parameters = generalCommandParameters;
+                    await nonTextCommand.ExecuteAsync(generalCommandParameters);
                 }
 
 				parameters.ExpectNoOtherParameters();
@@ -109,7 +141,7 @@ namespace MieszkanieOswieceniaBot
 				this.parent = parent;
 			}
 
-			public Task<string> ExecuteAsync(Parameters parameters)
+			public Task<string> ExecuteAsync(TextCommandParameters parameters)
             {
 				var builder = new StringBuilder();
 				builder.AppendLine("Dostępne są następujące komendy:");

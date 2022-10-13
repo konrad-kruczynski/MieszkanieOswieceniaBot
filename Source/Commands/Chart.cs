@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
 		}
 
-        public Task ExecuteAsync(Parameters parameters)
+        public Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var count = parameters.TakeInteger();
             var unit = parameters.TakeEnum<ChartUnit>();

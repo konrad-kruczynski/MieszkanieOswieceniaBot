@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot.Commands
         {
         }
 
-        protected override Task<string> ExecuteInnerAsync(Parameters parameters)
+        protected override Task<string> ExecuteInnerAsync(TextCommandParameters parameters)
         {
             var samplesStack = new Stack<RelaySample>();
             var oldStateFor = new int[Globals.Relays.Count];

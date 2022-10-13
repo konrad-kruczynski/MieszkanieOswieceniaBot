@@ -14,7 +14,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
         }
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             if (parameters.Count == 0)
             {

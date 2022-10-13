@@ -11,7 +11,7 @@ namespace MieszkanieOswieceniaBot.Commands
         {
         }
 
-        protected override Task<string> ExecuteInnerAsync(Parameters parameters)
+        protected override Task<string> ExecuteInnerAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
             var samples = Database.Instance.GetNewestSamples<TemperatureSample>(30);

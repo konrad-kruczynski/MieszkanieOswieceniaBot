@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot.Commands
             bot = telegramBotClient;
         }
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             foreach (var pekaEntry in PekaDb.Instance.GetData())
             {

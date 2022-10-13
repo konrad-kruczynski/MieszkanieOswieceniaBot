@@ -6,7 +6,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
 	public sealed class Heating : ITextCommand
 	{
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             int relayNo;
             if (!parameters.TryTakeString(out var whoToHeat))

@@ -5,7 +5,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
 	public sealed class Alarm : ITextCommand
 	{
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
             var random = new Random();

@@ -5,7 +5,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
     public sealed class Temperature : ITextCommand
     {
-        public Task<string> ExecuteAsync(Parameters parameters)
+        public Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
             if (!Controller.TryGetTemperature(out decimal temperature, out string rawData))

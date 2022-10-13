@@ -5,7 +5,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
 	public interface ITextCommand : ICommand
 	{
-		Task<string> ExecuteAsync(Parameters parameters);
+		Task<string> ExecuteAsync(TextCommandParameters parameters);
 	}
 }
 

@@ -10,7 +10,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.stats = stats;
         }
 
-        public Task<string> ExecuteAsync(Parameters parameters)
+        public Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
             return Task.FromResult(stats.GetStats());

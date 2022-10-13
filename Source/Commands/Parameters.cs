@@ -2,19 +2,15 @@
 using System.Collections.Generic;
 
 namespace MieszkanieOswieceniaBot.Commands
-{
-	public sealed class Parameters
+{ 
+	public class TextCommandParameters
 	{
-		public Parameters(string commandName, IReadOnlyList<string> parameters, long chatId, long senderId)
+		public TextCommandParameters(string commandName, IReadOnlyList<string> parameters)
 		{
 			this.parameters = parameters;
-			ChatId = chatId;
-			SenderId = senderId;
 			CommandName = commandName;
 		}
-
-		public long ChatId { get; init; }
-		public long SenderId { get; init; }
+		
 		public string CommandName { get; init; }
 		public bool IsAdmin { get; init; }
 		public int Count => parameters.Count;

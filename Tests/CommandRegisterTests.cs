@@ -12,7 +12,7 @@ public sealed class CommandRegisterTests
     public async Task ShouldFindAndExecuteCommand()
     {
         var message = ProduceFakeMessage("ping");
-        await register.HandleMessage(message);
+        await register.HandleTelegramMessageAsync(message);
         Assert.AreEqual("pong", fakeClient.LastText);
     }
 
@@ -20,7 +20,7 @@ public sealed class CommandRegisterTests
     public async Task ShouldSuggestMostSimilarCommand()
     {
         var message = ProduceFakeMessage("pring");
-        await register.HandleMessage(message);
+        await register.HandleTelegramMessageAsync(message);
         Assert.AreNotEqual("pong", fakeClient.LastText);
         Assert.IsTrue(fakeClient.LastText.Contains("ping"));
     }
@@ -29,7 +29,7 @@ public sealed class CommandRegisterTests
     public async Task ShouldDetectTooMuchArguments()
     {
         var message = ProduceFakeMessage("ping sth");
-        await register.HandleMessage(message);
+        await register.HandleTelegramMessageAsync(message);
     }
 
     [SetUp]

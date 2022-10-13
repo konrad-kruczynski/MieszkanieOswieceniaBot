@@ -9,7 +9,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
     public sealed class State : ITextCommand
     {
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             var result = new StringBuilder();
             var turnedOns = new List<string>();

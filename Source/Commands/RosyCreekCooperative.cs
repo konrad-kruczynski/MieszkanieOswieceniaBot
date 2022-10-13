@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
-    public sealed class RosyCreekCooperative : ITextCommand
+    public sealed class RosyCreekCooperative : IGeneralCommand
     {
-        public Task<string> ExecuteAsync(Parameters parameters)
+        public RosyCreekCooperative(ITelegramBotClient bot)
+        {
+            this.bot = bot;
+        }
+
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             if (parameters.Count == 0)
             {
                 Database.Instance.AddHouseCooperativeChatId(parameters.ChatId);
-                return Task.FromResult("Dodano");
+                await bot.SendTextMessageAsync(parameters.ChatId, "Dodano");
+                return;
             }
 
             var action = parameters.TakeEnum<RosyCreekAction>();
@@ -19,11 +26,14 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 case RosyCreekAction.Reset:
                     Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
-                    return Task.FromResult("Zresetowano");
+                    await bot.SendTextMessageAsync(parameters.ChatId, "Zresetowano");
+                    return;
                 default:
                     throw new ParameterException(ParameterExceptionType.OutOfRangeError);
             }
         }
+
+        private readonly ITelegramBotClient bot;
     }
 
     public enum RosyCreekAction

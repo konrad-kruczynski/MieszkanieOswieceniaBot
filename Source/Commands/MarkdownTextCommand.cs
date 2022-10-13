@@ -12,13 +12,13 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
 		}
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var result = await ExecuteInnerAsync(parameters);
             await bot.SendTextMessageAsync(parameters.ChatId, result, parseMode: ParseMode.Markdown);
         }
 
-        protected abstract Task<string> ExecuteInnerAsync(Parameters parameters);
+        protected abstract Task<string> ExecuteInnerAsync(TextCommandParameters parameters);
 
         private readonly ITelegramBotClient bot;
     }

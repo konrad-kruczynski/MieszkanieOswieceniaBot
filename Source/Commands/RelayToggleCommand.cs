@@ -5,7 +5,7 @@ namespace MieszkanieOswieceniaBot.Commands
 {
 	public sealed class RelayToggle : ITextCommand
 	{
-        public async Task<string> ExecuteAsync(Parameters parameters)
+        public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             var relayNo = parameters.CommandName switch
             {

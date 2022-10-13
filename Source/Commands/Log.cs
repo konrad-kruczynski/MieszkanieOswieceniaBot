@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
             this.bot = bot;
 		}
 
-        public async Task ExecuteAsync(Parameters parameters)
+        public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var entries = CircularLogger.Instance.GetEntriesAsHtmlStrings().ToList();
             if (entries.Count > 10)
