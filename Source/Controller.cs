@@ -58,17 +58,20 @@ namespace MieszkanieOswieceniaBot
             var relayToggleCommand = new Commands.RelayToggle();
             register.RegisterCommand("r", relayToggleCommand);
 
-            var externalLampProlonger = new Commands.HearbeatProlonger(TimeSpan.FromMinutes(15), Globals.Heartbeatings[2]);
+            var externalLampProlongTime = TimeSpan.FromMinutes(15);
+            var externalLampProlonger = new Commands.IndexedHeartbeatProlonger(externalLampProlongTime, Globals.Heartbeatings[2]);
             register.RegisterCommand("z", externalLampProlonger);
-            var externalLampLongProlonger = new Commands.HearbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[2]);
+            var externalLampParametrizedProlonger = new Commands.Prolonger(Globals.Heartbeatings[2]);
+            register.RegisterCommand("z_param", externalLampParametrizedProlonger);
+            var externalLampLongProlonger = new Commands.IndexedHeartbeatProlonger(TimeSpan.FromHours(2), Globals.Heartbeatings[2]);
             register.RegisterCommand("z1", externalLampLongProlonger);
             // actually a hacky way to switch it off
-            var externalLampTurnOffHandler = new Commands.HearbeatProlonger(TimeSpan.FromDays(-365), Globals.Heartbeatings[2]);
+            var externalLampTurnOffHandler = new Commands.IndexedHeartbeatProlonger(TimeSpan.FromDays(-365), Globals.Heartbeatings[2]);
             register.RegisterCommand("z0", externalLampTurnOffHandler);
 
-            var heartbeatProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[0..2]);
+            var heartbeatProlongerCommand = new Commands.IndexedHeartbeatProlonger(TimeSpan.FromHours(1), Globals.Heartbeatings[0..2]);
             register.RegisterCommand("czuwanie", heartbeatProlongerCommand);
-            var hearbeatAntiProlongerCommand = new Commands.HearbeatProlonger(TimeSpan.FromHours(-1), Globals.Heartbeatings[0..2]);
+            var hearbeatAntiProlongerCommand = new Commands.IndexedHeartbeatProlonger(TimeSpan.FromHours(-1), Globals.Heartbeatings[0..2]);
             register.RegisterCommand("antyczuwanie", hearbeatAntiProlongerCommand);
 
             var alarmCommand = new Commands.Alarm();

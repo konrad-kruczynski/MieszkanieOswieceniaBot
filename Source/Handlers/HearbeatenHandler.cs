@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Humanizer;
 
 namespace MieszkanieOswieceniaBot.Handlers
 {
@@ -12,28 +13,47 @@ namespace MieszkanieOswieceniaBot.Handlers
             lastHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
         }
 
-        public TimeSpan ProlongedTimeLeft => lastHeartbeat - DateTime.UtcNow;
+        public TimeSpan ProlongedTimeLeft => lastHeartbeat - DateTimeOffset.UtcNow;
 
         public async Task RefreshAsync()
         {
-            await Globals.Relays[relayId].Relay.TrySetStateAsync(DateTime.UtcNow - lastHeartbeat < timeout);
+            await Globals.Relays[relayId].Relay.TrySetStateAsync(DateTimeOffset.UtcNow - lastHeartbeat < timeout);
         }
 
         public RelayEntry RelayEntry => Globals.Relays[relayId];
 
         public Task HeartbeatAsync()
         {
-            lastHeartbeat = DateTime.UtcNow;
+            lastHeartbeat = DateTimeOffset.UtcNow;
             return RefreshAsync();
         }
 
         public Task ProlongFor(TimeSpan amount)
         {
-            lastHeartbeat = (lastHeartbeat < DateTime.UtcNow ? DateTime.UtcNow : lastHeartbeat) + amount;
+            lastHeartbeat = (lastHeartbeat < DateTimeOffset.UtcNow ? DateTimeOffset.UtcNow : lastHeartbeat) + amount;
             return RefreshAsync();
         }
 
-        private DateTime lastHeartbeat;
+        public Task ProlongTo(DateTimeOffset value)
+        {
+            lastHeartbeat = value;
+            return RefreshAsync();
+        }
+
+        public string GetFriendlyTimeOffValue()
+        {
+            var prolongedTimeLeft = ProlongedTimeLeft;
+            if (prolongedTimeLeft <= TimeSpan.Zero)
+            {
+                return "Przyjęto.";
+            }
+
+            var friendlyName = RelayEntry.FriendlyName;
+
+            return $"{friendlyName}: wyłączenie za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
+        }
+
+        private DateTimeOffset lastHeartbeat;
         private readonly int relayId;
         private readonly TimeSpan timeout;
     }

@@ -5,12 +5,12 @@ using MieszkanieOswieceniaBot.Handlers;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
-	public sealed class HearbeatProlonger : ITextCommand
+	public sealed class IndexedHeartbeatProlonger : ITextCommand
 	{
-		public HearbeatProlonger(TimeSpan prolongValue, params HeartbeatenHandler[] handlers)
+		public IndexedHeartbeatProlonger(TimeSpan heartbeatProlongValue, params HeartbeatenHandler[] handlers)
 		{
             this.handlers = handlers;
-            this.prolongValue = prolongValue;
+            this.prolongValue = heartbeatProlongValue;
 		}
 
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
@@ -33,15 +33,7 @@ namespace MieszkanieOswieceniaBot.Commands
             }
 
             await handler.ProlongFor(prolongValue);
-            var prolongedTimeLeft = handler.ProlongedTimeLeft;
-            if (prolongedTimeLeft <= TimeSpan.Zero)
-            {
-                return "Przyjęto.";
-            }
-
-            var friendlyName = handler.RelayEntry.FriendlyName;
-
-            return $"{friendlyName}: wyłączenie za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
+            return handler.GetFriendlyTimeOffValue();
         }
 
         private readonly HeartbeatenHandler[] handlers;

@@ -49,7 +49,7 @@ namespace MieszkanieOswieceniaBot
 				return ("Command is not avaialble via HTTP API", HttpStatusCode.NotImplemented);
 			}
 
-			var textCommandParameters = new TextCommandParameters(commandName, parameters.Values.OrderBy(x => x).ToList());
+			var textCommandParameters = new TextCommandParameters(commandName, parameters.OrderBy(x => x.Key).Select(x => x.Value).ToList());
 			try
 			{
 				var result = await textCommand.ExecuteAsync(textCommandParameters);
@@ -57,7 +57,7 @@ namespace MieszkanieOswieceniaBot
 			}
 			catch(Exception e)
 			{
-				return (e.Message, HttpStatusCode.InternalServerError);
+				return (e.ToString(), HttpStatusCode.InternalServerError);
 			}
         }
 
