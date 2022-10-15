@@ -39,6 +39,9 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly AutoScenarioHandler[] AutoScenarios = new AutoScenarioHandler[]
         {
+            // disable bed heating on weekends as "normal" heating is triggered on that days
+            new AutoScenarioHandler(4, true, (new HashSet<DayOfWeek>(new [] { DayOfWeek.Saturday, DayOfWeek.Sunday } ), "7:00", false)),
+            new AutoScenarioHandler(5, true, (new HashSet<DayOfWeek>(new [] { DayOfWeek.Saturday, DayOfWeek.Sunday } ), "7:00", false))
         };
 
         public static readonly HeartbeatenHandler[] Heartbeatings = new[]
