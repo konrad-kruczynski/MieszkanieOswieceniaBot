@@ -18,7 +18,7 @@ namespace MieszkanieOswieceniaBot.Commands
 
             if (offsetType == OffsetType.Current)
             {
-                await handler.ProlongTo(DateTimeOffset.UtcNow + TimeSpan.FromMinutes(offsetValue));
+                await handler.ProlongAtLeastTo(DateTimeOffset.UtcNow + TimeSpan.FromMinutes(offsetValue));
             }
             else
             {

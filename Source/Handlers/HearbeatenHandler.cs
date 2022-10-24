@@ -34,9 +34,12 @@ namespace MieszkanieOswieceniaBot.Handlers
             return RefreshAsync();
         }
 
-        public Task ProlongTo(DateTimeOffset value)
+        public Task ProlongAtLeastTo(DateTimeOffset value)
         {
-            lastHeartbeat = value;
+            if (value > lastHeartbeat)
+            {
+                lastHeartbeat = value;
+            }
             return RefreshAsync();
         }
 
