@@ -13,13 +13,6 @@ namespace MieszkanieOswieceniaBot.Commands
 
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
-            var now = DateTimeOffset.UtcNow;
-            if (now - lastUpdateAt < BounceThreshold)
-            {
-                return "Zignorowano";
-            }
-
-            lastUpdateAt = now;
             var offsetType = parameters.TakeEnum<OffsetType>();
             var offsetValue = parameters.TakeInteger();
 
@@ -36,9 +29,6 @@ namespace MieszkanieOswieceniaBot.Commands
         }
 
         private readonly HeartbeatenHandler handler;
-        private DateTimeOffset lastUpdateAt;
-
-        private static readonly TimeSpan BounceThreshold = TimeSpan.FromSeconds(2);
 
         private enum OffsetType
         {
