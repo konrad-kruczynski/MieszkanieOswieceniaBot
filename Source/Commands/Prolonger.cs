@@ -26,7 +26,7 @@ namespace MieszkanieOswieceniaBot.Commands
             }
             else
             {
-                var sign = handler.CurrentState ? -1 : 1;
+                var sign = handler.CurrentState ? -100 : 1;
                 await handler.ProlongFor(sign * TimeSpan.FromMinutes(offsetValue));
             }
 
