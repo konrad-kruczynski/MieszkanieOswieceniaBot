@@ -20,9 +20,14 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 await handler.ProlongAtLeastTo(DateTimeOffset.UtcNow + TimeSpan.FromMinutes(offsetValue));
             }
-            else
+            else if (offsetType == OffsetType.Relative)
             {
                 await handler.ProlongFor(TimeSpan.FromMinutes(offsetValue));
+            }
+            else
+            {
+                var sign = handler.CurrentState ? -1 : 1;
+                await handler.ProlongFor(sign * TimeSpan.FromMinutes(offsetValue));
             }
 
             return handler.GetFriendlyTimeOffValue();
@@ -33,7 +38,8 @@ namespace MieszkanieOswieceniaBot.Commands
         private enum OffsetType
         {
             Current,
-            Relative
+            Relative,
+            Toggle
         }
     } 
 }

@@ -15,9 +15,11 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public TimeSpan ProlongedTimeLeft => lastHeartbeat - DateTimeOffset.UtcNow;
 
+        public bool CurrentState => DateTimeOffset.UtcNow - lastHeartbeat < timeout;
+
         public async Task RefreshAsync()
         {
-            await Globals.Relays[relayId].Relay.TrySetStateAsync(DateTimeOffset.UtcNow - lastHeartbeat < timeout);
+            await Globals.Relays[relayId].Relay.TrySetStateAsync(CurrentState);
         }
 
         public RelayEntry RelayEntry => Globals.Relays[relayId];
