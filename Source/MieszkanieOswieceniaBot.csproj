@@ -6,17 +6,17 @@
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="3.2.4" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
-    <PackageReference Include="LiteDB" Version="5.0.12" />
+    <PackageReference Include="LiteDB" Version="5.0.13" />
     <PackageReference Include="Telegram.Bot" Version="18.0.0" />
-    <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
+    <PackageReference Include="OxyPlot.Core" Version="2.1.2" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="Migrantoid" Version="2.0.0" />
     <PackageReference Include="Telegram.Bot.Extensions.Polling" Version="1.0.2" />
-    <PackageReference Include="OxyPlot.ImageSharp" Version="2.1.0" />
+    <PackageReference Include="OxyPlot.ImageSharp" Version="2.1.2" />
     <PackageReference Include="Humanizer.Core.pl" Version="2.14.1" />
     <PackageReference Include="StringSimilarity" Version="1.0.2.1" />
     <PackageReference Include="SystemIOPorts.SerialPort_Mono" Version="1.0.0" />
-    <PackageReference Include="PeanutButter.SimpleHTTPServer" Version="3.0.61" />
+    <PackageReference Include="PeanutButter.SimpleHTTPServer" Version="3.0.95" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
   </ItemGroup>
   <ItemGroup>
