@@ -7,9 +7,9 @@ namespace MieszkanieOswieceniaBot.Commands
 	{
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
-            var relayNo = parameters.CommandName switch
+            var relayNo = parameters.TakeString() switch
             {
-                "r" => 7,
+                var integerString when int.TryParse(integerString, out var integer) => integer,
                 _ => throw new NotImplementedException("Unknown relay for toggling")
             };
 
@@ -21,8 +21,8 @@ namespace MieszkanieOswieceniaBot.Commands
 
             return currentState switch
             {
-                true => "Światło włączono",
-                false => "Światło wyłączono"
+                true => "Włączono",
+                false => "Wyłączono"
             };
         }
     }

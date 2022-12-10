@@ -56,7 +56,7 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("statystyki", statsCommand);
 
             var relayToggleCommand = new Commands.RelayToggle();
-            register.RegisterCommand("r", relayToggleCommand);
+            register.RegisterCommand("p", relayToggleCommand);
 
             var externalLampProlongTime = TimeSpan.FromMinutes(15);
             var externalLampProlonger = new Commands.IndexedHeartbeatProlonger(externalLampProlongTime, Globals.Heartbeatings[2]);
