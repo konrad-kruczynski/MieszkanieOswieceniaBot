@@ -29,7 +29,7 @@ namespace MieszkanieOswieceniaBot.Handlers
 
             var currentTime = DateTime.Now.TimeOfDay;
             var currentDayOfWeek = DateTime.Now.DayOfWeek;
-            var currentEvent = switchingEvents.Where(x => x.Item2 <= currentTime).LastOrDefault();
+            var currentEvent = switchingEvents.Where(x => x.Item2 <= currentTime && x.Item1.Contains(currentDayOfWeek)).LastOrDefault();
 
             if (currentEvent == default((HashSet<DayOfWeek>, TimeSpan, bool)))
             {
@@ -39,12 +39,6 @@ namespace MieszkanieOswieceniaBot.Handlers
 
             if (lastSwitchAtTime == currentEvent.Item2 && lastSwitchAtDayOfWeek == currentDayOfWeek)
             {
-                return;
-            }
-
-            if (!currentEvent.Item1.Contains(currentDayOfWeek))
-            {
-                // switch does not apply today
                 return;
             }
 
