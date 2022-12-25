@@ -24,7 +24,7 @@ namespace MieszkanieOswieceniaBot
 
 		public void RegisterCommand(string name, ICommand command)
         {
-			commands.Add(name, command);
+			commands.Add(name.ToLower(), command);
         }
 
 		public void RegisterCommandListCommandAs(string name)

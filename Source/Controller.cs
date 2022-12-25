@@ -87,6 +87,9 @@ namespace MieszkanieOswieceniaBot
                 register.RegisterCommand(i.ToString(), new Commands.Scenario(i));
             }
 
+            var removeLastTemperatureSamples = new Commands.RemoveLastTempSamples();
+            register.RegisterCommand("usuwaniePróbek", removeLastTemperatureSamples);
+
             return register;
         }
 

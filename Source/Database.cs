@@ -73,6 +73,16 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
+        public int RemoveLast<T>(int count) where T : ISample<T>
+        {
+            using (var database = new LiteDatabase(ConnectionString))
+            {
+                var samples = database.GetCollection<T>(CollectionNameOfType<T>());
+                var samplesToRemove = samples.Find(Query.All("Date", Query.Descending), 0, count);
+                return samplesToRemove.Select(x => samples.Delete(x.Id) ? 1 : 0).Sum();
+            }
+        }
+
         public IEnumerable<T> GetSamples<T>(DateTime startDate, DateTime endDate) where T : ISample<T>
         {
             using(var database = new LiteDatabase(ConnectionString))
