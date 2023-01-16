@@ -35,7 +35,7 @@ namespace MieszkanieOswieceniaBot.Commands
             var names = relayNos.Select(x => Globals.Relays[x].FriendlyName);
             var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję..."); ;
             var charter = new Charter("");
-            var pngFile = await charter.PrepareHistogram(relayNos, async step =>
+            using var imageStream = await charter.PrepareHistogram(relayNos, async step =>
             {
                 switch (step)
                 {
@@ -52,10 +52,9 @@ namespace MieszkanieOswieceniaBot.Commands
                 }
             });
 
-            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(pngFile));
+            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(imageStream);
             await bot.SendPhotoAsync(chatId, fileToSend);
             await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.");
-
         }
 
         private readonly ITelegramBotClient bot;

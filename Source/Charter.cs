@@ -18,7 +18,7 @@ namespace MieszkanieOswieceniaBot
             this.dateTimeFormat = dateTimeFormat;
         }
 
-        public async Task<string> PrepareChart(DateTime startDate, DateTime endDate, bool oneDay, Func<Step, Task> stepHandler = null,
+        public async Task<MemoryStream> PrepareChart(DateTime startDate, DateTime endDate, bool oneDay, Func<Step, Task> stepHandler = null,
                                    Func<int, Task> onDataCount = null)
         {
             await stepHandler(Step.RetrievingData);
@@ -97,18 +97,14 @@ namespace MieszkanieOswieceniaBot
             }
 
             await stepHandler(Step.RenderingImage);
-            var pngFile = "chart.png";
-            using (var stream = File.Create(pngFile))
-            {
-                var pngExporter = new PngExporter(1300, 800);
-                pngExporter.Export(plotModel, stream);
-            }
-
-
-            return pngFile;
+            var stream = new MemoryStream();
+            var pngExporter = new PngExporter(1300, 800);
+            pngExporter.Export(plotModel, stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
         }
         
-        public async Task<string> PrepareHistogram(List<int> relayNos, Func<Step, Task> stepHandler = null)
+        public async Task<MemoryStream> PrepareHistogram(List<int> relayNos, Func<Step, Task> stepHandler = null)
         {
             await stepHandler(Step.RetrievingData);
 
@@ -223,16 +219,12 @@ namespace MieszkanieOswieceniaBot
                 plotModel.Series.Add(serie);
             }
 
-            var chartFile = "histogram.jpg";
-
             await stepHandler(Step.RenderingImage);
-            using (var stream = File.Create(chartFile))
-            {
-                var pngExporter = new JpegExporter(1300, 800, quality: 100);
-                pngExporter.Export(plotModel, stream);
-            }
-
-            return chartFile;
+            var stream = new MemoryStream();
+            var pngExporter = new JpegExporter(1300, 800, quality: 100);
+            pngExporter.Export(plotModel, stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
         }
 
         private readonly string dateTimeFormat;

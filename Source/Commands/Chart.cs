@@ -34,7 +34,7 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję...");
             var charter = new Charter(dateTimeFormat);
-            var pngFile = await charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
+            var imageStream = await charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
                                                async step =>
                                                {
                                                    switch (step)
@@ -53,7 +53,7 @@ namespace MieszkanieOswieceniaBot.Commands
                                                }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
 
 
-            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(pngFile));
+            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(imageStream);
             await bot.SendPhotoAsync(chatId, fileToSend);
             await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.");
 
