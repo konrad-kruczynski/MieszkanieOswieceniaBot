@@ -90,6 +90,10 @@ namespace MieszkanieOswieceniaBot
             var removeLastTemperatureSamples = new Commands.RemoveLastTempSamples();
             register.RegisterCommand("usuwaniePróbek", removeLastTemperatureSamples);
 
+            var semiAutoLight = new Commands.SemiAutoCommonRoomLight();
+            register.RegisterCommand("światło", semiAutoLight);
+            register.RegisterCommand("swiatlo", semiAutoLight);
+
             return register;
         }
 

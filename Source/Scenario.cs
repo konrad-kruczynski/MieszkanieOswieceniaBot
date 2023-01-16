@@ -19,6 +19,25 @@ namespace MieszkanieOswieceniaBot
 
         }
 
+        public async Task<(bool Success, bool Applied)> TryCheckIfApplied(IDictionary<int, RelayEntry> relayEntries)
+        {
+            foreach (var id in coveredRange)
+            {
+                var relayState = await relayEntries[id].Relay.TryGetStateAsync();
+                if(!relayState.Success)
+                {
+                    return (false, false);
+                }
+
+                if (turnedOn.Contains(id) ^ relayState.State)
+                {
+                    return (true, false);
+                }
+            }
+
+            return (true, true);
+        }
+
         public async Task<bool> TryApplyAsync(IDictionary<int, RelayEntry> relayEntries)
         {
             var success = true;
