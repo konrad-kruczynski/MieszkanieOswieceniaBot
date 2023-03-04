@@ -94,6 +94,9 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("światło", semiAutoLight);
             register.RegisterCommand("swiatlo", semiAutoLight);
 
+            var eveningCommand = new Commands.Evening();
+            register.RegisterCommand("w", eveningCommand);
+
             return register;
         }
 

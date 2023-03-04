@@ -80,6 +80,21 @@ namespace MieszkanieOswieceniaBot.Relays
             }
         }
 
+        protected async Task<(bool Success, T Result)> TryExecute<T>(Task<T> task)
+        {
+            try
+            {
+                var state = await task;
+
+                return (true, state);
+            }
+            catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
+            {
+                CircularLogger.Instance.Log($"Exception on {FlurlClient}: {exception.Message}");
+                return (false, default(T));
+            }
+        }
+
         protected abstract Task<bool> ToggleAsync();
         protected abstract Task<bool> GetStateAsync();
         protected abstract Task SetStateAsync(bool state);
