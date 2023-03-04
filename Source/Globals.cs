@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot
         {
             new RelayEntry(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
             new RelayEntry(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
-            new RelayEntry(2, new Relays.Shelly("192.168.71.33"), "lampa przy kanapie"),
+            new RelayEntry(2, new Relays.Shelly("192.168.71.39"), "lampa przy kanapie"),
             new RelayEntry(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
             new RelayEntry(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
             new RelayEntry(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
