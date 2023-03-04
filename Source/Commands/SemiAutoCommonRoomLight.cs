@@ -3,28 +3,39 @@ using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
-	public class SemiAutoCommonRoomLight : ITextCommand
-	{
+    public class SemiAutoCommonRoomLight : ITextCommand
+    {
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
 
-            var hourOfDay = DateTime.Now.Hour;
-            var isEvening = hourOfDay >= 20 || hourOfDay <= 6;
-            var scenario = isEvening ? Globals.Scenarios[2] : Globals.Scenarios[1];
-            var isApplied = await scenario.TryCheckIfApplied(Globals.Relays);
-            if (!isApplied.Success)
+            var isOne = await Globals.Scenarios[1].TryCheckIfApplied(Globals.Relays);
+            var isTwo = await Globals.Scenarios[2].TryCheckIfApplied(Globals.Relays);
+            if (!isOne.Success || !isTwo.Success)
             {
                 return "Nie udało się sprawdzić aktualnego scenariusza.";
             }
 
-            if (!isApplied.Applied)
+            if (isOne.Applied)
             {
-                await scenario.TryApplyAsync(Globals.Relays);
+                if (!await Globals.Scenarios[2].TryApplyAsync(Globals.Relays))
+                {
+                    return "Nie udało się sprawdzić aktualnego scenariusza.";
+                }
+            }
+            else if (isTwo.Applied)
+            {
+                if (!await Globals.Scenarios[0].TryApplyAsync(Globals.Relays))
+                {
+                    return "Nie udało się sprawdzić aktualnego scenariusza.";
+                }
             }
             else
             {
-                await Globals.Scenarios[0].TryApplyAsync(Globals.Relays);
+                if (!await Globals.Scenarios[1].TryApplyAsync(Globals.Relays))
+                {
+                    return "Nie udało się sprawdzić aktualnego scenariusza.";
+                }
             }
 
             return "Wykonano.";
