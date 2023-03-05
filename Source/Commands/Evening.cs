@@ -20,6 +20,8 @@ namespace MieszkanieOswieceniaBot.Commands
                 {
                     return "Nie udało się ustawić stanu";
                 }
+
+                return "Wykonano";
             }
 
             var dimmableRelay = (IDimmableRelay)Globals.Relays[2].Relay;
