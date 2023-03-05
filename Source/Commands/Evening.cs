@@ -8,7 +8,8 @@ namespace MieszkanieOswieceniaBot.Commands
     { 
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
-            var currentState = await Globals.Relays[2].Relay.TryGetStateAsync();
+            var relay = (IDimmableRelay)Globals.Relays[2].Relay;
+            var currentState = await relay.TryGetStateAsync();
             if (!currentState.Success)
             {
                 return "Nie udało się odczytać stanu.";
@@ -16,7 +17,7 @@ namespace MieszkanieOswieceniaBot.Commands
 
             if (!currentState.State)
             {
-                if (!await Globals.Relays[2].Relay.TrySetStateAsync(true))
+                if (!await relay.TrySetStateAsync(true))
                 {
                     return "Nie udało się ustawić stanu";
                 }
@@ -24,8 +25,8 @@ namespace MieszkanieOswieceniaBot.Commands
                 return "Wykonano";
             }
 
-            var dimmableRelay = (IDimmableRelay)Globals.Relays[2].Relay;
-            var currentBrightness = await dimmableRelay.GetDimValueAsync();
+            
+            var currentBrightness = await relay.GetDimValueAsync();
             if (!currentBrightness.Success)
             {
                 return "Nie udało się odczytać jasności";
@@ -33,14 +34,14 @@ namespace MieszkanieOswieceniaBot.Commands
 
             if (currentBrightness.Value != DimmedBrightness)
             {
-                if (!await dimmableRelay.DimToAsync(DimmedBrightness))
+                if (!await relay.DimToAsync(DimmedBrightness))
                 {
                     return "Nie udało się ustawić jasności";
                 }
             }
             else
             {
-                if (!await dimmableRelay.TrySetStateAsync(false))
+                if (!await relay.TrySetStateAsync(false))
                 {
                     return "Nie udało się ustawić stanu";
                 }
