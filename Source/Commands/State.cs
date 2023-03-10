@@ -36,6 +36,22 @@ namespace MieszkanieOswieceniaBot.Commands
                             result.AppendFormat(", wyłączenie za {0}", timeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo));
                         }
                     }
+
+                    if (relay.Relay is Relays.IDimmableRelay dimmableRelay)
+                    {
+                        var dimCheckResult = await dimmableRelay.GetDimValueAsync();
+                        string dimValue;
+                        if (dimCheckResult.Success)
+                        {
+                            dimValue = string.Format("{0}%", dimCheckResult.Value);
+                        }
+                        else
+                        {
+                            dimValue = "nieznana";
+                        }
+
+                        result.AppendFormat(", jasność {0}");
+                    }
                 }
 
                 result.AppendLine();
