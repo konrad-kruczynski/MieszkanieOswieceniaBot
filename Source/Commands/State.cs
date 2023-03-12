@@ -50,7 +50,7 @@ namespace MieszkanieOswieceniaBot.Commands
                             dimValue = "nieznana";
                         }
 
-                        result.AppendFormat(", jasność {0}");
+                        result.AppendFormat(", jasność {0}", dimValue);
                     }
                 }
 
