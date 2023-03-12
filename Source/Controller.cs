@@ -97,6 +97,9 @@ namespace MieszkanieOswieceniaBot
             var eveningCommand = new Commands.Evening();
             register.RegisterCommand("w", eveningCommand);
 
+            var dimCommand = new Commands.Dim();
+            register.RegisterCommand("dim", dimCommand);
+
             return register;
         }
 
