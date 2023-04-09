@@ -15,7 +15,7 @@ namespace MieszkanieOswieceniaBot.Sensors
         {
             try
             {
-                var value = (decimal)(await flurlClient.Request("cm?cmnd=Status+10").GetJsonAsync().ConfigureAwait(false)).Power;
+                var value = (decimal)(await flurlClient.Request("cm?cmnd=Status+10").GetJsonAsync().ConfigureAwait(false)).StatusSNS.ENERGY.Power;
                 return (value, true);
             }
             catch (Exception exception) when (exception is FlurlHttpException || exception is TaskCanceledException)
