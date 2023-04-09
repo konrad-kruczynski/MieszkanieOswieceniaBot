@@ -4,9 +4,9 @@ using Telegram.Bot;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
-    public sealed class RosyCreekCooperative : IGeneralCommand
+    public sealed class Notifications : IGeneralCommand
     {
-        public RosyCreekCooperative(ITelegramBotClient bot)
+        public Notifications(ITelegramBotClient bot)
         {
             this.bot = bot;
         }
@@ -15,16 +15,16 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             if (parameters.Count == 0)
             {
-                Database.Instance.AddHouseCooperativeChatId(parameters.ChatId);
+                Database.Instance.AddNotificationChatId(parameters.ChatId);
                 await bot.SendTextMessageAsync(parameters.ChatId, "Dodano");
                 return;
             }
 
-            var action = parameters.TakeEnum<RosyCreekAction>();
+            var action = parameters.TakeEnum<NotificationAction>();
 
             switch (action)
             {
-                case RosyCreekAction.Reset:
+                case NotificationAction.Reset:
                     Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
                     await bot.SendTextMessageAsync(parameters.ChatId, "Zresetowano");
                     return;
@@ -36,7 +36,7 @@ namespace MieszkanieOswieceniaBot.Commands
         private readonly ITelegramBotClient bot;
     }
 
-    public enum RosyCreekAction
+    public enum NotificationAction
     {
         Reset
     }

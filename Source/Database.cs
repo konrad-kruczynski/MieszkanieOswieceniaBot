@@ -194,7 +194,7 @@ namespace MieszkanieOswieceniaBot
             set => newestRosyCreekShortNews.Value = value;
         }
 
-        public void AddHouseCooperativeChatId(long chatId)
+        public void AddNotificationChatId(long chatId)
         {
             using(var database = new LiteDatabase(ConnectionString))
             {
@@ -203,7 +203,7 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
-        public IEnumerable<long> GetHouseCooperativeChatIds()
+        public IEnumerable<long> GetNotificationChatIds()
         {
             using(var database = new LiteDatabase(ConnectionString))
             {
@@ -283,7 +283,7 @@ namespace MieszkanieOswieceniaBot
         private const string TemperatureCollectionName = "samples";
         private const string RelayCollectionName = "stany_nowe";
         private const string KeyValueCollectionName = "keyval";
-        private const string ChatIdColectionName = "hcChatIds";
+        private const string ChatIdColectionName = "notificationChatIds";
 
         private class CachedKeyValue<T>
         {

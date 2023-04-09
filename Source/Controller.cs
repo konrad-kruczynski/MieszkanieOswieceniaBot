@@ -49,7 +49,7 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("restart", new Commands.Restart(bot));
             register.RegisterCommand("log", new Commands.Log(bot));
             register.RegisterCommand("bitcoin", new Commands.Bitcoin());
-            register.RegisterCommand("różany", new Commands.RosyCreekCooperative(bot));
+            register.RegisterCommand("powiadomienia", new Commands.Notifications(bot));
 
             var statsCommand = new Commands.Stats(stats);
             register.RegisterCommand("staty", statsCommand);
@@ -334,7 +334,7 @@ namespace MieszkanieOswieceniaBot
             }
 
             var message = result.Message;
-            var chatIds = Database.Instance.GetHouseCooperativeChatIds();
+            var chatIds = Database.Instance.GetNotificationChatIds();
             foreach(var chatId in chatIds)
             {
                 await bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
