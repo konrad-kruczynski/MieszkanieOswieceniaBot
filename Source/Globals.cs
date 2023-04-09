@@ -6,8 +6,8 @@ using MieszkanieOswieceniaBot.Handlers;
 
 namespace MieszkanieOswieceniaBot
 {
-	internal static class Globals
-	{
+    internal static class Globals
+    {
         public static readonly Dictionary<int, IRelaySensorEntry<Relays.IRelay>> Relays = new IRelaySensorEntry<Relays.IRelay>[]
         {
             RelaySensorEntry.Create(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
@@ -19,6 +19,11 @@ namespace MieszkanieOswieceniaBot
             RelaySensorEntry.Create(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
             RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
+        }.ToDictionary(x => x.Id, x => x);
+
+        public static readonly Dictionary<int, IRelaySensorEntry<Sensors.IPowerMeter>> PowerMeters = new IRelaySensorEntry<Sensors.IPowerMeter>[]
+        {
+            RelaySensorEntry.Create(0, new Sensors.TasmotaPowerMeter("192.168.71.32"), "pralka"),
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);

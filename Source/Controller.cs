@@ -100,6 +100,9 @@ namespace MieszkanieOswieceniaBot
             var dimCommand = new Commands.Dim();
             register.RegisterCommand("dim", dimCommand);
 
+            var powerCommand = new Commands.Power();
+            register.RegisterCommand("moc", powerCommand);
+
             return register;
         }
 
