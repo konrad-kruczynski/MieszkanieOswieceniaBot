@@ -134,6 +134,18 @@ namespace MieszkanieOswieceniaBot
                 .Concat().Subscribe();
         }
 
+        private void SubscribeOnRandomInterval(TimeSpan min, TimeSpan max, SynchronizationContext context, Func<Task> handler)
+        {
+            RandomInterval(min, max).Select(x => Observable.FromAsync(handler).ObserveOn(context))
+                .Concat().Subscribe();
+        }
+
+        public static IObservable<int> RandomInterval(TimeSpan min, TimeSpan max)
+        {
+            return Observable.Generate(0, i => true, i => 0, i => 0,
+                i => TimeSpan.FromMilliseconds(new Random().Next((int)min.TotalMilliseconds, (int)max.TotalMilliseconds)));
+        }
+
         public async Task Run()
         {
             CircularLogger.Instance.Log("Starting bot...");
@@ -154,6 +166,7 @@ namespace MieszkanieOswieceniaBot
             SubscribeOnInterval(TimeSpan.FromMinutes(2), SynchronizationContext.Current, WriteTemperatureAndStateToDatabase);
             SubscribeOnInterval(TimeSpan.FromMinutes(1), SynchronizationContext.Current, RefreshHandlers);
             SubscribeOnInterval(TimeSpan.FromHours(8), SynchronizationContext.Current, CheckHousingCooperativeNews);
+            SubscribeOnRandomInterval(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2), SynchronizationContext.Current, CheckWasherStatus);
 
             CircularLogger.Instance.Log("Bot started.");
 
@@ -324,6 +337,38 @@ namespace MieszkanieOswieceniaBot
             }
         }
 
+        private async Task CheckWasherStatus()
+        {
+            const int MaxWasherQueueLength = 5;
+            const int PowerThreshold = 3;
+
+            var (powerUsage, success) = await Globals.PowerMeters[0].RelaySensor.TryGetCurrentUsageAsync();
+            if (!success)
+            {
+                return;
+            }
+
+            washerPowerUsage.Enqueue(powerUsage);
+
+            if (washerPowerUsage.Count > MaxWasherQueueLength)
+            {
+                washerPowerUsage.Dequeue();
+            }
+
+            var washerIsRunning = washerPowerUsage.Any(x => x > PowerThreshold);
+
+            if (!washerIsRunning && lastPowerWasherStatus)
+            {
+                var chatIds = Database.Instance.GetNotificationChatIds();
+                foreach (var chatId in chatIds)
+                {
+                    await bot.SendTextMessageAsync(chatId, "Pralka zakończyła pracę.");
+                }
+            }
+
+            lastPowerWasherStatus = washerIsRunning;
+        }
+
         private async Task CheckHousingCooperativeNews()
         {
             var rosyCreekClient = new RosyCreekClient();
@@ -374,6 +419,8 @@ namespace MieszkanieOswieceniaBot
             return $"{user.FirstName} {user.LastName}";
         }
 
+        private Queue<decimal> washerPowerUsage = new Queue<decimal>();
+        private bool lastPowerWasherStatus;
         private DateTime startDate;
         private readonly TelegramBotClient bot;
         private readonly Authorizer authorizer;
