@@ -3,17 +3,25 @@ using MieszkanieOswieceniaBot.Relays;
 
 namespace MieszkanieOswieceniaBot
 {
-    public sealed class RelayEntry
+    public sealed class RelaySensorEntry<T> : IRelaySensorEntry<T>
     {
-        public RelayEntry(int id, IRelay relay, string friendlyName)
+        public RelaySensorEntry(int id, T relaySensor, string friendlyName)
         {
             Id = id;
-            Relay = relay;
+            RelaySensor = relaySensor;
             FriendlyName = friendlyName;
         }
 
         public int Id { get; private set; }
-        public IRelay Relay { get; private set; }
+        public T RelaySensor { get; private set; }
         public string FriendlyName { get; private set; }
+    }
+
+    public static class RelaySensorEntry
+    {
+        public static RelaySensorEntry<T> Create<T>(int id, T relaySensor, string friendlyName)
+        {
+            return new RelaySensorEntry<T>(id, relaySensor, friendlyName);
+        }
     }
 }

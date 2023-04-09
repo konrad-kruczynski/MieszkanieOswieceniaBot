@@ -16,7 +16,7 @@ namespace MieszkanieOswieceniaBot.Commands
             var unknowns = new List<string>();
 
             var relays = Globals.Relays.OrderBy(x => x.Key);
-            var relaysWithStates = relays.Select(x => (x.Value, x.Value.Relay.TryGetStateAsync())).ToArray();
+            var relaysWithStates = relays.Select(x => (x.Value, x.Value.RelaySensor.TryGetStateAsync())).ToArray();
 
             foreach (var (relay, stateTask) in relaysWithStates)
             {
@@ -37,7 +37,7 @@ namespace MieszkanieOswieceniaBot.Commands
                         }
                     }
 
-                    if (relay.Relay is Relays.IDimmableRelay dimmableRelay)
+                    if (relay.RelaySensor is Relays.IDimmableRelay dimmableRelay)
                     {
                         var dimCheckResult = await dimmableRelay.GetDimValueAsync();
                         string dimValue;

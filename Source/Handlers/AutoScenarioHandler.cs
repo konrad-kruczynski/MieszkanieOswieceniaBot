@@ -43,7 +43,7 @@ namespace MieszkanieOswieceniaBot.Handlers
             }
 
             var relayEntry = Globals.Relays[relayId];
-            var relay = relayEntry.Relay;
+            var relay = relayEntry.RelaySensor;
 
             if (await relay.TrySetStateAsync(currentEvent.Item3))
             {

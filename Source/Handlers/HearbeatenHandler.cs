@@ -19,10 +19,10 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public async Task RefreshAsync()
         {
-            await Globals.Relays[relayId].Relay.TrySetStateAsync(CurrentState);
+            await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
         }
 
-        public RelayEntry RelayEntry => Globals.Relays[relayId];
+        public IRelaySensorEntry<Relays.IRelay> RelayEntry => Globals.Relays[relayId];
 
         public Task HeartbeatAsync()
         {

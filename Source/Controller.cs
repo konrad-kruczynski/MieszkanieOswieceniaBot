@@ -185,12 +185,12 @@ namespace MieszkanieOswieceniaBot
             {
                 if(number == 10)
                 {
-                    await Globals.Relays[3].Relay.TrySetStateAsync(true);
+                    await Globals.Relays[3].RelaySensor.TrySetStateAsync(true);
                 }
 
                 if(number == 11)
                 {
-                    await Globals.Relays[3].Relay.TrySetStateAsync(false);
+                    await Globals.Relays[3].RelaySensor.TrySetStateAsync(false);
                 }
 
                 // TODO
@@ -355,7 +355,7 @@ namespace MieszkanieOswieceniaBot
 
             foreach (var entry in Globals.Relays)
             {
-                var currentState = await entry.Value.Relay.TryGetStateAsync();
+                var currentState = await entry.Value.RelaySensor.TryGetStateAsync();
                 if (!currentState.Success)
                 {
                     continue;

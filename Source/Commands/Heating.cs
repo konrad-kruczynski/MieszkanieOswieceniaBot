@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
             if (!parameters.TryTakeString(out var whichToHeat))
             {
                 var relayNos = new[] { 4, 5 };
-                var relays = relayNos.Select(x => Globals.Relays[x].Relay);
+                var relays = relayNos.Select(x => Globals.Relays[x].RelaySensor);
                 var tasks = relays.Select(x => x.GetFriendlyStateAsync()).ToArray();
 
                 return string.Format("Prawa: {0}{1}Lewa: {2}", await tasks[0], Environment.NewLine, await tasks[1]);
@@ -30,7 +30,7 @@ namespace MieszkanieOswieceniaBot.Commands
                 return "Niepoprawna informacja o tym, którą matę włączyć";
             }
             
-            var (success, currentState) = await Globals.Relays[relayNo].Relay.TryToggleAsync();
+            var (success, currentState) = await Globals.Relays[relayNo].RelaySensor.TryToggleAsync();
             if (!success)
             {
                 return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";

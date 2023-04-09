@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot.Commands
                 _ => throw new NotImplementedException("Unknown relay for toggling")
             };
 
-            var (success, currentState) = await Globals.Relays[relayNo].Relay.TryToggleAsync();
+            var (success, currentState) = await Globals.Relays[relayNo].RelaySensor.TryToggleAsync();
             if (!success)
             {
                 return "Nie udało się przełączyć stanu. Spróbuj ponownie później.";

@@ -19,11 +19,11 @@ namespace MieszkanieOswieceniaBot
 
         }
 
-        public async Task<(bool Success, bool Applied)> TryCheckIfApplied(IDictionary<int, RelayEntry> relayEntries)
+        public async Task<(bool Success, bool Applied)> TryCheckIfApplied(IDictionary<int, IRelaySensorEntry<Relays.IRelay>> relayEntries)
         {
             foreach (var id in coveredRange)
             {
-                var relayState = await relayEntries[id].Relay.TryGetStateAsync();
+                var relayState = await relayEntries[id].RelaySensor.TryGetStateAsync();
                 if(!relayState.Success)
                 {
                     return (false, false);
@@ -38,13 +38,13 @@ namespace MieszkanieOswieceniaBot
             return (true, true);
         }
 
-        public async Task<bool> TryApplyAsync(IDictionary<int, RelayEntry> relayEntries)
+        public async Task<bool> TryApplyAsync(IDictionary<int, IRelaySensorEntry<Relays.IRelay>> relayEntries)
         {
             var success = true;
 
             foreach (var id in coveredRange)
             {
-                if (!await relayEntries[id].Relay.TrySetStateAsync(turnedOn.Contains(id)))
+                if (!await relayEntries[id].RelaySensor.TrySetStateAsync(turnedOn.Contains(id)))
                 {
                     success = false;
                 }
@@ -53,7 +53,7 @@ namespace MieszkanieOswieceniaBot
             return success;
         }
 
-        public string GetFriendlyDescription(IDictionary<int, RelayEntry> relayEntries)
+        public string GetFriendlyDescription(IDictionary<int, IRelaySensorEntry<Relays.IRelay>> relayEntries)
         {
             if(turnedOn.Count == 0)
             {

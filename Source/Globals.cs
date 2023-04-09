@@ -8,17 +8,17 @@ namespace MieszkanieOswieceniaBot
 {
 	internal static class Globals
 	{
-        public static readonly Dictionary<int, RelayEntry> Relays = new[]
+        public static readonly Dictionary<int, IRelaySensorEntry<Relays.IRelay>> Relays = new IRelaySensorEntry<Relays.IRelay>[]
         {
-            new RelayEntry(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
-            new RelayEntry(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
-            new RelayEntry(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa przy kanapie"),
-            new RelayEntry(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
-            new RelayEntry(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
-            new RelayEntry(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
-            new RelayEntry(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
-            new RelayEntry(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
-            new RelayEntry(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
+            RelaySensorEntry.Create(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
+            RelaySensorEntry.Create(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
+            RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa przy kanapie"),
+            RelaySensorEntry.Create(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
+            RelaySensorEntry.Create(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
+            RelaySensorEntry.Create(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
+            RelaySensorEntry.Create(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
+            RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
+            RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
