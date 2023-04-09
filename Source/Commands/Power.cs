@@ -18,7 +18,7 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 var usageResult = await usageTask;
                 var powerValue = usageResult.Item2 ? (usageResult.Item1.ToString() + " W") : "nieznane";
-                result.Append($"{sensor.Id} ({sensor.FriendlyName}): {powerValue}");
+                result.AppendLine($"{sensor.Id} ({sensor.FriendlyName}): {powerValue}");
             }
 
             return result.ToString();
