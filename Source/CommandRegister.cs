@@ -103,7 +103,7 @@ namespace MieszkanieOswieceniaBot
 				{
                     parameters = new TextCommandParameters(commandParts[0], commandParts.Skip(1).ToArray());
                     var response = await textCommand.ExecuteAsync(parameters);
-					await bot.SendTextMessageAsync(chatId, response);
+					await bot.SendTextMessageAsync(chatId, response, disableNotification: true);
 				}
 				else if (command is IGeneralCommand nonTextCommand)
                 {
