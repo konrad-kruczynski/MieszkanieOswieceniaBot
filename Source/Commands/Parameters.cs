@@ -48,7 +48,7 @@ namespace MieszkanieOswieceniaBot.Commands
 			return true;
         }
 
-		public int TakeInteger()
+		public int TakeInteger(int? lowestPossibleValue = default, int? highestPossibleValue = default)
         {
 			if (!TryTakeString(out var integerAsString))
             {
@@ -59,6 +59,16 @@ namespace MieszkanieOswieceniaBot.Commands
             {
 				throw new ParameterException(ParameterExceptionType.ConversionError) { Position = counter };
             }
+
+			if (lowestPossibleValue.HasValue && lowestPossibleValue.Value > value)
+			{
+				throw new ParameterException(ParameterExceptionType.OutOfRangeError) { Position = counter };
+			}
+
+			if (highestPossibleValue.HasValue && highestPossibleValue.Value < value)
+			{
+				throw new ParameterException(ParameterExceptionType.OutOfRangeError) { Position = counter };
+			}
 
 			return value;
         }
