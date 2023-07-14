@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Humanizer;
 
@@ -6,9 +7,9 @@ namespace MieszkanieOswieceniaBot.Handlers
 {
     public sealed class HeartbeatenHandler : IHandler
     {
-        public HeartbeatenHandler(int relayId, TimeSpan timeout)
+        public HeartbeatenHandler(TimeSpan timeout, params int[] relayIds)
         {
-            this.relayId = relayId;
+            this.relayIds = relayIds;
             this.timeout = timeout;
             lastHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
         }
@@ -19,10 +20,13 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public async Task RefreshAsync()
         {
-            await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
+            foreach (var relayId in relayIds)
+            {
+                await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
+            }
         }
 
-        public IRelaySensorEntry<Relays.IRelay> RelayEntry => Globals.Relays[relayId];
+        public IRelaySensorEntry<Relays.IRelay>[] RelayEntries => relayIds.Select(x => Globals.Relays[x]).ToArray();
 
         public Task HeartbeatAsync()
         {
@@ -53,13 +57,22 @@ namespace MieszkanieOswieceniaBot.Handlers
                 return "Przyjęto.";
             }
 
-            var friendlyName = RelayEntry.FriendlyName;
+            string friendlyName;
+            var relayEntries = RelayEntries;
+            if (relayEntries.Length == 1)
+            {
+                friendlyName = relayEntries[0].FriendlyName;
+            }
+            else
+            {
+                friendlyName = relayEntries.Select(x => x.FriendlyName).Aggregate((x, y) => x + ", " + y);
+            }
 
             return $"{friendlyName}: wyłączenie za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
         }
 
         private DateTimeOffset lastHeartbeat;
-        private readonly int relayId;
+        private readonly int[] relayIds;
         private readonly TimeSpan timeout;
     }
 }

@@ -18,7 +18,8 @@ namespace MieszkanieOswieceniaBot
             RelaySensorEntry.Create(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
             RelaySensorEntry.Create(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
             RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
-            RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni")
+            RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni"),
+            RelaySensorEntry.Create(9, new Relays.Tasmota("192.168.71.31", true), "Cambridge Audio DAC"),
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly Dictionary<int, IRelaySensorEntry<Sensors.IPowerMeter>> PowerMeters = new IRelaySensorEntry<Sensors.IPowerMeter>[]
@@ -53,9 +54,9 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly HeartbeatenHandler[] Heartbeatings = new[]
         {
-            new HeartbeatenHandler(3, HeartbeatTimeout),
-            new HeartbeatenHandler(8, HeartbeatTimeout),
-            new HeartbeatenHandler(6, TimeSpan.Zero) // we do not really use "heartbeat" feature here
+            new HeartbeatenHandler(HeartbeatTimeout, 3, 9),
+            new HeartbeatenHandler(HeartbeatTimeout, 8),
+            new HeartbeatenHandler(TimeSpan.Zero, 6) // we do not really use "heartbeat" feature here
         };
 
         public static readonly CultureInfo BotCommunicationCultureInfo = new CultureInfo("pl-PL");
