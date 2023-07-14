@@ -26,7 +26,8 @@ namespace MieszkanieOswieceniaBot
         {
             RelaySensorEntry.Create(0, new Sensors.TasmotaPowerMeter("192.168.71.32"), "pralka"),
             RelaySensorEntry.Create(1, new Sensors.ShellyPowerMeter("192.168.71.38"), "mata grzejna prawa"),
-            RelaySensorEntry.Create(2, new Sensors.ShellyPowerMeter("192.168.71.37"), "mata grzejna lewa")
+            RelaySensorEntry.Create(2, new Sensors.ShellyPowerMeter("192.168.71.37"), "mata grzejna lewa"),
+            RelaySensorEntry.Create(3, new Sensors.ShellyPowerMeter("192.168.71.31"), "Cambridge Audio DAC"),
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
