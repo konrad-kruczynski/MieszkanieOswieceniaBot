@@ -416,7 +416,7 @@ namespace MieszkanieOswieceniaBot
 
         private static string GetSender(Telegram.Bot.Types.User user)
         {
-            return $"{user.FirstName} {user.LastName}";
+            return $"{user.FirstName} {user.LastName} ({user.Id})";
         }
 
         private Queue<decimal> washerPowerUsage = new Queue<decimal>();
