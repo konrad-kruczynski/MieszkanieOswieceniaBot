@@ -42,7 +42,7 @@ namespace MieszkanieOswieceniaBot
             {
                 Write();
             }
-            foreach(var user in File.ReadAllLines(UsersFile).Select(x => int.Parse(x)))
+            foreach(var user in File.ReadAllLines(UsersFile).Select(x => long.Parse(x)))
             {
                 users.Add(user);
             }
