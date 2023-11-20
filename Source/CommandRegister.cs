@@ -68,7 +68,7 @@ namespace MieszkanieOswieceniaBot
 			if (!authorizer.IsAuthorized(senderId))
 			{
 				await bot.SendTextMessageAsync(chatId, "Brak dostępu.");
-				CircularLogger.Instance.Log($"Unauthorized access from {message.From.FirstName} {message.From.LastName}.");
+				CircularLogger.Instance.Log($"Unauthorized access from {message.From.FirstName} {message.From.LastName} ({senderId}), was {message.Text}.");
 				return;
 			}
 
