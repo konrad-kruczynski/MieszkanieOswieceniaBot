@@ -20,6 +20,7 @@ namespace MieszkanieOswieceniaBot
             RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni"),
             RelaySensorEntry.Create(9, new Relays.Tasmota("192.168.71.31", true), "Cambridge Audio DAC"),
+            RelaySensorEntry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly Dictionary<int, IRelaySensorEntry<Sensors.IPowerMeter>> PowerMeters = new IRelaySensorEntry<Sensors.IPowerMeter>[]

@@ -103,6 +103,9 @@ namespace MieszkanieOswieceniaBot
             var powerCommand = new Commands.Power();
             register.RegisterCommand("moc", powerCommand);
 
+            var christmasCommand = new Commands.Toggle(10);
+            register.RegisterCommand("lampki", christmasCommand);
+
             return register;
         }
 
