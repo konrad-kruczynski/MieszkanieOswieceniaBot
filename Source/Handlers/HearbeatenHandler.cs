@@ -33,12 +33,9 @@ namespace MieszkanieOswieceniaBot.Handlers
                 if (turnOnActions.TryGetValue(relayId, out var action))
                 {
                     var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
-                    CircularLogger.Instance.Log($"Considering turn on action for relay {relayId}, {oldState}, {CurrentState}.");
                     if (oldState.Success && oldState.State != CurrentState && CurrentState)
                     {
-                        CircularLogger.Instance.Log($"Executing turn on action for relay {relayId}.");
                         await action();
-                        CircularLogger.Instance.Log($"Turn on action for relay {relayId} executed.");
                     }
                 }
                 
