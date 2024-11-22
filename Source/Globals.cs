@@ -64,7 +64,7 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly IInfraredReceiverSender[] Infrareds = new[]
         {
-            new TasmotaInfrared("192.168.71.40"),
+            new TasmotaInfrared("192.168.71.41"),
         };
 
         public static readonly CultureInfo BotCommunicationCultureInfo = new CultureInfo("pl-PL");
