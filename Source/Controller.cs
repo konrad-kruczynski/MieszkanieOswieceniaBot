@@ -28,7 +28,7 @@ namespace MieszkanieOswieceniaBot
 
             Globals.Heartbeatings[0].SetTurnOnAction(9, async () =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 await Globals.Infrareds[0].SendInfrared(0x807FC03F, 0x1FE03FC);
             });
             
