@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MieszkanieOswieceniaBot.Handlers;
+using MieszkanieOswieceniaBot.OtherDevices;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -59,6 +60,11 @@ namespace MieszkanieOswieceniaBot
             new HeartbeatenHandler(HeartbeatTimeout, 3, 9),
             new HeartbeatenHandler(HeartbeatTimeout, 8),
             new HeartbeatenHandler(TimeSpan.Zero, 6) // we do not really use "heartbeat" feature here
+        };
+
+        public static readonly IInfraredReceiverSender[] Infrareds = new[]
+        {
+            new TasmotaInfrared("192.168.71.40"),
         };
 
         public static readonly CultureInfo BotCommunicationCultureInfo = new CultureInfo("pl-PL");

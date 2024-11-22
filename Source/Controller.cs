@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MieszkanieOswieceniaBot.Handlers;
+using MieszkanieOswieceniaBot.OtherDevices;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -24,6 +25,13 @@ namespace MieszkanieOswieceniaBot
             bot = new TelegramBotClient(Configuration.Instance.GetApiKey());
             stats = new Stats();
             authorizer = new Authorizer();
+
+            Globals.Heartbeatings[0].SetTurnOnAction(3, async () =>
+            {
+                await Task.Delay(3000);
+                await Globals.Infrareds[0].SendInfrared(0x807FC03F, 0x1FE03FC);
+            });
+            
             commandRegister = InitializeCommandRegister();
             apiHandler = new ApiHandler();
             CircularLogger.Instance.Log("Bot initialized.");

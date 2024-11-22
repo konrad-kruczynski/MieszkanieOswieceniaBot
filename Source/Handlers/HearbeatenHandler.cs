@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Humanizer;
@@ -11,6 +12,7 @@ namespace MieszkanieOswieceniaBot.Handlers
         {
             this.relayIds = relayIds;
             this.timeout = timeout;
+            this.turnOnActions = new Dictionary<int, Func<Task>>();
             lastHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
         }
 
@@ -18,10 +20,25 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public bool CurrentState => DateTimeOffset.UtcNow - lastHeartbeat < timeout;
 
+        public void SetTurnOnAction(int relayId, Func<Task> action)
+        {
+            // TODO: allow this only if cacheable
+            turnOnActions[relayId] = action;
+        }
+
         public async Task RefreshAsync()
         {
             foreach (var relayId in relayIds)
             {
+                if (turnOnActions.TryGetValue(relayId, out var action))
+                {
+                    var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
+                    if (oldState.Success && oldState.State != CurrentState)
+                    {
+                        await action();
+                    }
+                }
+                
                 await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
             }
         }
@@ -72,6 +89,7 @@ namespace MieszkanieOswieceniaBot.Handlers
         }
 
         private DateTimeOffset lastHeartbeat;
+        private readonly Dictionary<int, Func<Task>> turnOnActions;
         private readonly int[] relayIds;
         private readonly TimeSpan timeout;
     }

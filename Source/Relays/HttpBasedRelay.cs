@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Flurl.Http;
+using MieszkanieOswieceniaBot.Base;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
-    public abstract class HttpBasedRelay : IRelay
+    public abstract class HttpBasedRelay : HttpBasedSomething, IRelay
     {
-        protected HttpBasedRelay(string hostname, TimeSpan timeout = default, bool cacheable = false)
+        protected HttpBasedRelay(string hostname, TimeSpan timeout = default, bool cacheable = false) : base(hostname, timeout)
         {
-            var flurlClient = new FlurlClient($"http://{hostname}");
-            if (timeout != default)
-            {
-                flurlClient = flurlClient.WithTimeout(timeout);
-            }
-            
-            FlurlClient = flurlClient;
-            this.cacheable = cacheable;
         }
 
         public async Task<(bool Success, bool State)> TryGetStateAsync()
@@ -98,8 +91,6 @@ namespace MieszkanieOswieceniaBot.Relays
         protected abstract Task<bool> ToggleAsync();
         protected abstract Task<bool> GetStateAsync();
         protected abstract Task SetStateAsync(bool state);
-
-        protected readonly IFlurlClient FlurlClient;
 
         private bool? cachedValue;
         private readonly bool cacheable;
