@@ -33,7 +33,7 @@ namespace MieszkanieOswieceniaBot.Handlers
                 if (turnOnActions.TryGetValue(relayId, out var action))
                 {
                     var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
-                    if (oldState.Success && oldState.State != CurrentState)
+                    if (oldState.Success && oldState.State != CurrentState && CurrentState)
                     {
                         await action();
                     }
