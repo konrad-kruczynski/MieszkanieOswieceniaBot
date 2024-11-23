@@ -28,19 +28,8 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public async Task RefreshAsync()
         {
-            foreach (var relayId in relayIds)
-            {
-                if (turnOnActions.TryGetValue(relayId, out var action))
-                {
-                    var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
-                    if (oldState.Success && oldState.State != CurrentState && CurrentState)
-                    {
-                        await action();
-                    }
-                }
-                
-                await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
-            }
+            var actions = relayIds.Select(ActionForRelay);
+            await Task.WhenAll(actions);
         }
 
         public IRelaySensorEntry<Relays.IRelay>[] RelayEntries => relayIds.Select(x => Globals.Relays[x]).ToArray();
@@ -86,6 +75,20 @@ namespace MieszkanieOswieceniaBot.Handlers
             }
 
             return $"{friendlyName}: wyłączenie za {prolongedTimeLeft.Humanize(culture: Globals.BotCommunicationCultureInfo)}.";
+        }
+
+        private async Task ActionForRelay(int relayId)
+        {
+            if (turnOnActions.TryGetValue(relayId, out var action))
+            {
+                var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
+                if (oldState.Success && oldState.State != CurrentState && CurrentState)
+                {
+                    await action();
+                }
+            }
+                
+            await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
         }
 
         private DateTimeOffset lastHeartbeat;
