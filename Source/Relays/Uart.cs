@@ -9,6 +9,7 @@ namespace MieszkanieOswieceniaBot.Relays
     {
         public Uart(string deviceName, int relayNumber)
         {
+            active = File.Exists(deviceName);
             this.deviceName = deviceName;
             relayOffset = (byte)(relayNumber * 3);
         }
@@ -76,21 +77,25 @@ namespace MieszkanieOswieceniaBot.Relays
         private const int TurnOnOffset = 1;
         private const int TurnOffOffset = 0;
 
-        private static bool WithSerialPort(string name, Action<SerialPort> action)
+        private bool WithSerialPort(string name, Action<SerialPort> action)
         {
-            using (var serialPort = new SerialPort(name, 9600))
+            if (!active)
             {
-                try
-                {
-                    serialPort.Open();
-                    action(serialPort);
-                    return true;
-                }
-                catch (IOException)
-                {
-                    CircularLogger.Instance.Log("Could not open port '{0}', did nothing.", name);
-                    return false;
-                }
+                CircularLogger.Instance.Log("Serial port is not active (was opened with non-existing device), ignoring action.");
+                return false;
+            }
+
+            using var serialPort = new SerialPort(name, 9600);
+            try
+            {
+                serialPort.Open();
+                action(serialPort);
+                return true;
+            }
+            catch (IOException)
+            {
+                CircularLogger.Instance.Log("Could not open port '{0}', did nothing.", name);
+                return false;
             }
         }
 
@@ -115,5 +120,7 @@ namespace MieszkanieOswieceniaBot.Relays
             result = resultArray[0];
             return success;
         }
+
+        private readonly bool active;
     }
 }
