@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +23,8 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 "prawa" => 4,
                 "lewa" => 5,
+                "monika" => 4,
+                "konrad" => 5,
                 _ => -1
             };
 
@@ -36,12 +39,26 @@ namespace MieszkanieOswieceniaBot.Commands
                 return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";
             }
 
-            return currentState switch
+            var relevantPowerMeter = Globals.PowerMeters[RelayNoToPowerMeterNo[relayNo]].RelaySensor;
+
+            if (!currentState)
             {
-                true =>  "Grzanie włączono",
-                false => "Grzanie wyłączono"
-            };
+                return "Grzanie wyłączono";
+            }
+            
+            await Task.Delay(GracePeriod);
+            (var powerValue, success) = await relevantPowerMeter.TryGetCurrentUsageAsync();
+            if (!success)
+            {
+                return "Nie udało się stwierdzić, czy mata rzeczywiście zaczęła grzać";
+            }
+
+            return powerValue < PowerThreshold ? "Pomimo włączenia grzania mata nie uruchomiła się" : "Grzanie włączono";
         }
+
+        private static readonly Dictionary<int, int> RelayNoToPowerMeterNo = new() { { 4, 1 }, { 5, 2 } };
+        private static readonly TimeSpan GracePeriod = TimeSpan.FromSeconds(5);
+        private const decimal PowerThreshold = 5m;
     }
 }
 
