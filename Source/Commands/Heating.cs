@@ -25,6 +25,8 @@ namespace MieszkanieOswieceniaBot.Commands
                 "lewa" => 5,
                 "monika" => 4,
                 "konrad" => 5,
+                "monikaja" => 4,
+                "kwiatek" => 4,
                 _ => -1
             };
 
@@ -32,8 +34,20 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 return "Niepoprawna informacja o tym, którą matę włączyć";
             }
+
+            var relay = Globals.Relays[relayNo].RelaySensor;
+
+            if (parameters.TryTakeInteger(out var onOnOff))
+            {
+                var state = onOnOff switch
+                {
+                    0 => true,
+                    1 => false,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
             
-            var (success, currentState) = await Globals.Relays[relayNo].RelaySensor.TryToggleAsync();
+            var (success, currentState) = await relay.TryToggleAsync();
             if (!success)
             {
                 return "Nie udało się włączyć lub wyłączyć grzania. Spróbuj ponownie za jakiś czas.";
@@ -53,7 +67,13 @@ namespace MieszkanieOswieceniaBot.Commands
                 return "Nie udało się stwierdzić, czy mata rzeczywiście zaczęła grzać";
             }
 
-            return powerValue < PowerThreshold ? "Pomimo włączenia grzania mata nie uruchomiła się" : "Grzanie włączono";
+            if (powerValue < PowerThreshold)
+            {
+                await relay.TrySetStateAsync(false);
+                return "Pomimo włączenia grzania mata nie uruchomiła się, podjęto próbę wyłączenia.";
+            }
+            
+            return "Grzanie włączono";
         }
 
         private static readonly Dictionary<int, int> RelayNoToPowerMeterNo = new() { { 4, 1 }, { 5, 2 } };
