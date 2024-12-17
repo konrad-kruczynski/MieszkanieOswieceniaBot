@@ -20,7 +20,7 @@ namespace MieszkanieOswieceniaBot.Handlers
 
         public bool CurrentState => DateTimeOffset.UtcNow - lastHeartbeat < timeout;
 
-        public void SetTurnOnAction(int relayId, Func<Task> action)
+        public void SetActivationAction(int relayId, Func<Task> action)
         {
             // TODO: allow this only if cacheable
             turnOnActions[relayId] = action;
