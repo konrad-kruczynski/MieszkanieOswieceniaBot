@@ -83,7 +83,7 @@ namespace MieszkanieOswieceniaBot
 
 				await bot.SendTextMessageAsync(chatId,
 					$"Nie znalazłem komendy '{commandName}'. Czy chodziło Ci o '{mostSimilarCommandName.Item1}'?");
-				CircularLogger.Instance.Log($"Unknown command '{commandName}' sent by {message.From.FirstName} {message.From.LastName}");
+				CircularLogger.Instance.Log($"Unknown command '{commandName}' sent by {message.From.FirstName} {message.From.LastName} ({message.From.Id})");
 
 				return;
             }
@@ -92,7 +92,7 @@ namespace MieszkanieOswieceniaBot
 			{
 				await bot.SendTextMessageAsync(chatId, "Brak uprawnień - komenda dostępna tylko dla administratora.");
 				CircularLogger.Instance.Log(
-					$"Unauthorized (non-admin) attempt to execute '{commandName}' from {message.From.FirstName} {message.From.LastName}.");
+					$"Unauthorized (non-admin) attempt to execute '{commandName}' from {message.From.FirstName} {message.From.LastName} ({message.From.Id}).");
 				return;
 			}
 				
