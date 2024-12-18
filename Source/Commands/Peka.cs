@@ -23,7 +23,7 @@ namespace MieszkanieOswieceniaBot.Commands
                     pekaClients[pekaEntry.Item2] = client;
                 }
                 var balance = await client.GetCurrentBalance();
-                await bot.SendTextMessageAsync(parameters.ChatId, string.Format("{0}: {1:0.00} PLN", pekaEntry.Item1, balance));
+                await bot.SendMessage(parameters.ChatId, string.Format("{0}: {1:0.00} PLN", pekaEntry.Item1, balance));
             }
         }
 

@@ -67,7 +67,7 @@ namespace MieszkanieOswieceniaBot
 			var senderId = message.From.Id;
 			if (!authorizer.IsAuthorized(senderId))
 			{
-				await bot.SendTextMessageAsync(chatId, "Brak dostępu.");
+				await bot.SendMessage(chatId, "Brak dostępu.");
 				CircularLogger.Instance.Log($"Unauthorized access from {message.From.FirstName} {message.From.LastName} ({senderId}), was {message.Text}.");
 				return;
 			}
@@ -81,7 +81,7 @@ namespace MieszkanieOswieceniaBot
 					.Select(x => (x, StringSimilarity.Calculate(commandName, x)))
 					.OrderByDescending(x => x.Item2).First();
 
-				await bot.SendTextMessageAsync(chatId,
+				await bot.SendMessage(chatId,
 					$"Nie znalazłem komendy '{commandName}'. Czy chodziło Ci o '{mostSimilarCommandName.Item1}'?");
 				CircularLogger.Instance.Log($"Unknown command '{commandName}' sent by {message.From.FirstName} {message.From.LastName} ({message.From.Id})");
 
@@ -90,7 +90,7 @@ namespace MieszkanieOswieceniaBot
 
 			if (command.IsPrivileged() && !Configuration.Instance.IsAdmin(senderId))
 			{
-				await bot.SendTextMessageAsync(chatId, "Brak uprawnień - komenda dostępna tylko dla administratora.");
+				await bot.SendMessage(chatId, "Brak uprawnień - komenda dostępna tylko dla administratora.");
 				CircularLogger.Instance.Log(
 					$"Unauthorized (non-admin) attempt to execute '{commandName}' from {message.From.FirstName} {message.From.LastName} ({message.From.Id}).");
 				return;
@@ -103,7 +103,7 @@ namespace MieszkanieOswieceniaBot
 				{
                     parameters = new TextCommandParameters(commandParts[0], commandParts.Skip(1).ToArray());
                     var response = await textCommand.ExecuteAsync(parameters);
-					await bot.SendTextMessageAsync(chatId, response, disableNotification: true);
+					await bot.SendMessage(chatId, response, disableNotification: true);
 				}
 				else if (command is IGeneralCommand nonTextCommand)
                 {
@@ -125,7 +125,7 @@ namespace MieszkanieOswieceniaBot
                     _ => throw new NotImplementedException("Unknown parameter exception type")
                 };
 
-				await bot.SendTextMessageAsync(chatId, $"Błąd komendy: {errorMessage}");
+				await bot.SendMessage(chatId, $"Błąd komendy: {errorMessage}");
             }
         }
 

@@ -16,7 +16,7 @@ namespace MieszkanieOswieceniaBot.Commands
             if (parameters.Count == 0)
             {
                 Database.Instance.AddNotificationChatId(parameters.ChatId);
-                await bot.SendTextMessageAsync(parameters.ChatId, "Dodano");
+                await bot.SendMessage(parameters.ChatId, "Dodano");
                 return;
             }
 
@@ -26,7 +26,7 @@ namespace MieszkanieOswieceniaBot.Commands
             {
                 case NotificationAction.Reset:
                     Database.Instance.NewestKnownRosyCreekNewsDate = DateTime.MinValue;
-                    await bot.SendTextMessageAsync(parameters.ChatId, "Zresetowano");
+                    await bot.SendMessage(parameters.ChatId, "Zresetowano");
                     return;
                 default:
                     throw new ParameterException(ParameterExceptionType.OutOfRangeError);

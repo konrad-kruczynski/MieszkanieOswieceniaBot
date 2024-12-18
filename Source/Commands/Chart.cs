@@ -32,7 +32,7 @@ namespace MieszkanieOswieceniaBot.Commands
 
         private async Task CreateChart(TimeSpan timeBack, long chatId, string dateTimeFormat, bool oneDay)
         {
-            var messageToEdit = await bot.SendTextMessageAsync(chatId, "Wykonuję...");
+            var messageToEdit = await bot.SendMessage(chatId, "Wykonuję...");
             var charter = new Charter(dateTimeFormat);
             var imageStream = await charter.PrepareChart(DateTime.Now - timeBack, DateTime.Now, oneDay,
                                                async step =>
@@ -40,22 +40,22 @@ namespace MieszkanieOswieceniaBot.Commands
                                                    switch (step)
                                                    {
                                                        case Step.RetrievingData:
-                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Pobieranie danych...");
+                                                           await bot.EditMessageText(chatId, messageToEdit.MessageId, "Pobieranie danych...");
                                                            break;
                                                        case Step.CreatingPlot:
-                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Tworzenie wykresu...");
+                                                           await bot.EditMessageText(chatId, messageToEdit.MessageId, "Tworzenie wykresu...");
                                                            break;
                                                        case Step.RenderingImage:
-                                                           await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Renderowanie obrazu...");
+                                                           await bot.EditMessageText(chatId, messageToEdit.MessageId, "Renderowanie obrazu...");
                                                            break;
 
                                                    }
-                                               }, x => bot.SendTextMessageAsync(chatId, string.Format("Liczba próbek: {0}", x)));
+                                               }, x => bot.SendMessage(chatId, string.Format("Liczba próbek: {0}", x)));
 
 
-            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(imageStream);
-            await bot.SendPhotoAsync(chatId, fileToSend);
-            await bot.EditMessageTextAsync(chatId, messageToEdit.MessageId, "Gotowe.");
+            var fileToSend = new Telegram.Bot.Types.InputFileStream(imageStream);
+            await bot.SendPhoto(chatId, fileToSend);
+            await bot.EditMessageText(chatId, messageToEdit.MessageId, "Gotowe.");
 
         }
 

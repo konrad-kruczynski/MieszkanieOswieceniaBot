@@ -18,7 +18,7 @@ public class ScheduleEntry<T>
             throw new ArgumentException($"{nameof(time)} must represent time of day without the seconds component.");
         }
         
-        daysOfWeek = ExtensionsForIEnumerables.ToHashSet(days);
+        daysOfWeek = days.AsHashSet();
     }
     
     public ScheduleEntry(T value, DateTime specificDate)
