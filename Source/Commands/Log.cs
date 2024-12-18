@@ -22,7 +22,7 @@ namespace MieszkanieOswieceniaBot.Commands
 
             foreach (var line in entries)
             {
-                await bot.SendMessage(parameters.ChatId, line, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                await bot.SendTextMessageAsync(parameters.ChatId, line, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
             }
         }
 

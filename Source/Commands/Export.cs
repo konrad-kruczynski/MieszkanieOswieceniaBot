@@ -15,21 +15,21 @@ namespace MieszkanieOswieceniaBot.Commands
         public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var chatId = parameters.ChatId;
-            var progressMessage = await bot.SendMessage(chatId, "Przygotowuję...");
+            var progressMessage = await bot.SendTextMessageAsync(chatId, "Przygotowuję...");
             var lastMessage = string.Empty;
             var exportFile = await Database.Instance.GetTemperatureSampleExport(async progress =>
             {
-                var message = $"Wykonuję ({100 * progress:0}%)...";
+                var message = string.Format("Wykonuję ({0:0}%)...", 100 * progress);
                 if (message != lastMessage)
                 {
-                    await bot.EditMessageText(chatId, progressMessage.MessageId, message);
+                    await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, message);
                     lastMessage = message;
                 }
             });
-            await bot.EditMessageText(chatId, progressMessage.MessageId, "Wysyłam...");
-            var fileToSend = new Telegram.Bot.Types.InputFileStream(File.OpenRead(exportFile), "probki.json.gz");
-            await bot.SendDocument(chatId, fileToSend);
-            await bot.EditMessageText(chatId, progressMessage.MessageId, "Gotowe");
+            await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Wysyłam...");
+            var fileToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(File.OpenRead(exportFile), "probki.json.gz");
+            await bot.SendDocumentAsync(chatId, fileToSend);
+            await bot.EditMessageTextAsync(chatId, progressMessage.MessageId, "Gotowe");
         }
 
         private readonly ITelegramBotClient bot;

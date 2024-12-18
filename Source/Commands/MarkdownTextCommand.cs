@@ -15,7 +15,7 @@ namespace MieszkanieOswieceniaBot.Commands
         public async Task ExecuteAsync(GeneralCommandParameters parameters)
         {
             var result = await ExecuteInnerAsync(parameters);
-            await bot.SendMessage(parameters.ChatId, result, parseMode: ParseMode.Markdown);
+            await bot.SendTextMessageAsync(parameters.ChatId, result, parseMode: ParseMode.Markdown);
         }
 
         protected abstract Task<string> ExecuteInnerAsync(TextCommandParameters parameters);

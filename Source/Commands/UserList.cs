@@ -21,7 +21,7 @@ namespace MieszkanieOswieceniaBot.Commands
             foreach (var user in users.Concat(Configuration.Instance.ListAdmins()))
             {
                 var isAdmin = Configuration.Instance.IsAdmin(user);
-                var photos = await bot.GetUserProfilePhotos(user);
+                var photos = await bot.GetUserProfilePhotosAsync(user);
                 if (photos.TotalCount < 1)
                 {
                     continue;
@@ -31,8 +31,8 @@ namespace MieszkanieOswieceniaBot.Commands
 
                 var markup = new InlineKeyboardMarkup(
                     new[] { InlineKeyboardButton.WithCallbackData("Usuń", "r" + user) });
-                var photoToSend = new Telegram.Bot.Types.InputFileId(photo.FileId);
-                await bot.SendPhoto(parameters.ChatId, photoToSend, caption: isAdmin ? "Administrator" : "Użytkownik",
+                var photoToSend = new Telegram.Bot.Types.InputFiles.InputOnlineFile(photo.FileId.ToString());
+                await bot.SendPhotoAsync(parameters.ChatId, photoToSend, isAdmin ? "Administrator" : "Użytkownik",
                                          replyMarkup: isAdmin ? null : markup);
             }
         }

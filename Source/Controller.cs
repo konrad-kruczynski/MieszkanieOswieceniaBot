@@ -238,14 +238,14 @@ namespace MieszkanieOswieceniaBot
             var chatId = message.Chat.Id;
             if(!authorizer.IsAuthorized(userId))
             {
-                await bot.SendMessage(chatId, "Brak dostępu.");
+                await bot.SendTextMessageAsync(chatId, "Brak dostępu.");
                 CircularLogger.Instance.Log($"Unauthorized access from {GetSender(message.From)}.");
                 return;
             }
 
             if(message.Date < startDate)
             {
-                await bot.SendMessage(message.Chat.Id,
+                await bot.SendTextMessageAsync(message.Chat.Id,
                                          string.Format("Wiadomość '{0}' została wysłana {1}, tj. przed startem bota, który nastąpił {2}. Proszę ponowić.",
                                          message.Text, message.Date, startDate));
                 return;
@@ -264,7 +264,7 @@ namespace MieszkanieOswieceniaBot
             {
                 if(!Configuration.Instance.IsAdmin(userId))
                 {
-                    await bot.SendMessage(chatId, "Tylko administrator może dodawać użytownkików.");
+                    await bot.SendTextMessageAsync(chatId, "Tylko administrator może dodawać użytownkików.");
                     CircularLogger.Instance.Log($"Trying to add remove/user from {GetSender(message.From)}.");
                     return;
                 }
@@ -275,7 +275,7 @@ namespace MieszkanieOswieceniaBot
                 var noButton = InlineKeyboardButton.WithCallbackData("Przeciwnie, chcę go usunąć", "r");
                 var keyboardMarkup = new InlineKeyboardMarkup(new[] { yesButton, noButton });
 
-                await bot.SendMessage(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup);
+                await bot.SendTextMessageAsync(chatId, "Autoryzować gada?", replyMarkup: keyboardMarkup);
                 return;
             }
 
@@ -288,12 +288,12 @@ namespace MieszkanieOswieceniaBot
             stats.IncrementMessageCounter();
             if(!Configuration.Instance.IsAdmin(callbackQuery.From.Id))
             {
-                await bot.SendMessage(callbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
+                await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Tylko administrator może takie rzeczy.");
                 CircularLogger.Instance.Log($"Trying to remove user by {GetSender(callbackQuery.From)}.");
                 return;
             }
             var empty = new InlineKeyboardMarkup(new InlineKeyboardButton[0]);
-            await bot.EditMessageReplyMarkup(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, empty);
+            await bot.EditMessageReplyMarkupAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, empty);
             var data = callbackQuery.Data;
             var contactId = int.Parse(data.Substring(1));
             string operation;
@@ -307,9 +307,9 @@ namespace MieszkanieOswieceniaBot
                 operation = "Usunięto";
                 authorizer.RemoveUser(contactId);
             }
-            await bot.SendMessage(callbackQuery.Message.Chat.Id,
+            await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id,
                                      $"{operation} gada. Teraz jest ich {authorizer.ListUsers().Count()}.");
-            await bot.SendMessage(callbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.");
+            await bot.SendTextMessageAsync(callbackQuery.Message.Chat.Id, "Użyj komendy 'lista', aby obejrzeć kto to jest.");
         }
 
         // TODO: move
@@ -375,7 +375,7 @@ namespace MieszkanieOswieceniaBot
                 var chatIds = Database.Instance.GetNotificationChatIds();
                 foreach (var chatId in chatIds)
                 {
-                    await bot.SendMessage(chatId, "Pralka zakończyła pracę.");
+                    await bot.SendTextMessageAsync(chatId, "Pralka zakończyła pracę.");
                 }
             }
 
@@ -395,8 +395,9 @@ namespace MieszkanieOswieceniaBot
             var chatIds = Database.Instance.GetNotificationChatIds();
             foreach(var chatId in chatIds)
             {
-                await bot.SendMessage(chatId, "**Nowa wiadomość od USM Różany Potok**", parseMode: ParseMode.Markdown);
-                await bot.SendMessage(chatId, message);
+                await bot.SendTextMessageAsync(chatId, "**Nowa wiadomość od USM Różany Potok**",
+                    Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                await bot.SendTextMessageAsync(chatId, message);
             }
         }
 
