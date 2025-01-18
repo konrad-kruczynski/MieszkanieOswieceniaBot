@@ -22,6 +22,7 @@ namespace MieszkanieOswieceniaBot
                 var responseQueue = new AsyncProducerConsumerQueue<Response>();
                 responses.TryAdd(id, responseQueue);
                 var request = new Request { For = id, CommandName = commandText, Parameters = http.UrlParameters };
+                CircularLogger.Instance.Log($"Request: {commandText}, parameters: {http.UrlParameters}");
                 requests.Enqueue(request);
                 var response = responseQueue.Dequeue();
                 responses.Remove(id, out _);
@@ -30,6 +31,7 @@ namespace MieszkanieOswieceniaBot
                     http.WriteFailure(response.StatusCode);
                 }
 
+                http.WriteSuccess();
                 return response.Text;
             });
         }
