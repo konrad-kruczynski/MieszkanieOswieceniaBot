@@ -32,7 +32,7 @@ namespace MieszkanieOswieceniaBot
                     http.WriteFailure(response.StatusCode);
                 }
                 
-                http.WriteDataToStream("HTTP/1.1 200 OK");
+                http.WriteDataToStream("HTTP/1.1 200 OK\r\n");
                 return response.Text;
             });
         }
