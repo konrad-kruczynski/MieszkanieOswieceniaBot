@@ -15,14 +15,14 @@ namespace MieszkanieOswieceniaBot
             requests = new AsyncProducerConsumerQueue<Request>();
             responses = new ConcurrentDictionary<Guid, AsyncProducerConsumerQueue<Response>>();
             server = new HttpServer(8080, false, null);
-            server.AddHtmlDocumentHandler((http, stream) =>
+            server.AddHandler(((http, stream) =>
             {
                 var commandText = http.Path.TrimStart('/');
                 var id = Guid.NewGuid();
                 var responseQueue = new AsyncProducerConsumerQueue<Response>();
                 responses.TryAdd(id, responseQueue);
                 var request = new Request { For = id, CommandName = commandText, Parameters = http.UrlParameters };
-                CircularLogger.Instance.Log($"Request: {commandText}, parameters: {http.UrlParameters}");
+                CircularLogger.Instance.Log($"Request: {commandText}, parameters: {http.UrlParameters.Count}");
                 requests.Enqueue(request);
                 var response = responseQueue.Dequeue();
                 responses.Remove(id, out _);
@@ -36,8 +36,9 @@ namespace MieszkanieOswieceniaBot
                 http.WriteDataToStream("Content-Type: text/html\r\n");
                 http.WriteDataToStream($"Content-Length: {response.Text.Length}\r\n");
                 http.WriteDataToStream("\r\n");
-                return response.Text;
-            });
+                http.WriteDataToStream(response.Text);
+                return HttpServerPipelineResult.HandledExclusively;
+            }));
         }
 
         public void Start()
