@@ -15,6 +15,7 @@ namespace MieszkanieOswieceniaBot
             requests = new AsyncProducerConsumerQueue<Request>();
             responses = new ConcurrentDictionary<Guid, AsyncProducerConsumerQueue<Response>>();
             server = new HttpServer(8080, false, null);
+            //server.
             server.AddHtmlDocumentHandler((http, stream) =>
             {
                 var commandText = http.Path.TrimStart('/');
@@ -30,8 +31,8 @@ namespace MieszkanieOswieceniaBot
                 {
                     http.WriteFailure(response.StatusCode);
                 }
-
-                http.WriteSuccess();
+                
+                http.WriteDataToStream("HTTP/1.1 200 OK");
                 return response.Text;
             });
         }
