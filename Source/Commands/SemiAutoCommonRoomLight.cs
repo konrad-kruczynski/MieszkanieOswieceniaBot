@@ -9,8 +9,8 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             parameters.ExpectNoOtherParameters();
 
-            var isOne = await Globals.Scenarios[1].TryCheckIfApplied(Globals.Relays);
-            var isTwo = await Globals.Scenarios[2].TryCheckIfApplied(Globals.Relays);
+            var isOne = await Globals.Scenarios[1].TryCheckIfApplied();
+            var isTwo = await Globals.Scenarios[2].TryCheckIfApplied();
             if (!isOne.Success || !isTwo.Success)
             {
                 return "Nie udało się sprawdzić aktualnego scenariusza.";
@@ -18,21 +18,21 @@ namespace MieszkanieOswieceniaBot.Commands
 
             if (isOne.Applied)
             {
-                if (!await Globals.Scenarios[2].TryApplyAsync(Globals.Relays))
+                if (!await Globals.Scenarios[2].TryApplyAsync())
                 {
                     return "Nie udało się sprawdzić aktualnego scenariusza.";
                 }
             }
             else if (isTwo.Applied)
             {
-                if (!await Globals.Scenarios[0].TryApplyAsync(Globals.Relays))
+                if (!await Globals.Scenarios[0].TryApplyAsync())
                 {
                     return "Nie udało się sprawdzić aktualnego scenariusza.";
                 }
             }
             else
             {
-                if (!await Globals.Scenarios[1].TryApplyAsync(Globals.Relays))
+                if (!await Globals.Scenarios[1].TryApplyAsync())
                 {
                     return "Nie udało się sprawdzić aktualnego scenariusza.";
                 }

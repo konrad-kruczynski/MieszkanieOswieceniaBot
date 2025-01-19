@@ -14,7 +14,7 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             parameters.ExpectNoOtherParameters();
             var scenario = Globals.Scenarios[scenarioNumber];
-            if (!await scenario.TryApplyAsync(Globals.Relays))
+            if (!await scenario.TryApplyAsync())
             {
                 return "Nie udało się w całości wykonać scenariusza";
             }

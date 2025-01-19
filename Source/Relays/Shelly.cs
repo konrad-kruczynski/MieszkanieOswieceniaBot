@@ -6,9 +6,9 @@ namespace MieszkanieOswieceniaBot.Relays
 {
     public class Shelly : HttpBasedRelay
     {
-        public Shelly(string hostname) : this(hostname, "relay")
+        public Shelly(string hostname, int relayNumber = 0) : this(hostname, "relay")
         {
-            this.hostname = hostname;
+            this.relayNumber = relayNumber;
         }
 
         protected Shelly(string hostname, string relayKey) : base(hostname)
@@ -18,22 +18,22 @@ namespace MieszkanieOswieceniaBot.Relays
 
         protected override async Task<bool> ToggleAsync()
         {
-            return (await FlurlClient.Request($"{relayKey}/0?turn=toggle").GetJsonAsync().ConfigureAwait(false)).ison;
+            return (await FlurlClient.Request($"{relayKey}/{relayNumber}?turn=toggle").GetJsonAsync().ConfigureAwait(false)).ison;
         }
 
         protected override async Task<bool> GetStateAsync()
         {
-            var jsonState = await FlurlClient.Request($"{relayKey}/0").GetJsonAsync().ConfigureAwait(false);
+            var jsonState = await FlurlClient.Request($"{relayKey}/{relayNumber}").GetJsonAsync().ConfigureAwait(false);
             return jsonState.ison;
         }
 
         protected override Task SetStateAsync(bool state)
         {
             var stateAsText = state ? "on" : "off";
-            return FlurlClient.Request($"{relayKey}/0?turn={stateAsText}").GetAsync();
+            return FlurlClient.Request($"{relayKey}/{relayNumber}?turn={stateAsText}").GetAsync();
         }
 
-        private readonly string hostname;
+        private readonly int relayNumber;
         private readonly string relayKey;
     }
 }

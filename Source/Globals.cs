@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot
         {
             RelaySensorEntry.Create(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
             RelaySensorEntry.Create(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
-            RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa przy kanapie"),
+            RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa przy bilim"),
             RelaySensorEntry.Create(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
             RelaySensorEntry.Create(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
             RelaySensorEntry.Create(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
@@ -21,7 +21,8 @@ namespace MieszkanieOswieceniaBot
             RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni"),
             RelaySensorEntry.Create(9, new Relays.Tasmota("192.168.71.31", true), "Cambridge Audio DAC"),
-            RelaySensorEntry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe")
+            RelaySensorEntry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe"),
+            RelaySensorEntry.Create(11, new Relays.Shelly("192.168.71.42", relayNumber: 0), "lampka na schodach w salonie")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly Dictionary<int, IRelaySensorEntry<Sensors.IPowerMeter>> PowerMeters = new IRelaySensorEntry<Sensors.IPowerMeter>[]
@@ -39,13 +40,11 @@ namespace MieszkanieOswieceniaBot
         public static readonly Scenario[] Scenarios = new Scenario[]
         {
             new Scenario(BasicRange, Array.Empty<int>()),
-            new Scenario(BasicRange, new [] { 0, 1 }),
-            new Scenario(BasicRange, new [] { 1, 2 }),
-            new Scenario(BasicRange, new [] { 2 }),
-            new Scenario(BasicRange, new [] { 1 }),
-            new Scenario(BasicRange, new [] { 0 }),
-            new Scenario(BasicRange, new [] { 0, 1, 2 }),
             new Scenario(BasicRange, new [] { 0, 2 }),
+            new Scenario(BasicRange, new [] { 1, 2, 11 }, new Dictionary<int, int> { { 2, 70 } }),
+            new Scenario(BasicRange, new [] { 2, 11 }, new Dictionary<int, int> { { 2, 50 } }),
+            new Scenario(BasicRange, new [] { 2 }, new Dictionary<int, int> { { 2, 30 } }),
+            new Scenario(BasicRange, new [] { 0, 1, 2, 11 }),
         };
 
         public static readonly AutoScenarioHandler[] AutoScenarios = new AutoScenarioHandler[]

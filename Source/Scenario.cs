@@ -2,25 +2,41 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MieszkanieOswieceniaBot.Relays;
 
 namespace MieszkanieOswieceniaBot
 {
     public sealed class Scenario
     {
-        public Scenario(int[] coveredRange, int[] turnedOn)
+        public Scenario(int[] coveredRange, int[] turnedOn, IReadOnlyDictionary<int, int> dimToValues = null)
         {
             this.coveredRange = new HashSet<int>(coveredRange);
             this.turnedOn = new HashSet<int>(turnedOn);
+            this.dimToValues = new Dictionary<int, int>(dimToValues ?? new Dictionary<int, int>());
 
             if (!this.turnedOn.IsSubsetOf(coveredRange))
             {
                 throw new InvalidOperationException("The turned on collection must be a subset of covered range.");
             }
 
+            foreach (var dimToValue in dimToValues)
+            {
+                if (!this.turnedOn.Contains(dimToValue.Value))
+                {
+                    throw new InvalidOperationException("Relay to dim must be in the turned on collection.");
+                }
+
+                if (Globals.Relays[dimToValue.Key].RelaySensor is not IDimmableRelay)
+                {
+                    throw new InvalidOperationException("Relay to dim must be a dimmable relay sensor.");
+                }
+            }
         }
 
-        public async Task<(bool Success, bool Applied)> TryCheckIfApplied(IDictionary<int, IRelaySensorEntry<Relays.IRelay>> relayEntries)
+        public async Task<(bool Success, bool Applied)> TryCheckIfApplied()
         {
+            var relayEntries = Globals.Relays;
+            
             foreach (var id in coveredRange)
             {
                 var relayState = await relayEntries[id].RelaySensor.TryGetStateAsync();
@@ -38,15 +54,24 @@ namespace MieszkanieOswieceniaBot
             return (true, true);
         }
 
-        public async Task<bool> TryApplyAsync(IDictionary<int, IRelaySensorEntry<Relays.IRelay>> relayEntries)
+        public async Task<bool> TryApplyAsync()
         {
             var success = true;
+            var relayEntries = Globals.Relays;
 
             foreach (var id in coveredRange)
             {
                 if (!await relayEntries[id].RelaySensor.TrySetStateAsync(turnedOn.Contains(id)))
                 {
                     success = false;
+                }
+
+                if (dimToValues.TryGetValue(id, out var dimValue))
+                {
+                    if (!await ((IDimmableRelay)relayEntries[id].RelaySensor).DimToAsync(dimValue))
+                    {
+                        success = false;
+                    }
                 }
             }
 
@@ -64,5 +89,6 @@ namespace MieszkanieOswieceniaBot
 
         private readonly HashSet<int> coveredRange;
         private readonly HashSet<int> turnedOn;
+        private readonly Dictionary<int, int> dimToValues;
     }
 }
