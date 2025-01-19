@@ -21,7 +21,7 @@ namespace MieszkanieOswieceniaBot
 
             foreach (var dimToValue in this.dimToValues)
             {
-                if (!this.turnedOn.Contains(dimToValue.Value))
+                if (!this.turnedOn.Contains(dimToValue.Key))
                 {
                     throw new InvalidOperationException("Relay to dim must be in the turned on collection.");
                 }
