@@ -19,14 +19,12 @@ namespace MieszkanieOswieceniaBot
                 throw new InvalidOperationException("The turned on collection must be a subset of covered range.");
             }
 
-            foreach (var dimToValue in dimToValues)
+            foreach (var dimToValue in this.dimToValues)
             {
                 if (!this.turnedOn.Contains(dimToValue.Value))
                 {
                     throw new InvalidOperationException("Relay to dim must be in the turned on collection.");
                 }
-
-                
             }
         }
 
