@@ -35,7 +35,7 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly int[] BasicRange = new[] { 0, 1, 2 };
+        private static readonly int[] BasicRange = new[] { 0, 1, 2, 11 };
 
         public static readonly Scenario[] Scenarios = new Scenario[]
         {
