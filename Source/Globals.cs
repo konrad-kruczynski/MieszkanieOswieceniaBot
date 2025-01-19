@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot
         {
             RelaySensorEntry.Create(0, new Relays.Uart("/dev/ttyUSB1", 0), "lampa doniczka"),
             RelaySensorEntry.Create(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
-            RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa przy bilim"),
+            RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa materiałowa"),
             RelaySensorEntry.Create(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
             RelaySensorEntry.Create(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
             RelaySensorEntry.Create(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
@@ -35,9 +35,9 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly int[] BasicRange = new[] { 0, 1, 2, 11 };
+        private static readonly int[] BasicRange = { 0, 1, 2, 11 };
 
-        public static readonly Scenario[] Scenarios = new Scenario[]
+        public static readonly Scenario[] Scenarios =
         {
             new Scenario(BasicRange, Array.Empty<int>()),
             new Scenario(BasicRange, new [] { 0, 2 }),
@@ -47,14 +47,14 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, new [] { 0, 1, 2, 11 }),
         };
 
-        public static readonly AutoScenarioHandler[] AutoScenarios = new AutoScenarioHandler[]
+        public static readonly AutoScenarioHandler[] AutoScenarios = 
         {
             // disable bed heating on weekends as "normal" heating is triggered on that days
             new AutoScenarioHandler(4, false, (new HashSet<DayOfWeek>(new [] { DayOfWeek.Saturday, DayOfWeek.Sunday } ), "7:00", false)),
             new AutoScenarioHandler(5, false, (new HashSet<DayOfWeek>(new [] { DayOfWeek.Saturday, DayOfWeek.Sunday } ), "7:00", false))
         };
 
-        public static readonly HeartbeatenHandler[] Heartbeatings = new[]
+        public static readonly HeartbeatenHandler[] Heartbeatings = 
         {
             new HeartbeatenHandler(HeartbeatTimeout, 3, 9),
             new HeartbeatenHandler(HeartbeatTimeout, 8),

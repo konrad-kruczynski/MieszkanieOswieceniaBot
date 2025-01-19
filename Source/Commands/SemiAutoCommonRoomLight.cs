@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MieszkanieOswieceniaBot.Commands
@@ -7,39 +8,47 @@ namespace MieszkanieOswieceniaBot.Commands
     {
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
+
+            var key = parameters.TakeInteger();
             parameters.ExpectNoOtherParameters();
 
-            var isOne = await Globals.Scenarios[1].TryCheckIfApplied();
-            var isTwo = await Globals.Scenarios[2].TryCheckIfApplied();
-            if (!isOne.Success || !isTwo.Success)
+            if (!scenarioMaps.TryGetValue(key, out var scenarioCycle))
             {
-                return "Nie udało się sprawdzić aktualnego scenariusza.";
+                return "Niewałściwy klucz cyklu scenariuszy";
             }
 
-            if (isOne.Applied)
+            // no scenario will work as last scenario found >> activate the first one
+            var currentScenario = scenarioCycle.Length - 1;
+            for (var i = 0; i < scenarioCycle.Length; i++)
             {
-                if (!await Globals.Scenarios[2].TryApplyAsync())
+                var (success, isApplied) = await Globals.Scenarios[scenarioCycle[i]].TryCheckIfApplied();
+                if (!success)
                 {
                     return "Nie udało się sprawdzić aktualnego scenariusza.";
+                }
+
+                if (isApplied)
+                {
+                    currentScenario = i;
+                    break;
                 }
             }
-            else if (isTwo.Applied)
+            
+            var scenarioToApply = scenarioCycle[(currentScenario + 1) % scenarioCycle.Length];
+
+            if (!await Globals.Scenarios[scenarioToApply].TryApplyAsync())
             {
-                if (!await Globals.Scenarios[0].TryApplyAsync())
-                {
-                    return "Nie udało się sprawdzić aktualnego scenariusza.";
-                }
-            }
-            else
-            {
-                if (!await Globals.Scenarios[1].TryApplyAsync())
-                {
-                    return "Nie udało się sprawdzić aktualnego scenariusza.";
-                }
+                return "Nie udało się wykonać scenariusza, a przynajmniej nie w całości.";
             }
 
-            return "Wykonano.";
+            return "Wykonano";
         }
+
+        private readonly Dictionary<int, int[]> scenarioMaps = new()
+        {
+            { 0, new[] { 1, 2 } },
+            { 1, new[] { 3, 4 } },
+        };
     }
 }
 
