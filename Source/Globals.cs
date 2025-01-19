@@ -42,7 +42,7 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, Array.Empty<int>()),
             new Scenario(BasicRange, new [] { 0, 2 }),
             new Scenario(BasicRange, new [] { 1, 2, 11 }, new Dictionary<int, int> { { 2, 70 } }),
-            new Scenario(BasicRange, new [] { 2, 11 }, new Dictionary<int, int> { { 2, 50 } }),
+            new Scenario(BasicRange, new [] { 1, 2, 11 }, new Dictionary<int, int> { { 2, 50 } }),
             new Scenario(BasicRange, new [] { 2 }, new Dictionary<int, int> { { 2, 30 } }),
             new Scenario(BasicRange, new [] { 0, 1, 2, 11 }),
         };
