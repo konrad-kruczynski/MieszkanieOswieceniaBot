@@ -26,10 +26,7 @@ namespace MieszkanieOswieceniaBot
                     throw new InvalidOperationException("Relay to dim must be in the turned on collection.");
                 }
 
-                if (Globals.Relays[dimToValue.Key].RelaySensor is not IDimmableRelay)
-                {
-                    throw new InvalidOperationException("Relay to dim must be a dimmable relay sensor.");
-                }
+                
             }
         }
 
@@ -68,9 +65,16 @@ namespace MieszkanieOswieceniaBot
 
                 if (dimToValues.TryGetValue(id, out var dimValue))
                 {
-                    if (!await ((IDimmableRelay)relayEntries[id].RelaySensor).DimToAsync(dimValue))
+                    if (relayEntries[id].RelaySensor is IDimmableRelay dimmableRelay)
                     {
-                        success = false;
+                        if (!await dimmableRelay.DimToAsync(dimValue))
+                        {
+                            success = false;
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Relay to dim must be a dimmable relay sensor.");
                     }
                 }
             }
