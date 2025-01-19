@@ -14,7 +14,7 @@ namespace MieszkanieOswieceniaBot
             this.turnedOn = new HashSet<int>(turnedOn);
             this.dimToValues = new Dictionary<int, int>(dimToValues ?? new Dictionary<int, int>());
 
-            if (!this.turnedOn.IsSubsetOf(coveredRange))
+            if (!this.turnedOn.IsSubsetOf(this.coveredRange))
             {
                 throw new InvalidOperationException("The turned on collection must be a subset of covered range.");
             }
