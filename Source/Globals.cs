@@ -42,8 +42,8 @@ namespace MieszkanieOswieceniaBot
             new Scenario(BasicRange, Array.Empty<int>()),
             new Scenario(BasicRange, new [] { 0, 2 }),
             new Scenario(BasicRange, new [] { 1, 2, 11 }, new Dictionary<int, int> { { 2, 38 } }),
-            new Scenario(BasicRange, new [] { 2, 11 }, new Dictionary<int, int> { { 2, 26 } }),
-            new Scenario(BasicRange, new [] { 2 }, new Dictionary<int, int> { { 2, 13 } }),
+            new Scenario(BasicRange, new [] { 2, 11 }, new Dictionary<int, int> { { 2, 20 } }),
+            new Scenario(BasicRange, new [] { 2 }, new Dictionary<int, int> { { 2, 12 } }),
             new Scenario(BasicRange, new [] { 0, 1, 2, 11 }),
         };
 
