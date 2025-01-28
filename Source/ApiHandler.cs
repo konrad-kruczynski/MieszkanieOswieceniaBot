@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using PeanutButter.SimpleHTTPServer;
@@ -34,7 +35,7 @@ namespace MieszkanieOswieceniaBot
                 http.WriteDataToStream("HTTP/1.1 200 OK\r\n");
                 http.WriteDataToStream("Connection: close\r\n");
                 http.WriteDataToStream("Content-Type: text/html\r\n");
-                http.WriteDataToStream($"Content-Length: {response.Text.Length}\r\n");
+                http.WriteDataToStream($"Content-Length: {Encoding.UTF8.GetBytes(response.Text).Length}\r\n");
                 http.WriteDataToStream("\r\n");
                 http.WriteDataToStream(response.Text);
                 return HttpServerPipelineResult.HandledExclusively;
