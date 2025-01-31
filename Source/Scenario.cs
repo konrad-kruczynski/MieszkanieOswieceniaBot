@@ -56,9 +56,21 @@ namespace MieszkanieOswieceniaBot
 
             foreach (var id in coveredRange)
             {
-                if (!await relayEntries[id].RelaySensor.TrySetStateAsync(turnedOn.Contains(id)))
+                var currentRelayState = await relayEntries[id].RelaySensor.TryGetStateAsync();
+                if (!currentRelayState.Success)
                 {
                     success = false;
+                }
+                else
+                {
+                    // nothing to do if already in a desired state
+                    if (turnedOn.Contains(id) ^ currentRelayState.State)
+                    {
+                        if (!await relayEntries[id].RelaySensor.TrySetStateAsync(turnedOn.Contains(id)))
+                        {
+                            success = false;
+                        }
+                    }
                 }
 
                 if (dimToValues.TryGetValue(id, out var dimValue))
