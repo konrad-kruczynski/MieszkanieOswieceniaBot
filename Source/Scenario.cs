@@ -73,19 +73,16 @@ namespace MieszkanieOswieceniaBot
                     }
                 }
 
-                if (dimToValues.TryGetValue(id, out var dimValue))
+                if (relayEntries[id].RelaySensor is not IDimmableRelay dimmableRelay)
                 {
-                    if (relayEntries[id].RelaySensor is IDimmableRelay dimmableRelay)
-                    {
-                        if (!await dimmableRelay.DimToAsync(dimValue))
-                        {
-                            success = false;
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Relay to dim must be a dimmable relay sensor.");
-                    }
+                    continue;
+                }
+                
+                var dimValue = dimToValues.GetValueOrDefault(id, 100);
+                
+                if (!await dimmableRelay.DimToAsync(dimValue))
+                {
+                    success = false;
                 }
             }
 
