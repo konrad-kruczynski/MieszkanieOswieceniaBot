@@ -5,7 +5,7 @@ namespace MieszkanieOswieceniaBot.Sensors
 {
 	public interface IPowerMeter
 	{
-		Task<(decimal, bool)> TryGetCurrentUsageAsync();
+		Task<(decimal Value, bool Success)> TryGetCurrentUsageAsync();
 	}
 }
 

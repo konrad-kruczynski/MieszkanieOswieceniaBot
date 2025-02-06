@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Humanizer;
+using MieszkanieOswieceniaBot.Relays;
+using MieszkanieOswieceniaBot.Sensors;
 
 namespace MieszkanieOswieceniaBot.Commands
 {
@@ -20,6 +22,11 @@ namespace MieszkanieOswieceniaBot.Commands
 
             foreach (var (relay, stateTask) in relaysWithStates)
             {
+                if (relay.RelaySensor is DefunctRelay)
+                {
+                    continue;
+                }
+                
                 var state = await stateTask;
                 result.Append($"{relay.Id} ({relay.FriendlyName}): {RelayExtensions.GetFriendlyStateFromSuccessAndState(state)}");
                 if (state.State)
@@ -51,6 +58,14 @@ namespace MieszkanieOswieceniaBot.Commands
                         }
 
                         result.AppendFormat(", jasność {0}", dimValue);
+                    }
+
+                    if (relay.RelaySensor is IPowerMeter powerMeter)
+                    {
+                        var currentPowerUsage = await powerMeter.TryGetCurrentUsageAsync();
+                        var currentPowerValue = currentPowerUsage.Success ? currentPowerUsage.Value.ToString("0.#") : "??";
+                        
+                        result.AppendFormat(", {0} W", currentPowerValue);
                     }
                 }
 

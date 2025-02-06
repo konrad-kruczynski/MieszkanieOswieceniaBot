@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Flurl.Http;
+using MieszkanieOswieceniaBot.Sensors;
 
 namespace MieszkanieOswieceniaBot.Relays
 {
-	public class ShellyDimmer : Shelly, IDimmableRelay
+	public class ShellyDimmer : ShellyWithPowerMeter, IDimmableRelay
 	{
 		public ShellyDimmer(string hostname) : base(hostname, "light")
 		{

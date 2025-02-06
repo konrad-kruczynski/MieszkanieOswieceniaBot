@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using MieszkanieOswieceniaBot.Handlers;
 using MieszkanieOswieceniaBot.OtherDevices;
+using MieszkanieOswieceniaBot.Sensors;
 
 namespace MieszkanieOswieceniaBot
 {
@@ -15,21 +16,21 @@ namespace MieszkanieOswieceniaBot
             RelaySensorEntry.Create(1, new Relays.Uart("/dev/ttyUSB1", 1), "lampa stojąca"),
             RelaySensorEntry.Create(2, new Relays.ShellyDimmer("192.168.71.39"), "lampa materiałowa"),
             RelaySensorEntry.Create(3, new Relays.Uart("/dev/ttyUSB0", 0), "głośniki w salonie"),
-            RelaySensorEntry.Create(4, new Relays.Shelly("192.168.71.38"), "mata grzejna prawa"),
-            RelaySensorEntry.Create(5, new Relays.Shelly("192.168.71.37"), "mata grzejna lewa"),
+            RelaySensorEntry.Create(4, new ShellyWithPowerMeter("192.168.71.38"), "mata grzejna prawa"),
+            RelaySensorEntry.Create(5, new ShellyWithPowerMeter("192.168.71.37"), "mata grzejna lewa"),
             RelaySensorEntry.Create(6, new Relays.Shelly("192.168.71.34"), "lampa zewnętrzna"),
             RelaySensorEntry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             RelaySensorEntry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni"),
             RelaySensorEntry.Create(9, new Relays.Tasmota("192.168.71.31", true), "Cambridge Audio DAC"),
             RelaySensorEntry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe"),
-            RelaySensorEntry.Create(11, new Relays.Shelly("192.168.71.42", relayNumber: 0), "lampka na schodach w salonie")
+            RelaySensorEntry.Create(11, new ShellyWithPowerMeter("192.168.71.42", relayNumber: 0), "lampka na schodach w salonie")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly Dictionary<int, IRelaySensorEntry<Sensors.IPowerMeter>> PowerMeters = new IRelaySensorEntry<Sensors.IPowerMeter>[]
         {
             RelaySensorEntry.Create(0, new Sensors.TasmotaPowerMeter("192.168.71.32"), "pralka"),
-            RelaySensorEntry.Create(1, new Sensors.ShellyPowerMeter("192.168.71.38"), "mata grzejna prawa"),
-            RelaySensorEntry.Create(2, new Sensors.ShellyPowerMeter("192.168.71.37"), "mata grzejna lewa"),
+            RelaySensorEntry.Create(1, new Sensors.ShellyWithPowerMeter("192.168.71.38"), "mata grzejna prawa"),
+            RelaySensorEntry.Create(2, new Sensors.ShellyWithPowerMeter("192.168.71.37"), "mata grzejna lewa"),
             RelaySensorEntry.Create(3, new Sensors.TasmotaPowerMeter("192.168.71.31"), "Cambridge Audio DAC"),
         }.ToDictionary(x => x.Id, x => x);
 
