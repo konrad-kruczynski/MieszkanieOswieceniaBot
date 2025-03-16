@@ -9,7 +9,7 @@ namespace MieszkanieOswieceniaBot.Commands
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             var dimToValue = parameters.TakeInteger(0, 100);
-            var relay = (IDimmableRelay)Globals.Relays[2].RelaySensor;
+            var relay = (IDimmableRelay)Globals.Relays[2].Element;
             if (!await relay.DimToAsync(dimToValue))
             {
                 return "Nie udało się ściemnić.";

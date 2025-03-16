@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Handlers
         {
             this.relayIds = relayIds;
             this.timeout = timeout;
-            this.turnOnActions = new Dictionary<int, Func<Task>>();
+            turnOnActions = new Dictionary<int, Func<Task>>();
             lastHeartbeat = new DateTime(2000, 1, 1).ToUniversalTime();
         }
 
@@ -32,7 +32,7 @@ namespace MieszkanieOswieceniaBot.Handlers
             await Task.WhenAll(actions);
         }
 
-        public IRelaySensorEntry<Relays.IRelay>[] RelayEntries => relayIds.Select(x => Globals.Relays[x]).ToArray();
+        public IEntry<Relays.IRelay>[] RelayEntries => relayIds.Select(x => Globals.Relays[x]).ToArray();
 
         public Task HeartbeatAsync()
         {
@@ -81,14 +81,14 @@ namespace MieszkanieOswieceniaBot.Handlers
         {
             if (turnOnActions.TryGetValue(relayId, out var action))
             {
-                var oldState = await Globals.Relays[relayId].RelaySensor.TryGetStateAsync();
+                var oldState = await Globals.Relays[relayId].Element.TryGetStateAsync();
                 if (oldState.Success && oldState.State != CurrentState && CurrentState)
                 {
                     await action();
                 }
             }
                 
-            await Globals.Relays[relayId].RelaySensor.TrySetStateAsync(CurrentState);
+            await Globals.Relays[relayId].Element.TrySetStateAsync(CurrentState);
         }
 
         private DateTimeOffset lastHeartbeat;

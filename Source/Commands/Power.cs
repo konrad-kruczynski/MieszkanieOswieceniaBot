@@ -12,7 +12,7 @@ namespace MieszkanieOswieceniaBot.Commands
         {
             var result = new StringBuilder();
 
-            var sensorsWithCurrentUsages = Globals.PowerMeters.Select(x => (x.Value, x.Value.RelaySensor.TryGetCurrentUsageAsync())).ToArray();
+            var sensorsWithCurrentUsages = Globals.PowerMeters.Select(x => (x.Value, x.Value.Element.TryGetCurrentUsageAsync())).ToArray();
 
             foreach (var (sensor, usageTask) in sensorsWithCurrentUsages.OrderBy(x => x.Item1.Id))
             {

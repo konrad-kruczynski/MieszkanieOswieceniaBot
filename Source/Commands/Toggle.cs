@@ -13,7 +13,7 @@ namespace MieszkanieOswieceniaBot.Commands
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
             parameters.ExpectNoOtherParameters();
-            await Globals.Relays[relayNo].RelaySensor.TryToggleAsync();
+            await Globals.Relays[relayNo].Element.TryToggleAsync();
             return "Wykonano";
         }
 

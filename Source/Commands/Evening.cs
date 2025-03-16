@@ -8,7 +8,7 @@ namespace MieszkanieOswieceniaBot.Commands
     { 
         public async Task<string> ExecuteAsync(TextCommandParameters parameters)
         {
-            var relay = (IDimmableRelay)Globals.Relays[2].RelaySensor;
+            var relay = (IDimmableRelay)Globals.Relays[2].Element;
             var currentState = await relay.TryGetStateAsync();
             if (!currentState.Success)
             {

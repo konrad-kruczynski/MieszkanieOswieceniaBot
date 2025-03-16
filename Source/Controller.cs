@@ -58,7 +58,6 @@ namespace MieszkanieOswieceniaBot
             register.RegisterCommand("lista", new Commands.UserList(bot));
             register.RegisterCommand("restart", new Commands.Restart(bot));
             register.RegisterCommand("log", new Commands.Log(bot));
-            register.RegisterCommand("bitcoin", new Commands.Bitcoin());
             register.RegisterCommand("powiadomienia", new Commands.Notifications(bot));
 
             var statsCommand = new Commands.Stats(stats);
@@ -214,12 +213,12 @@ namespace MieszkanieOswieceniaBot
             {
                 if(number == 10)
                 {
-                    await Globals.Relays[3].RelaySensor.TrySetStateAsync(true);
+                    await Globals.Relays[3].Element.TrySetStateAsync(true);
                 }
 
                 if(number == 11)
                 {
-                    await Globals.Relays[3].RelaySensor.TrySetStateAsync(false);
+                    await Globals.Relays[3].Element.TrySetStateAsync(false);
                 }
 
                 // TODO
@@ -343,6 +342,7 @@ namespace MieszkanieOswieceniaBot
         {
             IEnumerable<Handlers.IHandler> handlers = Globals.AutoScenarios;
             handlers = handlers.Concat(Globals.Heartbeatings);
+            handlers = handlers.Concat(Globals.HeatingHandlers);
 
             foreach (Handlers.IHandler handler in handlers)
             {
@@ -355,7 +355,7 @@ namespace MieszkanieOswieceniaBot
             const int MaxWasherQueueLength = 5;
             const int PowerThreshold = 3;
 
-            var (powerUsage, success) = await Globals.PowerMeters[0].RelaySensor.TryGetCurrentUsageAsync();
+            var (powerUsage, success) = await Globals.PowerMeters[0].Element.TryGetCurrentUsageAsync();
             if (!success)
             {
                 return;
@@ -416,7 +416,7 @@ namespace MieszkanieOswieceniaBot
 
             foreach (var entry in Globals.Relays)
             {
-                var currentState = await entry.Value.RelaySensor.TryGetStateAsync();
+                var currentState = await entry.Value.Element.TryGetStateAsync();
                 if (!currentState.Success)
                 {
                     continue;

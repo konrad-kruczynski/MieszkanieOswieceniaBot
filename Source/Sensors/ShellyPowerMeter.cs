@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Flurl.Http;
+using Flurl.Http.Newtonsoft;
 
 namespace MieszkanieOswieceniaBot.Sensors
 {
