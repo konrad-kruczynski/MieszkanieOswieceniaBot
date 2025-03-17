@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using PeanutButter.SimpleHTTPServer;
@@ -15,13 +16,14 @@ namespace MieszkanieOswieceniaBot
             requests = new AsyncProducerConsumerQueue<Request>();
             responses = new ConcurrentDictionary<Guid, AsyncProducerConsumerQueue<Response>>();
             server = new HttpServer(8080, false, null);
-            server.AddHtmlDocumentHandler((http, stream) =>
+            server.AddHandler(((http, stream) =>
             {
                 var commandText = http.Path.TrimStart('/');
                 var id = Guid.NewGuid();
                 var responseQueue = new AsyncProducerConsumerQueue<Response>();
                 responses.TryAdd(id, responseQueue);
                 var request = new Request { For = id, CommandName = commandText, Parameters = http.UrlParameters };
+                CircularLogger.Instance.Log($"Request: {commandText}, parameters: {http.UrlParameters.Count}");
                 requests.Enqueue(request);
                 var response = responseQueue.Dequeue();
                 responses.Remove(id, out _);
@@ -29,9 +31,15 @@ namespace MieszkanieOswieceniaBot
                 {
                     http.WriteFailure(response.StatusCode);
                 }
-
-                return response.Text;
-            });
+                
+                http.WriteDataToStream("HTTP/1.1 200 OK\r\n");
+                http.WriteDataToStream("Connection: close\r\n");
+                http.WriteDataToStream("Content-Type: text/html\r\n");
+                http.WriteDataToStream($"Content-Length: {Encoding.UTF8.GetBytes(response.Text).Length}\r\n");
+                http.WriteDataToStream("\r\n");
+                http.WriteDataToStream(response.Text);
+                return HttpServerPipelineResult.HandledExclusively;
+            }));
         }
 
         public void Start()

@@ -27,7 +27,7 @@ namespace MieszkanieOswieceniaBot.Relays
         {
             if (state)
             {
-                return FlurlClient.Request("light/0?turn=on&brightness=100").GetAsync();
+                return FlurlClient.Request("light/0?turn=on").GetAsync();
             }
 
             return base.SetStateAsync(state);

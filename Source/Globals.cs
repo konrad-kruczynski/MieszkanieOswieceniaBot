@@ -23,7 +23,8 @@ namespace MieszkanieOswieceniaBot
             Entry.Create(7, new Relays.DefunctRelay(), "oświetlenie akwarium"),
             Entry.Create(8, new Relays.Tasmota("192.168.71.36", true), "głośniki w sypialni"),
             Entry.Create(9, new Relays.Tasmota("192.168.71.31", true), "Cambridge Audio DAC"),
-            Entry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe")
+            Entry.Create(10, new Relays.Tasmota("192.168.71.35", true), "lampki choinkowe"),
+            Entry.Create(11, new Relays.Shelly("192.168.71.42", relayNumber: 0), "lampka na schodach w salonie")
         }.ToDictionary(x => x.Id, x => x);
 
         public static readonly Dictionary<int, IEntry<Sensors.IPowerMeter>> PowerMeters = new IEntry<Sensors.IPowerMeter>[]
@@ -41,28 +42,26 @@ namespace MieszkanieOswieceniaBot
 
         public static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly int[] BasicRange = new[] { 0, 1, 2 };
+        private static readonly int[] BasicRange = { 0, 1, 2, 11 };
 
-        public static readonly Scenario[] Scenarios = new Scenario[]
+        public static readonly Scenario[] Scenarios =
         {
             new Scenario(BasicRange, Array.Empty<int>()),
-            new Scenario(BasicRange, new [] { 0, 1 }),
-            new Scenario(BasicRange, new [] { 1, 2 }),
-            new Scenario(BasicRange, new [] { 2 }),
-            new Scenario(BasicRange, new [] { 1 }),
-            new Scenario(BasicRange, new [] { 0 }),
-            new Scenario(BasicRange, new [] { 0, 1, 2 }),
             new Scenario(BasicRange, new [] { 0, 2 }),
+            new Scenario(BasicRange, new [] { 1, 2, 11 }, new Dictionary<int, int> { { 2, 47 } }),
+            new Scenario(BasicRange, new [] { 2, 11 }, new Dictionary<int, int> { { 2, 25 } }),
+            new Scenario(BasicRange, new [] { 2 }, new Dictionary<int, int> { { 2, 12 } }),
+            new Scenario(BasicRange, new [] { 0, 1, 2, 11 }),
         };
 
-        public static readonly AutoScenarioHandler[] AutoScenarios = new AutoScenarioHandler[]
+        public static readonly AutoScenarioHandler[] AutoScenarios = 
         {
             // disable bed heating on weekends as "normal" heating is triggered on that days
             new AutoScenarioHandler(4, false, new ScheduleEntry<bool>(false, "7:00", new WeekDay(DayOfWeek.Saturday))),
             new AutoScenarioHandler(5, false, new ScheduleEntry<bool>(false, "7:00", new WeekDay(DayOfWeek.Saturday)))
         };
 
-        public static readonly HeartbeatenHandler[] Heartbeatings = new[]
+        public static readonly HeartbeatenHandler[] Heartbeatings = 
         {
             new HeartbeatenHandler(HeartbeatTimeout, 3, 9),
             new HeartbeatenHandler(HeartbeatTimeout, 8),
